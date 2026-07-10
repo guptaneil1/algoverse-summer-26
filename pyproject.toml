@@ -1,0 +1,15 @@
+[project]
+name = "collapse-rescue"
+version = "0.1.0"
+description = "Geometry of Collapse Rescue Data: which properties of human text prevent model collapse"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "scripts", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

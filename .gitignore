@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
-data/
-results/*/
-!results/.gitkeep
-figures/
-*.egg-info/
-.env

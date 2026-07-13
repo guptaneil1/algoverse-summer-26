@@ -1,0 +1,17 @@
+[project]
+name = "human-data-budget"
+version = "0.0.0"
+description = "Design-stage research on jointly scheduling and targeting finite human-data budgets in recursive language-model training"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "The Collapse Rescue Data team (KNAR / Algoverse Summer 2026)" }
+]
+
+# No runtime package or dependencies are declared yet because experimental code
+# has not been implemented. Add package discovery only when a real src/ package exists.
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100

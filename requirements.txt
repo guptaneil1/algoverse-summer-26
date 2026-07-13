@@ -1,0 +1,6 @@
+# DESIGN-STAGE PLACEHOLDER
+#
+# There is currently no executable experiment package, so no dependency set is
+# claimed to reproduce results. When the published positive-control pipeline is
+# implemented, replace this file with a pinned, tested environment lock and
+# record Python, framework, CUDA, model, tokenizer, and dataset revisions.

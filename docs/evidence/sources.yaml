@@ -1,0 +1,19 @@
+schema_version: "1.0"
+sources:
+  - id: drayson_2025
+    title: Machine-generated text detection prevents language model collapse
+    authors:
+      - George Drayson
+      - Emine Yilmaz
+      - Vasileios Lampos
+    venue: EMNLP 2025
+    primary_url: https://aclanthology.org/2025.emnlp-main.1506/
+    code_url: https://github.com/GeorgeDrayson/model_collapse
+    exact_supporting_location: "TBD by Ronit during Week 1 primary-source audit"
+    audit_status: pending_exact_location
+  - id: pineau_2021
+    title: Improving Reproducibility in Machine Learning Research
+    venue: JMLR 2021
+    primary_url: https://www.jmlr.org/papers/v22/20-303.html
+    exact_supporting_location: "Reproducibility program and checklist; exact location pending"
+    audit_status: pending_exact_location

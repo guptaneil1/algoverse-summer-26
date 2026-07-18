@@ -1,0 +1,53 @@
+name: Experiment
+description: Predeclare and track one experiment or recursive-chain family.
+title: "[Experiment] "
+labels: ["area:experiment"]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis or verification objective
+    validations:
+      required: true
+  - type: textarea
+    id: assets
+    attributes:
+      label: Frozen assets
+      description: Model/tokenizer/data/config revisions and hashes.
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Conditions, budget, horizon, and seeds
+    validations:
+      required: true
+  - type: textarea
+    id: outcomes
+    attributes:
+      label: Primary outcomes and contrast
+    validations:
+      required: true
+  - type: textarea
+    id: exclusions
+    attributes:
+      label: Objective failure, exclusion, and replacement rules
+    validations:
+      required: true
+  - type: textarea
+    id: compute
+    attributes:
+      label: Expected compute, storage, and artifact destination
+    validations:
+      required: true
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: Protocol/configs are frozen before primary outcomes.
+          required: true
+        - label: Data separation and budget validators pass.
+          required: true
+        - label: Ordered seed is predeclared.
+          required: true

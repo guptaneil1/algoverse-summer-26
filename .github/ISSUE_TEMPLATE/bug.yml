@@ -1,0 +1,30 @@
+name: Bug or failure
+description: Report an implementation defect, infrastructure failure, protocol violation, or scientific failure.
+title: "[Failure] "
+labels: ["status:blocked"]
+body:
+  - type: dropdown
+    id: classification
+    attributes:
+      label: Provisional classification
+      options: [Implementation defect, Infrastructure failure, Data problem, Protocol violation, Scientific divergence/unfavorable result, Unknown]
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Exact run/commit/config and evidence
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: consequence
+    attributes:
+      label: Rerun permission and scientific consequence
+    validations:
+      required: true

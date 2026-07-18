@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+
+# Experiment trackers and logs
+wandb/
+logs/
+runs/
+external/
+
+# Large model artifacts
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+
+# Data: keep documentation and manifests only
+data/*
+!data/README.md
+!data/datasheet.md
+!data/manifests/
+data/manifests/*
+!data/manifests/README.md
+!data/fixtures/
+data/fixtures/*
+!data/fixtures/toy_corpus.jsonl
+
+# Results: keep documentation and small generated aggregates only
+results/*
+!results/README.md
+!results/aggregates/
+results/aggregates/*
+!results/aggregates/README.md
+!results/figures/
+results/figures/*
+!results/figures/README.md
+
+# Temporary and generated files
+tmp/
+cache/
+dist/
+*.log
+*.tmp
+
+# LaTeX build outputs
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.pdf

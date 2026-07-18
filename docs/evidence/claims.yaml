@@ -1,0 +1,34 @@
+schema_version: "1.0"
+claims:
+  - id: C-000
+    type: repository_fact
+    statement: No novel Human Data Budget experiment has been run or verified in this repository.
+    status: verified_by_repository_audit
+    evidence:
+      - README.md
+      - docs/STATUS.md
+  - id: C-001
+    type: literature_motivation
+    statement: Recursive training on generated data can degrade model fit or distributional coverage in studied settings.
+    status: supported_with_scope_qualifiers
+    evidence:
+      - source_id: drayson_2025
+  - id: C-002
+    type: hypothesis
+    statement: At equal lifetime human-token and total-token budgets, joint allocation reduces chain-level regret relative to the strongest eligible non-joint baseline.
+    status: untested
+    evidence_required:
+      - frozen_protocol
+      - valid_paired_chains
+      - chain_level_analysis
+  - id: C-003
+    type: hypothesis
+    statement: Targeted allocation loses advantage when monitoring omits globally important modes.
+    status: untested
+  - id: C-004
+    type: provisional_novelty
+    statement: Joint finite-lifetime allocation across recursive time and human-distribution modes is distinguishable from the closest work.
+    status: unverified
+    evidence_required:
+      - hostile_closest_work_search
+      - external_novelty_review

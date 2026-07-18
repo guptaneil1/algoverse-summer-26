@@ -1,0 +1,21 @@
+{
+  "run_id": "fixture_joint_seed1",
+  "budget_id": "toy-b1",
+  "policy": "joint",
+  "horizon": 3,
+  "chain_seed": 1,
+  "lifetime_human_budget": 60,
+  "per_generation_human_budget": 20,
+  "total_optimizer_tokens": 300,
+  "output_dir": "tmp/toy_run",
+  "mode_statistics": {
+    "common": 0.1,
+    "tail": 0.5
+  },
+  "candidates": [
+    {"example_id": "h-common-1", "human_token_count": 10, "mode": "common", "undercoverage_score": 0.1},
+    {"example_id": "h-common-2", "human_token_count": 10, "mode": "common", "undercoverage_score": 0.1},
+    {"example_id": "h-tail-1", "human_token_count": 10, "mode": "tail", "undercoverage_score": 0.5},
+    {"example_id": "h-tail-2", "human_token_count": 10, "mode": "tail", "undercoverage_score": 0.5}
+  ]
+}

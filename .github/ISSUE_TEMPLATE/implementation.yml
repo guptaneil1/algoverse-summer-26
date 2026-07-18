@@ -1,0 +1,31 @@
+name: Implementation
+description: Implement or test one scoped repository component.
+title: "[Implementation] "
+labels: ["status:ready"]
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective and owned paths
+    validations:
+      required: true
+  - type: textarea
+    id: interface
+    attributes:
+      label: Inputs, outputs, and frozen interface
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance tests
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Independent fixture
+      description: How can this be completed without another current branch?
+    validations:
+      required: true

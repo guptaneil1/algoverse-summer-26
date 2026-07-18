@@ -1,0 +1,4 @@
+{"example_id":"h-common-1","text":"A common-mode human fixture.","origin":"human","mode":"common"}
+{"example_id":"h-common-2","text":"A second common-mode fixture.","origin":"human","mode":"common"}
+{"example_id":"h-tail-1","text":"A rare-mode human fixture.","origin":"human","mode":"tail"}
+{"example_id":"h-tail-2","text":"A second rare-mode fixture.","origin":"human","mode":"tail"}

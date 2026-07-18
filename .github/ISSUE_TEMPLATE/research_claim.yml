@@ -1,0 +1,36 @@
+name: Research claim
+description: Add, revise, support, falsify, or withdraw a scientific claim.
+title: "[Claim] "
+labels: ["area:research"]
+body:
+  - type: textarea
+    id: statement
+    attributes:
+      label: Exact proposed sentence
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Claim type
+      options: [Fact, Inference, Hypothesis, Decision, Result, Unknown]
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Primary evidence and exact supporting location
+    validations:
+      required: true
+  - type: textarea
+    id: counterargument
+    attributes:
+      label: Strongest counterargument or falsification
+    validations:
+      required: true
+  - type: textarea
+    id: wording
+    attributes:
+      label: Allowed and prohibited wording
+    validations:
+      required: true

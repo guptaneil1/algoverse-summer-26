@@ -1,0 +1,2 @@
+source_id,title,recursive_setting,fixed_lifetime_budget,allocates_across_time,targets_modes,monitoring_assumption,models,domains,difference_from_our_work,threat_level,audit_status
+drayson_2025,Machine-generated text detection prevents language model collapse,yes,no,no,likely-human importance resampling,detector reference,GPT-2 and SmolLM2,text,Does not presently appear to formulate the joint lifetime time-by-mode budget problem,high,requires_full_primary_review

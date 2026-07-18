@@ -1,0 +1,53 @@
+name: Weekly deliverable
+description: Define one member's complete independent deliverable for a project week.
+title: "[W?][Owner] "
+labels: ["status:ready"]
+body:
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Owner
+      options: [Ronit, Khantushig, Neil, Aarav]
+    validations:
+      required: true
+  - type: dropdown
+    id: week
+    attributes:
+      label: Week
+      options: ["Week 1 — July 18–24", "Week 2 — July 25–31", "Week 3 — August 1–7", "Week 4 — August 8–14"]
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Complete Friday outcome
+      description: Describe the standalone subsystem/report/package that will exist.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Exact tasks
+      description: Use a checklist.
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: textarea
+    id: independence
+    attributes:
+      label: Frozen inputs and fixtures
+      description: Explain why no other current-week branch is required.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification commands and evidence
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and fallback
+      description: What mock remains if the deliverable misses the freeze?

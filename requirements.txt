@@ -1,0 +1,3 @@
+# Convenience development requirements. The authoritative dependency declaration
+# is pyproject.toml; create and commit a platform-tested lock before real runs.
+-e .[dev]

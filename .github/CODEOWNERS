@@ -1,0 +1,31 @@
+# Replace the four placeholder handles with the members' real GitHub usernames
+# before enabling required code-owner review.
+
+/paper/                                      @Ronit
+/docs/evidence/                              @Ronit
+/CLAIMS.md                                   @Ronit
+/DECISIONS.md                                @Ronit
+
+/src/human_data_budget/training/             @Khantushig
+/src/human_data_budget/generation/           @Khantushig
+/src/human_data_budget/runner/               @Khantushig
+/configs/training/                           @Khantushig
+/configs/generation/                         @Khantushig
+
+/src/human_data_budget/data/                 @Neil
+/src/human_data_budget/evaluation/           @Neil
+/data/                                       @Neil
+/configs/data/                               @Neil
+/configs/evaluation/                         @Neil
+
+/src/human_data_budget/policies/             @Aarav
+/src/human_data_budget/analysis/             @Aarav
+/configs/policy/                             @Aarav
+/PREREGISTRATION.md                          @Aarav
+/results/aggregates/                         @Aarav
+/results/figures/                            @Aarav
+
+/schemas/                                    @Khantushig @Neil @Aarav
+/docs/interfaces/                            @Khantushig @Neil @Aarav
+/configs/experiment/                         @Khantushig @Neil @Aarav
+/PROTOCOL.md                                 @Ronit @Neil @Aarav

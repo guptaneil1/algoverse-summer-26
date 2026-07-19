@@ -1,0 +1,21 @@
+name: Paper structure
+
+on:
+  pull_request:
+    paths:
+      - "paper/**"
+      - "results/**"
+      - ".github/workflows/paper.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  paper-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: test -f paper/main.tex
+      - run: test -f paper/references.bib
+      - run: test -f paper/tables/primary_results.tex
+      - run: test -f paper/figures/README.md

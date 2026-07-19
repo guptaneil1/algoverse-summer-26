@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/human-data-budget/run_manifest.schema.json",
+  "title": "Human Data Budget run manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "run_id", "stage", "git_commit", "model", "data", "policy", "budget", "randomness", "environment", "horizon", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["fixture", "positive_control", "screening", "pilot", "confirmation"]},
+    "git_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "working_tree_clean": {"type": "boolean"},
+    "model": {
+      "type": "object",
+      "required": ["identifier", "revision", "tokenizer_revision"],
+      "properties": {
+        "identifier": {"type": "string"},
+        "revision": {"type": "string"},
+        "tokenizer_revision": {"type": "string"}
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": ["train_manifest", "train_manifest_sha256"],
+      "properties": {
+        "train_manifest": {"type": "string"},
+        "train_manifest_sha256": {"type": "string"}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "required": ["name", "config", "config_sha256"]
+    },
+    "budget": {
+      "type": "object",
+      "required": ["lifetime_human_optimizer_tokens", "total_optimizer_tokens"],
+      "properties": {
+        "lifetime_human_optimizer_tokens": {"type": "integer", "minimum": 0},
+        "total_optimizer_tokens": {"type": "integer", "minimum": 1}
+      }
+    },
+    "randomness": {
+      "type": "object",
+      "required": ["chain_seed"]
+    },
+    "environment": {"type": "object"},
+    "horizon": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["planned", "running", "complete", "failed", "invalid"]}
+  }
+}

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "This repository is a design and pilot scaffold; cite a future frozen release rather than implying current experimental results."
+title: "The Human Data Budget"
+type: software
+version: 0.1.0
+date-released: 2026-07-18
+license: MIT
+authors:
+  - name: Ronit
+  - name: Khantushig
+  - name: Neil
+  - name: Aarav
+repository-code: "https://github.com/guptaneil1/algoverse-summer-26"

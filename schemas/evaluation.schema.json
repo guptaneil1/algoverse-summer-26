@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/human-data-budget/evaluation.schema.json",
+  "title": "Human Data Budget evaluation result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "generation", "human_nll", "tail_retention", "tokens_evaluated", "evaluation_manifest_sha256", "checkpoint_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string"},
+    "generation": {"type": "integer", "minimum": 0},
+    "human_nll": {"type": "number"},
+    "tail_retention": {"type": "number", "minimum": 0, "maximum": 1},
+    "tokens_evaluated": {"type": "integer", "minimum": 1},
+    "evaluation_manifest_sha256": {"type": "string"},
+    "checkpoint_sha256": {"type": "string"}
+  }
+}

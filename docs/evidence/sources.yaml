@@ -1,19 +1,512 @@
-schema_version: "1.0"
+schema_version: '1.1'
+review_completed: '2026-07-22'
+reviewer: Ronit
 sources:
-  - id: drayson_2025
-    title: Machine-generated text detection prevents language model collapse
-    authors:
-      - George Drayson
-      - Emine Yilmaz
-      - Vasileios Lampos
-    venue: EMNLP 2025
-    primary_url: https://aclanthology.org/2025.emnlp-main.1506/
-    code_url: https://github.com/GeorgeDrayson/model_collapse
-    exact_supporting_location: "TBD by Ronit during Week 1 primary-source audit"
-    audit_status: pending_exact_location
-  - id: pineau_2021
-    title: Improving Reproducibility in Machine Learning Research
-    venue: JMLR 2021
-    primary_url: https://www.jmlr.org/papers/v22/20-303.html
-    exact_supporting_location: "Reproducibility program and checklist; exact location pending"
-    audit_status: pending_exact_location
+- id: shumailov_2024
+  title: AI models collapse when trained on recursively generated data
+  authors:
+  - Ilia Shumailov
+  - Zakhar Shumaylov
+  - Yiren Zhao
+  - Nicolas Papernot
+  - Ross Anderson
+  - Yarin Gal
+  venue: Nature 2024
+  primary_url: https://www.nature.com/articles/s41586-024-07566-y
+  relevance: direct
+  topic_group: recursive collapse and tail loss
+  exact_supporting_location: Definition 2.1 and Fig. 1 (collapse and early tail loss); main text around Figs. 2–4
+    (GMM, VAE, and language-model recursion); Methods, “Learning with generational data”; final Discussion paragraph.
+  audit_status: reviewed_primary
+- id: alemohammad_2024
+  title: Self-Consuming Generative Models Go MAD
+  authors:
+  - Sina Alemohammad
+  - Josue Casco-Rodriguez
+  - Lorenzo Luzi
+  - Ahmed Imtiaz Humayun
+  - Hossein Babaei
+  - Daniel LeJeune
+  - Ali Siahkoohi
+  - Richard G. Baraniuk
+  venue: ICLR 2024
+  primary_url: https://openreview.net/forum?id=ShjMHfmPs0
+  relevance: direct
+  topic_group: recursive collapse, fresh-data mixing, biased sampling
+  exact_supporting_location: Section 2, “Autophagous Loops”; Section 3 analytical Gaussian model; Section 4, experimental
+    settings for fully synthetic, fixed-real, and fresh-real loops; Figs. 3–7; Section 5 Conclusion.
+  audit_status: reviewed_primary
+- id: gerstgrasser_2024
+  title: Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data
+  authors:
+  - Matthias Gerstgrasser
+  - Rylan Schaeffer
+  - Apratim Dey
+  - Rafael Rafailov
+  - Henry Sleight
+  - John Hughes
+  - Tomasz Korbak
+  - Rajashree Agrawal
+  - Dhruv Pai
+  - Andrey Gromov
+  - Daniel A. Roberts
+  - Diyi Yang
+  - David L. Donoho
+  - Sanmi Koyejo
+  venue: COLM 2024
+  primary_url: https://openreview.net/forum?id=5B2K4LRgmz
+  relevance: direct
+  topic_group: fresh human mixing and accumulation
+  exact_supporting_location: Section 2.1, Experiments and Results; Figs. 2–3 and Table 1 (replace versus accumulate
+    for language models); Sections 2.2–2.3 (diffusion and VAE); Section 3.2, Theorems 1–2 and Fig. 7; Section 4
+    Discussion.
+  audit_status: reviewed_primary
+- id: briesch_2023
+  title: 'Large Language Models Suffer From Their Own Output: An Analysis of the Self-Consuming Training Loop'
+  authors:
+  - Martin Briesch
+  - Dominik Sobania
+  - Franz Rothlauf
+  venue: arXiv 2023, revised 2025
+  primary_url: https://arxiv.org/abs/2311.16822
+  relevance: direct
+  topic_group: recursive language-model training and fresh data
+  exact_supporting_location: Section 3, experimental design and synthetic-data ratios; Section 4, diversity and
+    correctness results, especially the generation-by-generation plots and fresh-data condition; Section 5 Discussion
+    and Conclusion.
+  audit_status: reviewed_primary
+- id: dohmatob_2024_tails
+  title: 'A Tale of Tails: Model Collapse as a Change of Scaling Laws'
+  authors:
+  - Elvis Dohmatob
+  - Yunzhen Feng
+  - Pu Yang
+  - Francois Charton
+  - Julia Kempe
+  venue: ICML 2024
+  primary_url: https://proceedings.mlr.press/v235/dohmatob24b.html
+  relevance: direct
+  topic_group: tail loss and human-synthetic mixing
+  exact_supporting_location: Section 2, scaling-law setup; Sections 3–4, successive-generation and mixed-data regimes;
+    figures showing shifted scaling, skill unlearning, and human/synthetic mixture behavior; final Discussion.
+  audit_status: reviewed_primary
+- id: dohmatob_2024_regression
+  title: 'Model Collapse Demystified: The Case of Regression'
+  authors:
+  - Elvis Dohmatob
+  - Yunzhen Feng
+  - Julia Kempe
+  venue: NeurIPS 2024
+  primary_url: https://proceedings.neurips.cc/paper_files/paper/2024/hash/53dbd7e34fab703a639964e2d3ee9e84-Abstract-Conference.html
+  relevance: direct
+  topic_group: recursive-collapse theory and adaptive regularization
+  exact_supporting_location: Section 2, recursive regression model; Section 3, exact bias/variance and test-error
+    formulas; Section 4, polynomial spectral/source scaling laws; mitigation subsection on adaptive regularization;
+    Section 6 Discussion.
+  audit_status: reviewed_primary
+- id: seddik_2024
+  title: How Bad is Training on Synthetic Data? A Statistical Analysis of Language Model Collapse
+  authors:
+  - Mohamed El Amine Seddik
+  - Suei-Wen Chen
+  - Soufiane Hayou
+  - Pierre Youssef
+  - Merouane Debbah
+  venue: COLM 2024
+  primary_url: https://openreview.net/forum?id=4b55130ce33429ab600e5cde927dfe10a36328ba
+  relevance: direct
+  topic_group: recursive language models and real-synthetic mixture thresholds
+  exact_supporting_location: Section 2, recursive statistical language model; Section 3, fully synthetic recursion
+    result; Section 4, real/synthetic mixture and critical synthetic fraction; empirical validation figures; final
+    Discussion.
+  audit_status: reviewed_primary
+- id: gillman_2024
+  title: Self-Correcting Self-Consuming Loops for Generative Model Training
+  authors:
+  - Nate Gillman
+  - Michael Freeman
+  - Daksh Aggarwal
+  - Chia-Hong Hsu
+  - Calvin Luo
+  - Yonglong Tian
+  - Chen Sun
+  venue: ICML 2024
+  primary_url: https://proceedings.mlr.press/v235/gillman24a.html
+  relevance: direct
+  topic_group: recursive-loop correction and external knowledge
+  exact_supporting_location: Section 2, self-consuming-loop setup; Section 3, idealized corrector and stability
+    theorem; Section 4, practical correction functions; Section 5, human-motion experiments and high synthetic-to-real
+    ratios; Conclusion.
+  audit_status: reviewed_primary
+- id: kazdan_2025
+  title: 'Collapse or Thrive: Perils and Promises of Synthetic Data in a Self-Generating World'
+  authors:
+  - Joshua Kazdan
+  - Rylan Schaeffer
+  - Apratim Dey
+  - Matthias Gerstgrasser
+  - Rafael Rafailov
+  - David L. Donoho
+  - Sanmi Koyejo
+  venue: ICML 2025
+  primary_url: https://proceedings.mlr.press/v267/kazdan25a.html
+  relevance: direct
+  topic_group: replacement, accumulation, and fixed-size accumulated sampling
+  exact_supporting_location: Section 2 and Fig. 1, three training workflows; Sections 3–5, Gaussian, KDE, and language-model
+    experiments; fixed-size subset workflow results; Section 6 Discussion and limitations.
+  audit_status: reviewed_primary
+- id: suresh_2025
+  title: Rate of Model Collapse in Recursive Training
+  authors:
+  - Ananda Theertha Suresh
+  - Andrew Thangaraj
+  - Aditya Nanda Kishore Khandavally
+  venue: AISTATS 2025
+  primary_url: https://proceedings.mlr.press/v258/suresh25a.html
+  relevance: direct
+  topic_group: rate of rare-symbol loss under recursion
+  exact_supporting_location: Section 2, discrete recursive sampling and symbol-extinction analysis; Section 3, Gaussian
+    recursion; main theorems characterizing collapse time; experimental figures; Section 5 Discussion.
+  audit_status: reviewed_primary
+- id: drayson_2025
+  title: Machine-generated text detection prevents language model collapse
+  authors:
+  - George Drayson
+  - Emine Yilmaz
+  - Vasileios Lampos
+  venue: EMNLP 2025
+  primary_url: https://aclanthology.org/2025.emnlp-main.1506/
+  code_url: https://github.com/GeorgeDrayson/model_collapse
+  relevance: direct
+  topic_group: importance resampling of likely human text
+  exact_supporting_location: Section 3, recursive-training and decoding setup; Section 4, detector training and
+    importance-resampling method; Tables 1–3 and collapse curves across GPT-2/SmolLM2; Section 6 Conclusion.
+  audit_status: reviewed_primary
+- id: kovac_2025
+  title: 'Recursive Training Loops in LLMs: How training data properties modulate distribution shift in generated
+    data?'
+  authors:
+  - Grgur Kovač
+  - Jérémy Perez
+  - Rémy Portelas
+  - Peter Ford Dominey
+  - Pierre-Yves Oudeyer
+  venue: EMNLP 2025
+  primary_url: https://aclanthology.org/2025.emnlp-main.1643/
+  relevance: direct
+  topic_group: human-data properties, diversity, and monitoring bias
+  exact_supporting_location: Section 3, recursive fine-tuning protocol and four human datasets; Section 4, controlled
+    dataset-property manipulations and regressions; sections on lexical/semantic diversity and political bias; final
+    Discussion.
+  audit_status: reviewed_primary
+- id: zhu_2025_synthesize
+  title: How to Synthesize Text Data without Model Collapse?
+  authors:
+  - Xuekai Zhu
+  - Daixuan Cheng
+  - Hengli Li
+  - Kaiyan Zhang
+  - Ermo Hua
+  - Xingtai Lv
+  - Ning Ding
+  - Zhouhan Lin
+  - Zilong Zheng
+  - Bowen Zhou
+  venue: ICML 2025
+  primary_url: https://proceedings.mlr.press/v267/zhu25d.html
+  relevance: direct
+  topic_group: human/synthetic ratios and token editing
+  exact_supporting_location: Section 3, synthetic-ratio pretraining and distributional analysis; subsection on n-gram
+    over-concentration; Section 4, token-editing construction and theoretical bound; Sections 5–6 experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: kang_2025
+  title: 'Demystifying Synthetic Data in LLM Pre-training: A Systematic Study of Scaling Laws, Benefits, and Pitfalls'
+  authors:
+  - Feiyang Kang
+  - Newsha Ardalani
+  - Michael Kuchnik
+  - Youssef Emad
+  - Mostafa Elhoushi
+  - Shubhabrata Sengupta
+  - Shang-Wen Li
+  - Ramya Raghavendra
+  - Ruoxi Jia
+  - Carole-Jean Wu
+  venue: EMNLP 2025
+  primary_url: https://aclanthology.org/2025.emnlp-main.544/
+  relevance: direct
+  topic_group: natural/synthetic mixture ratios and data budgets
+  exact_supporting_location: Section 3, unified pretraining protocol and data types; Section 4, scaling-law fits
+    and mixture-ratio sweeps; figures comparing natural, rephrased, and textbook-style data across budgets; Section
+    6 Discussion.
+  audit_status: reviewed_primary
+- id: zhu_2026_reflow
+  title: Analyzing and Mitigating Model Collapse in Reflow Methods
+  authors:
+  - Huminhao Zhu
+  - Fangyikang Wang
+  - Tianyu Ding
+  - Qing Qu
+  - Zhihui Zhu
+  venue: Conference on Parsimony and Learning 2026
+  primary_url: https://proceedings.mlr.press/v328/zhu26a.html
+  relevance: direct
+  topic_group: recursive flow training and fixed real-data fraction
+  exact_supporting_location: Section 3, linear DAE surrogate and geometric contraction result; Section 4, real-data
+    augmentation guarantee; Section 5, Reflow experiments on toy and image benchmarks; Conclusion.
+  audit_status: reviewed_primary
+- id: yi_2026
+  title: 'Escaping Model Collapse via Synthetic Data Verification: Near-term Improvements and Long-term Convergence'
+  authors:
+  - Bingji Yi
+  - Qiyuan Liu
+  - Yuwei Cheng
+  - Haifeng Xu
+  venue: ICLR 2026 DeLTa Workshop
+  primary_url: https://openreview.net/forum?id=54cOA1Cthz
+  relevance: direct
+  topic_group: human or model verification in recursive retraining
+  exact_supporting_location: Section 2, verifier-guided recursive regression; theory section on convergence to the
+    verifier knowledge center; experiment section covering regression, MNIST VAEs, and SmolLM2/XSUM; Conclusion
+    and limitations.
+  audit_status: reviewed_primary
+- id: wang_2026_scpl
+  title: Observations and Remedies for Large Language Model Bias in Self-Consuming Performative Loop
+  authors:
+  - Yaxuan Wang
+  - Zhongteng Cai
+  - Yujia Bao
+  - Xueru Zhang
+  - Yang Liu
+  venue: ACL 2026
+  primary_url: https://aclanthology.org/2026.acl-long.1561/
+  code_url: https://github.com/UCSC-REAL/SCPL
+  relevance: direct
+  topic_group: recursive feedback, group bias, and rejection sampling
+  exact_supporting_location: Section 3, self-consuming performative-loop formulation; Section 4, typical retraining
+    and incremental fine-tuning protocols; bias-evolution tables/figures; mitigation subsection on reward-based
+    rejection sampling; Conclusion.
+  audit_status: reviewed_primary
+- id: zhao_2026_regmixd
+  title: 'RegMix-D: Dynamic Data Mixing via Proxy Training Trajectories'
+  authors:
+  - Kaiyan Zhao
+  - Zhongtao Miao
+  - Akiko Aizawa
+  - Yoshimasa Tsuruoka
+  venue: arXiv 2026
+  primary_url: https://arxiv.org/abs/2606.18663
+  relevance: direct
+  topic_group: time-varying domain allocation schedules
+  exact_supporting_location: Section 3.2, trajectory-conditioned regression; Sections 3.3–3.4, offline and online
+    mixture schedules; Fig. 1 and Algorithm 1; Section 4, 25B-token Pile experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: wang_2026_tikmix
+  title: 'TiKMiX: Efficient Semi-Dynamic Data Mixture via Data Influence for LLM Pre-training'
+  authors:
+  - Yifan Wang
+  - Binbinliu
+  - Fengze Liu
+  - Yuanfan Guo
+  - Jiyao Deng
+  - Xuecheng Wu
+  - Weidong Zhou
+  - Xiaohuan Zhou
+  - Taifeng Wang
+  venue: ACL 2026
+  primary_url: https://aclanthology.org/2026.acl-long.261/
+  relevance: direct
+  topic_group: periodic dynamic domain allocation
+  exact_supporting_location: Section 3, influence-ranking invariance and Group Influence; section formulating periodic
+    influence maximization; experiments across nine downstream benchmarks; ablation on update frequency and overhead;
+    Conclusion.
+  audit_status: reviewed_primary
+- id: xie_2023_doremi
+  title: 'DoReMi: Optimizing Data Mixtures Speeds Up Language Model Pretraining'
+  authors:
+  - Sang Michael Xie
+  - Hieu Pham
+  - Xuanyi Dong
+  - Nan Du
+  - Hanxiao Liu
+  - Yifeng Lu
+  - Percy Liang
+  - Quoc V. Le
+  - Tengyu Ma
+  - Adams Wei Yu
+  venue: NeurIPS 2023
+  primary_url: https://proceedings.neurips.cc/paper_files/paper/2023/hash/dcba6be91359358c2355cd920da3fcbd-Abstract-Conference.html
+  relevance: adjacent
+  topic_group: domain mixture optimization
+  exact_supporting_location: Section 2, domain-reweighting objective; Algorithm 1, proxy-model Group DRO and resampling;
+    Section 4, Pile and GLaM experiments; ablations and Conclusion.
+  audit_status: reviewed_primary
+- id: ye_2025_mixinglaws
+  title: 'Data Mixing Laws: Optimizing Data Mixtures by Predicting Language Modeling Performance'
+  authors:
+  - Jiasheng Ye
+  - Peiju Liu
+  - Tianxiang Sun
+  - Jun Zhan
+  - Yunhua Zhou
+  - Xipeng Qiu
+  venue: ICLR 2025
+  primary_url: https://openreview.net/forum?id=jjCB27TMK3
+  relevance: adjacent
+  topic_group: mixture prediction and continual-training schedules
+  exact_supporting_location: Section 3, data-mixing-law functional forms; section nesting step/model-size/mixing
+    laws; experiments on RedPajama; continual-training subsection identifying a critical mixture and discussing
+    dynamic schedules; Conclusion.
+  audit_status: reviewed_primary
+- id: liu_2025_regmix
+  title: 'RegMix: Data Mixture as Regression for Language Model Pre-training'
+  authors:
+  - Qian Liu
+  - Xiaosen Zheng
+  - Niklas Muennighoff
+  - Guangtao Zeng
+  - Longxu Dou
+  - Tianyu Pang
+  - Jing Jiang
+  - Min Lin
+  venue: ICLR 2025
+  primary_url: https://proceedings.iclr.cc/paper_files/paper/2025/hash/5f67d864aae6115374fed7beddd119e0-Abstract-Conference.html
+  code_url: https://github.com/sail-sg/regmix
+  relevance: adjacent
+  topic_group: proxy-based domain mixture search
+  exact_supporting_location: Section 3, regression formulation and candidate-mixture search; Fig. 1 workflow; Section
+    4, proxy and target-model setup; main comparison tables against human mixtures and DoReMi; Conclusion.
+  audit_status: reviewed_primary
+- id: xie_2023_dsir
+  title: Data Selection for Language Models via Importance Resampling
+  authors:
+  - Sang Michael Xie
+  - Shibani Santurkar
+  - Tengyu Ma
+  - Percy Liang
+  venue: NeurIPS 2023
+  primary_url: https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b9aa8f418bde2840d5f4ab7a02f663b-Abstract-Conference.html
+  code_url: https://github.com/p-lambda/dsir
+  relevance: adjacent
+  topic_group: importance resampling and target-distribution matching
+  exact_supporting_location: Section 2, distribution-matching formulation; Section 3, DSIR weight estimation and
+    sampling algorithm; Section 4, KL-reduction metric; Sections 5–6 domain-specific and general pretraining experiments;
+    Conclusion.
+  audit_status: reviewed_primary
+- id: katharopoulos_2018
+  title: 'Not All Samples Are Created Equal: Deep Learning with Importance Sampling'
+  authors:
+  - Angelos Katharopoulos
+  - François Fleuret
+  venue: ICML 2018
+  primary_url: https://proceedings.mlr.press/v80/katharopoulos18a.html
+  relevance: adjacent
+  topic_group: importance sampling by gradient informativeness
+  exact_supporting_location: Section 2, variance-optimal importance distribution; Section 3, tractable gradient-norm
+    upper bound; Section 4, switching criterion and implementation; Section 5 experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: chang_2017
+  title: 'Active Bias: Training More Accurate Neural Networks by Emphasizing High Variance Samples'
+  authors:
+  - Haw-Shiuan Chang
+  - Erik Learned-Miller
+  - Andrew McCallum
+  venue: NeurIPS 2017
+  primary_url: https://proceedings.neurips.cc/paper/2017/hash/2f37d10131f2a483a8dd005b3d14b0d9-Abstract.html
+  relevance: adjacent
+  topic_group: high-surprise or high-variance sampling
+  exact_supporting_location: Section 2, prediction-history uncertainty scores; Section 3, variance and threshold-closeness
+    weighting/sampling rules; Section 4 experiments across six datasets; Conclusion.
+  audit_status: reviewed_primary
+- id: sener_2018
+  title: 'Active Learning for Convolutional Neural Networks: A Core-Set Approach'
+  authors:
+  - Ozan Sener
+  - Silvio Savarese
+  venue: ICLR 2018
+  primary_url: https://openreview.net/forum?id=H1aIuk-RW
+  relevance: adjacent
+  topic_group: semantic coverage and core-set selection
+  exact_supporting_location: Section 2, active learning as core-set selection; Section 3, geometric generalization
+    bound; Section 4, k-center approximation; Section 5 image-classification experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: ash_2020
+  title: Deep Batch Active Learning by Diverse, Uncertain Gradient Lower Bounds
+  authors:
+  - Jordan T. Ash
+  - Chicheng Zhang
+  - Akshay Krishnamurthy
+  - John Langford
+  - Alekh Agarwal
+  venue: ICLR 2020
+  primary_url: https://openreview.net/forum?id=ryghZJBKPS
+  relevance: adjacent
+  topic_group: joint diversity and uncertainty sampling
+  exact_supporting_location: Section 2, batch-active-learning setup; Section 3, gradient embeddings and lower-bound
+    motivation; Algorithm 1, BADGE k-means++ selection; Section 4 experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: sagawa_2020
+  title: 'Distributionally Robust Neural Networks for Group Shifts: On the Importance of Regularization for Worst-Case
+    Generalization'
+  authors:
+  - Shiori Sagawa
+  - Pang Wei Koh
+  - Tatsunori B. Hashimoto
+  - Percy Liang
+  venue: ICLR 2020
+  primary_url: https://openreview.net/forum?id=ryxGuJrFvS
+  code_url: https://github.com/kohpangwei/group_DRO
+  relevance: adjacent
+  topic_group: worst-group preservation with known groups
+  exact_supporting_location: Section 2, group-DRO objective; Section 3, overparameterization and regularization
+    analysis; Section 4, stochastic optimization algorithm; Section 5 worst-group experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: liu_2021_jtt
+  title: 'Just Train Twice: Improving Group Robustness without Training Group Information'
+  authors:
+  - Evan Z. Liu
+  - Behzad Haghgoo
+  - Annie S. Chen
+  - Aditi Raghunathan
+  - Pang Wei Koh
+  - Shiori Sagawa
+  - Percy Liang
+  - Chelsea Finn
+  venue: ICML 2021
+  primary_url: https://proceedings.mlr.press/v139/liu21f.html
+  relevance: adjacent
+  topic_group: high-loss resampling for minority groups
+  exact_supporting_location: Section 2, failure of generic high-loss joint DRO; Section 3 and Algorithm 1, two-stage
+    error-set upsampling; Section 4 experimental setup; main worst-group tables; Section 5 Discussion.
+  audit_status: reviewed_primary
+- id: sohoni_2020
+  title: 'No Subclass Left Behind: Fine-Grained Robustness in Coarse-Grained Classification Problems'
+  authors:
+  - Nimit S. Sohoni
+  - Jared A. Dunnmon
+  - Geoffrey Angus
+  - Albert Gu
+  - Christopher Ré
+  venue: NeurIPS 2020
+  primary_url: https://proceedings.neurips.cc/paper_files/paper/2020/hash/e0688d13958a19e087e123148555e4b4-Abstract.html
+  relevance: adjacent
+  topic_group: hidden modes and monitoring bias
+  exact_supporting_location: Section 2, hidden-stratification problem; Section 3, GEORGE representation clustering
+    and robust retraining; theory subsection on worst-subclass error; Section 4 experiments; Conclusion.
+  audit_status: reviewed_primary
+- id: menon_2021
+  title: Long-tail learning via logit adjustment
+  authors:
+  - Aditya Krishna Menon
+  - Sadeep Jayasumana
+  - Ankit Singh Rawat
+  - Himanshu Jain
+  - Andreas Veit
+  - Sanjiv Kumar
+  venue: ICLR 2021
+  primary_url: https://openreview.net/forum?id=37nvvqkCo5
+  relevance: adjacent
+  topic_group: rare-label and tail-distribution correction
+  exact_supporting_location: Section 2, long-tail statistical setup; Section 3, post-hoc and training-time logit
+    adjustment; consistency analysis; Section 4 experiments on four long-tailed datasets; Conclusion.
+  audit_status: reviewed_primary

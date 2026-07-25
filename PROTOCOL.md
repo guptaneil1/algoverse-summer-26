@@ -12,7 +12,12 @@ The protocol prevents an invalid recursive-training pipeline from producing pers
 
 - Paper: George Drayson, Emine Yilmaz, and Vasileios Lampos, “Machine-generated text detection prevents language model collapse,” EMNLP 2025.
 - Official code: `https://github.com/GeorgeDrayson/model_collapse`
-- Exact upstream commit: `TBD — must be recorded before execution`.
+- Exact upstream commit: `TODO(khantushig): pin exact upstream commit hash before Stage A execution — do not invent, awaiting value from repo owner.`
+
+### Initial environment identifiers
+
+- Python (this scaffold's dev environment): `3.12.1`; `pyproject.toml` requires `>=3.10`.
+- Framework/model/tokenizer versions: `TODO(khantushig): record exact torch/transformers versions and GPT-2 tokenizer revision once the upstream commit above is pinned` — the official repo's own pinned dependency file is authoritative and is not yet available in this environment (no ML framework is installed here).
 
 ### Reproduction conditions
 

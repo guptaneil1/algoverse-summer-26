@@ -67,6 +67,18 @@ def _write_chain_result(result: ChainResult, path: Path) -> None:
     tmp_path.replace(path)
 
 
+def run_directory(config: dict[str, Any], base_dir: Path = Path("runs")) -> Path:
+    """Return the canonical run directory for this config's run_id.
+
+    Matches ``docs/ARCHITECTURE.md``'s ``runs/<run_id>/`` artifact layout: one
+    directory per run_id, deterministic across repeated invocations (not
+    random or timestamped), so a restarted process can find it again by
+    run_id alone to resume.
+    """
+
+    return base_dir / config["run_id"]
+
+
 def run_toy_chain(
     config: dict[str, Any],
     *,
@@ -122,6 +134,17 @@ def run_toy_chain(
         for generation in range(start_generation, config["horizon"]):
             active_generation = generation
             policy_seed = config["chain_seed"] * 1000 + generation
+
+            # 1. train: toy, no real model -- trains on the budget consumed by
+            #    prior generations, deterministic under policy_seed.
+            train_state = {"generation": generation, "consumed_tokens": consumed_human}
+            toy_train_step(train_state, policy_seed)
+
+            # 2. generate: toy synthetic examples from the just-trained checkpoint.
+            generate_state = {"generation": generation, "examples_per_generation": 2}
+            toy_generate_step(generate_state, policy_seed)
+
+            # 3. allocate: policy decides this generation's human rescue.
             state = PolicyState(
                 generation=generation,
                 remaining_human_tokens=remaining,
@@ -135,12 +158,6 @@ def run_toy_chain(
             consumed_human += allocation.selected_human_tokens
             allocations.append(allocation.as_dict())
 
-            # Toy train/generate steps: no real model, deterministic under policy_seed.
-            train_state = {"generation": generation, "consumed_tokens": consumed_human}
-            toy_train_step(train_state, policy_seed)
-            generate_state = {"generation": generation, "examples_per_generation": 2}
-            toy_generate_step(generate_state, policy_seed)
-
             rescued_modes = set(allocation.mode_allocations)
             mode_statistics = {
                 mode: max(0.0, score + 0.08 - (0.12 if mode in rescued_modes else 0.0))
@@ -150,6 +167,8 @@ def run_toy_chain(
                 mode: max(1e-6, 1.0 - undercoverage)
                 for mode, undercoverage in mode_statistics.items()
             }
+
+            # 4. evaluate: frozen null evaluator against the held-out toy fixture.
             evaluation = evaluator.evaluate(
                 run_id=config["run_id"],
                 generation=generation,
@@ -168,6 +187,7 @@ def run_toy_chain(
                 )
             )
 
+            # 5. checkpoint: atomically persist this generation's full state.
             if output_dir is not None:
                 save_checkpoint(
                     {
@@ -220,13 +240,15 @@ def run_toy_chain(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
-    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument(
+        "--output-dir", type=Path, help="override the default runs/<run_id> directory"
+    )
     parser.add_argument(
         "--resume", action="store_true", help="resume from the latest checkpoint in --output-dir"
     )
     args = parser.parse_args()
     config = json.loads(args.config.read_text(encoding="utf-8"))
-    output_dir = args.output_dir or Path(config.get("output_dir", "tmp/toy_run"))
+    output_dir = args.output_dir or run_directory(config)
     output_dir.mkdir(parents=True, exist_ok=True)
     _, result = run_toy_chain(config, output_dir=output_dir, resume=args.resume)
     (output_dir / "allocation_note.txt").write_text(

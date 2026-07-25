@@ -8,6 +8,7 @@ checkpoints").
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -19,12 +20,23 @@ def checkpoint_path(run_dir: Path, generation: int) -> Path:
 
 
 def save_checkpoint(state: dict[str, Any], path: Path) -> None:
-    """Atomically write ``state`` as the checkpoint at ``path``."""
+    """Atomically write ``state`` as the checkpoint at ``path``.
+
+    Writes to a temp file in the same directory, flushes and fsyncs it, then
+    ``os.replace``s it onto ``path``. The destination is never opened for
+    writing directly, so a crash at any point before the replace leaves
+    whatever was previously at ``path`` (a prior valid checkpoint, or
+    nothing) untouched — never a half-written file.
+    """
 
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
-    tmp_path.replace(path)
+    payload = json.dumps(state, indent=2) + "\n"
+    with open(tmp_path, "w", encoding="utf-8") as handle:
+        handle.write(payload)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(tmp_path, path)
 
 
 def load_checkpoint(path: Path) -> dict[str, Any] | None:

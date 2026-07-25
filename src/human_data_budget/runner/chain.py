@@ -28,7 +28,13 @@ from human_data_budget.runner.checkpoint import (
 )
 from human_data_budget.runner.evaluator import NullEvaluator, load_toy_eval_corpus
 from human_data_budget.runner.failure import FailureState, write_failure
-from human_data_budget.runner.manifest import new_manifest, transition_status, write_manifest_atomic
+from human_data_budget.runner.manifest import (
+    attach_failure,
+    new_manifest,
+    record_generation,
+    transition_status,
+    write_manifest_atomic,
+)
 from human_data_budget.training.toy import toy_train_step
 
 
@@ -174,6 +180,8 @@ def run_toy_chain(
                     },
                     checkpoint_path(output_dir, generation),
                 )
+                manifest = record_generation(manifest, generation)
+                write_manifest_atomic(manifest, output_dir / "run_manifest.json")
     except Exception as error:
         if output_dir is not None:
             failure = FailureState(
@@ -184,6 +192,7 @@ def run_toy_chain(
                 evidence={"error_type": type(error).__name__},
             )
             write_failure(failure, output_dir / "failure.json")
+            manifest = attach_failure(manifest, failure.as_dict())
             manifest = transition_status(manifest, "failed")
             write_manifest_atomic(manifest, output_dir / "run_manifest.json")
         raise

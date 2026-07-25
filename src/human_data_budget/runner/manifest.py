@@ -8,6 +8,7 @@ Field shape matches ``schemas/run_manifest.schema.json`` and
 from __future__ import annotations
 
 import json
+import platform
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +29,10 @@ _DEFAULT_DATA = {
     "train_manifest": "data/fixtures/toy_corpus.jsonl",
     "train_manifest_sha256": "fixture",
 }
-_DEFAULT_ENVIRONMENT = {"python": ">=3.10", "hardware": "cpu-fixture"}
+
+
+def _default_environment() -> dict[str, str]:
+    return {"python": platform.python_version(), "hardware": "cpu-fixture"}
 
 
 def new_manifest(
@@ -58,10 +62,12 @@ def new_manifest(
             "total_optimizer_tokens": config["total_optimizer_tokens"],
         },
         "randomness": {"chain_seed": config["chain_seed"]},
-        "environment": config.get("environment", _DEFAULT_ENVIRONMENT),
+        "environment": config.get("environment", _default_environment()),
         "horizon": config["horizon"],
         "status": "planned",
         "status_history": [{"status": "planned"}],
+        "current_generation": None,
+        "failure": None,
     }
 
 
@@ -79,6 +85,29 @@ def transition_status(manifest: dict[str, Any], new_status: str) -> dict[str, An
     updated = dict(manifest)
     updated["status"] = new_status
     updated["status_history"] = [*manifest.get("status_history", []), {"status": new_status}]
+    return updated
+
+
+def record_generation(manifest: dict[str, Any], generation: int) -> dict[str, Any]:
+    """Return a copy of ``manifest`` with ``current_generation`` advanced."""
+
+    if generation < 0:
+        raise ValueError("generation must be non-negative")
+    updated = dict(manifest)
+    updated["current_generation"] = generation
+    return updated
+
+
+def attach_failure(manifest: dict[str, Any], failure: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of ``manifest`` recording structured failure info.
+
+    ``failure`` is expected to be a ``FailureState.as_dict()`` payload
+    (``human_data_budget.runner.failure``), kept generic here to avoid a
+    manifest -> failure import for a shape check alone.
+    """
+
+    updated = dict(manifest)
+    updated["failure"] = failure
     return updated
 
 

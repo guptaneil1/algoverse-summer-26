@@ -1,0 +1,3 @@
+{"example_id": "rc-1", "text": "Quantum entanglement enables instantaneous correlation between distant particles.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 100, "token_count": 11}
+{"example_id": "rc-2", "text": "The migration patterns of Arctic terns span both polar regions each year.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 101, "token_count": 13}
+{"example_id": "rc-3", "text": "Medieval castle construction techniques varied considerably by region and era.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 102, "token_count": 12}

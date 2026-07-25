@@ -1,0 +1,4 @@
+{"example_id": "test-common-1", "text": "The population of major cities around the world has grown substantially.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 400, "token_count": 4}
+{"example_id": "test-common-2", "text": "Climate change is affecting agricultural yields across multiple continents.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 401, "token_count": 3}
+{"example_id": "test-tail-1", "text": "The dendrochronology of ancient Bristlecone pines reveals past climate.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 402, "token_count": 2}
+{"example_id": "test-tail-2", "text": "Paleomagnetism in oceanic crust records reversals of Earth's magnetic field.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 403, "token_count": 3}

@@ -1,0 +1,2 @@
+{"example_id": "val-1", "text": "The solar system formed approximately four and a half billion years ago.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 300, "token_count": 13}
+{"example_id": "val-2", "text": "Rare earth elements extracted from specific mineral deposits power modern electronics.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 301, "token_count": 13}

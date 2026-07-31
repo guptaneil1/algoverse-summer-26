@@ -1,1 +1,27 @@
-{"name":"schedule_only","status":"fixture","schedule":"TBD_BEFORE_PRIMARY_RUNS"}
+{
+  "candidate_source": "frozen_rescue_candidate_manifest",
+  "horizon": 10,
+  "insufficient_candidates_behavior": "select_the_largest_feasible_subset_without_exceeding_the_scheduled_or_remaining_lifetime_budget",
+  "lifetime_human_tokens": 100,
+  "missing_monitoring_behavior": "monitoring_is_not_read",
+  "name": "schedule_only",
+  "policy_version": "week2-fixture-v1",
+  "real_run_blocker": "Real-model execution is blocked until the team approves a tokenizer-counted real human-token budget and total optimizer-token budget.",
+  "schema_version": "1.0",
+  "selection_rule": "seeded_shuffle_without_replacement",
+  "spending_schedule": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 20,
+    "6": 20,
+    "7": 20,
+    "8": 20,
+    "9": 20
+  },
+  "status": "fixture_frozen_real_run_blocked",
+  "tie_breaking": "seeded_shuffle_order",
+  "uses_mode_undercoverage": false
+}

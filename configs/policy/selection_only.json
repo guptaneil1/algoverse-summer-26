@@ -1,1 +1,32 @@
-{"name":"selection_only","status":"fixture","per_generation_human_budget":"TBD_BEFORE_PRIMARY_RUNS","selection_score":"TBD"}
+{
+  "candidate_source": "frozen_rescue_candidate_manifest",
+  "fully_missing_monitoring_behavior": "seeded_random_candidate_order",
+  "horizon": 10,
+  "insufficient_candidates_behavior": "select_the_largest_feasible_subset_without_exceeding_the_fixed_or_remaining_lifetime_budget",
+  "lifetime_human_tokens": 100,
+  "monitoring_lag_generations": 1,
+  "name": "selection_only",
+  "nonfinite_score_behavior": "reject_allocation_as_invalid",
+  "partially_missing_mode_behavior": "assign_score_zero",
+  "policy_version": "week2-fixture-v1",
+  "ranking_rule": "descending_undercoverage_score",
+  "real_run_blocker": "Real-model execution is blocked until the team approves a tokenizer-counted real human-token budget and total optimizer-token budget.",
+  "schema_version": "1.0",
+  "score_formula": "clip((previous_generation_mode_nll-reference_mode_nll)/max(abs(reference_mode_nll),1e-8),0,1)",
+  "score_name": "lagged_relative_mode_nll_gap",
+  "spending_schedule": {
+    "0": 10,
+    "1": 10,
+    "2": 10,
+    "3": 10,
+    "4": 10,
+    "5": 10,
+    "6": 10,
+    "7": 10,
+    "8": 10,
+    "9": 10
+  },
+  "status": "fixture_frozen_real_run_blocked",
+  "tie_breaking": "ascending_example_id",
+  "uses_mode_undercoverage": true
+}

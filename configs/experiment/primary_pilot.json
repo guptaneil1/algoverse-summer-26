@@ -1,0 +1,72 @@
+{
+  "amendment_rule": "dated_amendments_must_preserve_the_original_version_and_explain_the_reason;primary_outcomes_may_not_motivate_an_amendment",
+  "baseline_selection_rule": "choose_the_baseline_with_lower_mean_validation_only_nll_regret_auc;if_the_absolute_difference_is_at_most_0_001_choose_selection_only",
+  "confirmatory_outcome": "frozen_primary_tail_retention",
+  "effect_interpretation": {
+    "beneficial": "mean_relative_difference_at_most_minus_0_02_and_bootstrap_interval_below_zero",
+    "harmful": "mean_relative_difference_at_least_0_02_and_bootstrap_interval_above_zero",
+    "negligible": "entire_bootstrap_interval_inside_minus_0_02_to_plus_0_02",
+    "uncertain": "every_other_valid_pattern"
+  },
+  "eligible_primary_baselines": [
+    "schedule_only",
+    "selection_only"
+  ],
+  "exclusion_rules": [
+    "corrupt_or_missing_required_artifact",
+    "verified_incorrect_token_accounting",
+    "verified_wrong_config_or_code_commit",
+    "verified_data_leakage_or_manifest_mismatch",
+    "infrastructure_termination_before_required_checkpoint"
+  ],
+  "experiment_version": "week2-fixture-v1",
+  "fixture_validation_allowed": true,
+  "fixture_warning": "FIXTURE - NOT SCIENTIFIC EVIDENCE",
+  "human_tokens_are_included_in_total_optimizer_tokens": true,
+  "meaningful_effect_threshold": 0.02,
+  "meaningful_effect_type": "relative_nll_regret_auc_difference",
+  "multiplicity_rule": "one_primary_budget_horizon_outcome_and_contrast;all_other_comparisons_are_secondary_or_exploratory",
+  "must_not_be_excluded": [
+    "training_divergence_without_verified_implementation_defect",
+    "poor_or_harmful_treatment_performance",
+    "null_or_negligible_effect"
+  ],
+  "name": "primary_pilot",
+  "ordered_chain_seeds": [
+    101,
+    202,
+    303,
+    404,
+    505
+  ],
+  "ordered_replacement_seeds": [
+    606,
+    707,
+    808,
+    909,
+    1010
+  ],
+  "outcome_based_stopping_allowed": false,
+  "policies": [
+    "random",
+    "schedule_only",
+    "selection_only",
+    "joint"
+  ],
+  "policy_config_paths": {
+    "joint": "configs/policy/joint.json",
+    "random": "configs/policy/random.json",
+    "schedule_only": "configs/policy/schedule_only.json",
+    "selection_only": "configs/policy/selection_only.json"
+  },
+  "primary_contrast": "joint_minus_strongest_eligible_non_joint_baseline",
+  "primary_horizon": 10,
+  "primary_lifetime_human_tokens": 100,
+  "primary_outcome": "held_out_human_nll_regret_auc",
+  "real_run_blocker": "Real-model execution is blocked until the team approves a tokenizer-counted real human-token budget and total optimizer-token budget.",
+  "replacement_seed_rule": "use_the_next_unused_replacement_seed_only_after_an_objective_implementation_infrastructure_or_protocol_invalidation",
+  "schema_version": "1.0",
+  "scientific_status": "fixture_frozen_real_run_blocked",
+  "total_optimizer_tokens_per_chain": 10000,
+  "total_token_matching_rule": "reduce_synthetic_origin_optimizer_tokens_so_every_policy_consumes_exactly_the_same_total_optimizer_tokens"
+}

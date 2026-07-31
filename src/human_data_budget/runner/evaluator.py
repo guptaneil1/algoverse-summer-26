@@ -49,7 +49,10 @@ class NullEvaluator:
             "run_id": run_id,
             "generation": generation,
             "human_nll": human_nll,
-            "tail_retention": retention,
+            "tail_retention": {
+                "primary": retention,
+                "nll_gap": 0.0,
+            },
             "tokens_evaluated": len(target_log_probabilities),
             "evaluation_manifest_sha256": evaluation_manifest_sha256,
             "checkpoint_sha256": checkpoint_sha256,

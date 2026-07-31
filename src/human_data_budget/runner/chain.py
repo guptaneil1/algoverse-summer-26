@@ -183,7 +183,7 @@ def run_toy_chain(
                 GenerationMetric(
                     generation=generation,
                     human_nll=evaluation["human_nll"],
-                    tail_retention=evaluation["tail_retention"],
+                    tail_retention=evaluation["tail_retention"]["primary"],
                 )
             )
 

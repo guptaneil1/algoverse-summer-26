@@ -26,3 +26,26 @@ This file records project choices. A decision is not evidence that the correspon
 ## How to add a decision
 
 Record the date, alternatives considered, evidence available, chosen option, owner, and what future evidence would reverse the decision. Never silently change a frozen protocol.
+
+
+## Week 2 method freeze decisions
+
+**Scientific-config SHA-256:** `33d268deb5a7b1c13a95f4f5e4171af77403872b49dc79f2afd2a7b19d63261b`
+
+| ID | Date | Owner | Decision | Status |
+|---|---|---|---|---|
+| D-008 | 2026-07-31 | Aarav | Use a 10-generation central fixture horizon | Fixture frozen |
+| D-009 | 2026-07-31 | Aarav | Match 100 human tokens and 10,000 total optimizer tokens | Fixture frozen; real conversion blocked |
+| D-010 | 2026-07-31 | Aarav | Use ordered primary seeds 101, 202, 303, 404, 505 | Fixture frozen |
+| D-011 | 2026-07-31 | Aarav | Use replacement seeds 606, 707, 808, 909, 1010 | Fixture frozen |
+| D-012 | 2026-07-31 | Aarav | Use clipped lagged relative mode-NLL gap | Fixture frozen |
+| D-013 | 2026-07-31 | Aarav | Use a back-loaded schedule-only baseline | Fixture frozen |
+| D-014 | 2026-07-31 | Aarav | Use fixed spending with score ranking for selection-only | Fixture frozen |
+| D-015 | 2026-07-31 | Aarav | Use thresholded 0/10/20 joint spending with feasibility clamp | Fixture frozen |
+| D-016 | 2026-07-31 | Aarav | Use a 2% relative NLL-regret AUC practical threshold | Fixture frozen |
+| D-017 | 2026-07-31 | Aarav | Exclude only verified implementation, infrastructure, protocol, leakage, or accounting failures | Frozen |
+| D-018 | 2026-07-31 | Aarav | Use joint versus the validation-selected strongest eligible non-joint baseline | Frozen |
+
+### Real-execution blocker
+
+Real-model execution is blocked until the team approves a tokenizer-counted real human-token budget and total optimizer-token budget.

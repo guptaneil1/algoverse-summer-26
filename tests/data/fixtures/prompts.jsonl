@@ -1,0 +1,2 @@
+{"example_id": "pr-1", "text": "Continue the following passage about the history of ancient civilizations:", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 200, "token_count": 12}
+{"example_id": "pr-2", "text": "Describe the following concept in the field of modern natural science:", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 201, "token_count": 12}

@@ -1,6 +1,26 @@
 \section{Problem Definition}
-Let $G$ denote the recursive horizon, $M$ the number of frozen monitored modes, and $B$ the lifetime human-origin optimizer-token budget. A policy selects allocations $b_{g,m}$ satisfying
+
+Let $P_{\mathrm{H}}$ denote the frozen human reference distribution and let $g\in\{0,1,\ldots,G\}$ index a recursive model--data chain. The initial model $\theta_0$ is trained from a frozen base partition. At each later generation, model $\theta_{g-1}$ produces a synthetic pool $S_g$ under a fixed prompting and decoding protocol. A training-set constructor combines synthetic examples with a selected multiset of human-origin rescue examples $H_g$, and a newly initialized or otherwise protocol-specified learner produces $\theta_g$. The initialization rule, synthetic pool size, optimizer, number of updates, and total optimizer-consumed tokens are held constant across budget-matched policies.
+
+A frozen monitoring map $\mu(x)\in\{1,\ldots,M\}$ assigns each eligible human rescue example to one of $M$ monitored modes. A mode may be defined by a licensed domain label, a preregistered semantic cluster, or another auditable partition, but it must be fixed without access to final-test outcomes. Let $R_g$ denote the policy-visible monitored state before training generation $g$, such as mode-specific validation loss, coverage, uncertainty, or a lagged degradation statistic. The state excludes the final human test partition.
+
+The scarce resource is a lifetime budget of human-origin optimizer-consumed tokens. Let $b_{g,m}\geq 0$ be the number of human-origin tokens from monitored mode $m$ that are actually presented to the optimizer while training generation $g$. Repeated presentation is counted repeatedly; padding is excluded or treated by one frozen rule. Every nonzero-budget policy must satisfy
 \[
-\sum_{g=1}^{G}\sum_{m=1}^{M} b_{g,m}=B.
+\sum_{g=1}^{G}\sum_{m=1}^{M} b_{g,m}=B,
 \]
-Budget-matched comparisons also fix total optimizer-consumed tokens. A complete independently seeded recursive chain is one experimental unit; generations within a chain are repeated observations.
+where $B$ is fixed before primary outcomes are opened. In addition, each matched policy consumes the same total number $T$ of optimizer tokens,
+\[
+\sum_{g=1}^{G}\left(\sum_{m=1}^{M}b_{g,m}+s_g\right)=T,
+\]
+where $s_g$ is the number of synthetic-origin optimizer tokens consumed at generation $g$. Thus a policy cannot win by training longer or by silently replaying human examples more often.
+
+We compare four treatment families. A \emph{fresh-random} policy follows a frozen time schedule and samples eligible human examples without mode targeting. A \emph{schedule-only} policy may choose the generation totals $b_g=\sum_m b_{g,m}$ from policy-visible state but must distribute each $b_g$ according to a frozen neutral mode rule. A \emph{selection-only} policy may choose the mode proportions within a generation but must follow a fixed vector $(b_1,\ldots,b_G)$. A \emph{joint} policy may choose both $b_g$ and the conditional mode allocation. A no-rescue chain and, where implementable, accumulation, fixed-fraction, detector-resampling, and oracle-mode conditions are reference baselines rather than substitutes for the matched decomposition.
+
+One independently seeded complete chain is one experimental unit. Let $L_g^{\pi}$ be held-out human negative log-likelihood for policy $\pi$ at generation $g$, and let $L_g^{\mathrm{ref}}$ be the frozen reference value used to define regret. The proposed primary chain-level outcome is a preregistered weighted area
+\[
+A^{\pi}=\sum_{g=1}^{G}w_g\bigl(L_g^{\pi}-L_g^{\mathrm{ref}}\bigr),
+\qquad \sum_g w_g=1,
+\]
+with weights fixed in advance. A second primary outcome measures tail retention on an evaluation partition that is disjoint from the monitoring reference and is not identical to the policy score.
+
+The primary contrast is the paired chain-level difference between the joint policy and the strongest eligible non-joint policy selected by a frozen screening rule. ``Strongest'' cannot be chosen after confirmation outcomes are viewed. Comparisons are matched on initial assets, chain seed, $B$, $T$, horizon, and evaluation data. A monitoring-bias intervention constructs an incomplete monitoring map that omits a preregistered globally important mode while leaving final evaluation unchanged. This tests whether targeted allocation can optimize the observed monitor while harming the true reference distribution. All quantities in this section define a planned experiment; none denotes a completed result.

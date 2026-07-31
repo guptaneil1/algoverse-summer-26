@@ -1,0 +1,29 @@
+{
+  "dataset_name": "wikitext-103-v1",
+  "source_url": "https://huggingface.co/datasets/wikitext",
+  "license": "CC-BY-SA-3.0",
+  "version": "wikitext-103-v1",
+  "primary_domain": true,
+  "fallback_domain": false,
+  "mode_definition": "pending_week2_freeze",
+  "mode_candidates": [
+    "wikipedia_article_category (broad topic label assigned to each article)",
+    "article_length_quantile (tail = bottom decile by token count, common = upper 50%)"
+  ],
+  "partition_strategy": "stable_id_hash_modulo",
+  "status": "pending_week2_freeze",
+  "notes": [
+    "WikiText-103 is derived from verified Good and Featured English Wikipedia articles.",
+    "Train/valid/test splits already exist in the canonical release.",
+    "For this project the canonical train split is re-partitioned into base_train and rescue_candidates.",
+    "The canonical test split is held out as the final test partition.",
+    "Partition paths, SHA-256 hashes, and the frozen mode definition will be recorded here at Week 2 integration."
+  ],
+  "why_selected": [
+    "Permissive license (CC-BY-SA) is compatible with ML training and publication.",
+    "Well-studied benchmark: positive-control reproduction is straightforward.",
+    "Clear article-level structure enables principled mode definition.",
+    "Moderate size (~103M tokens) fits a 124M–160M screening model on available compute.",
+    "No personal-data concerns; Wikipedia content is encyclopedic."
+  ]
+}

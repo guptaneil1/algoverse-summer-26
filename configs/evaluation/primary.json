@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "evaluation_seed": 42,
+  "padding_id": 0,
+  "nll_threshold_candidate": 3.0,
+  "tail_retention_metrics": {
+    "primary": "ratio_based (tail_retention from evaluation/tail.py)",
+    "secondary": "nll_gap (nll_gap from evaluation/tail.py)"
+  },
+  "test_partition": "test",
+  "status": "pending_week2_freeze",
+  "notes": [
+    "nll_threshold_candidate will be frozen at Week 2 based on the baseline NLL distribution on the validation partition.",
+    "The threshold must not be tuned on or informed by the final test partition.",
+    "The primary tail_retention metric (ratio-based) requires a reference mode-score snapshot from the baseline model at generation 0.",
+    "The nll_gap metric requires no reference — it compares tail vs common NLL on the same checkpoint.",
+    "Both metrics are independent of the policy undercoverage_score selection signal.",
+    "The frozen primary metric and threshold will be recorded here and in PREREGISTRATION.md before primary outcomes are opened."
+  ]
+}

@@ -8,7 +8,7 @@ This file separates forecasts from actual usage.
 
 | Stage | Model | Conditions | Chains | Generations | Estimated accelerator-hours | Storage | Basis of estimate | Status |
 |---|---|---:|---:|---:|---:|---:|---|---|
-| Positive control | GPT-2 124M-class | 2 | TBD | 10 | TBD | TBD | Must be measured from one-generation smoke run | Not estimated |
+| Positive control | GPT-2 124M-class | 2 | TBD | 10 | TBD | TBD | Must be measured from one-generation smoke run — blocked on upstream commit pin, ML framework, and accelerator access; see `docs/benchmarks/khantushig_week1.md` | Not estimated |
 | Mechanism pilot | 160M-class | TBD | At least 5 initial | 10 | TBD | TBD | Positive-control and smoke-run measurements | Blocked |
 | Powered core | 410M/1B-class | TBD | Power result | 10+ | TBD | TBD | Pilot measurements | Blocked |
 | Independent confirmation | TBD | Decisive contrast only | TBD | TBD | TBD | TBD | Powered-core measurements | Blocked |

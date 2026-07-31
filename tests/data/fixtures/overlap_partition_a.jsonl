@@ -1,0 +1,1 @@
+{"example_id": "overlap-1", "text": "This example deliberately appears in two partitions to test exact overlap detection.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 500, "token_count": 14}

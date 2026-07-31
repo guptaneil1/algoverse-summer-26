@@ -1,0 +1,5 @@
+{"example_id": "bt-1", "text": "The history of ancient Rome spans many centuries of political change.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 0, "token_count": 12}
+{"example_id": "bt-2", "text": "Modern physics describes the fundamental forces governing the universe.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 1, "token_count": 11}
+{"example_id": "bt-3", "text": "Literature from the Victorian era reflects the values of industrial society.", "origin": "human", "mode": "common", "source": "wikitext-103-v1", "source_offset": 2, "token_count": 13}
+{"example_id": "bt-4", "text": "The nesting habits of the rare Kakapo parrot are studied by conservationists.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 3, "token_count": 13}
+{"example_id": "bt-5", "text": "Obscure dialects of medieval German linguistics survive in alpine villages.", "origin": "human", "mode": "tail", "source": "wikitext-103-v1", "source_offset": 4, "token_count": 12}

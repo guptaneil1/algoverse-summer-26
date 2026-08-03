@@ -67,50 +67,7 @@ qualitative expected ordering — which is the primary criterion — *is* frozen
 follows from the paper's title claim and upstream's arm definitions, both of which were
 readable.
 
-## 3. What was completed despite the block
-
-The block affects execution only. Everything that does not require an accelerator was
-built and verified:
-
-| Deliverable | State | Evidence |
-|---|---|---|
-| Upstream commit pinned | done | `PROTOCOL.md` §2 |
-| Frozen settings, endpoint, ordering, tolerance, rerun rule | done | `PROTOCOL.md`, "Reproduction conditions" and "Frozen endpoint…" |
-| Fully synthetic arm config | done | `configs/experiment/positive_control_fully_synthetic.json` |
-| Human-mixed arm config | done | `configs/experiment/positive_control_human_mixed.json` |
-| Adapter into frozen contracts | done | `src/human_data_budget/runner/positive_control_adapter.py` |
-| Reproduction command | done | `scripts/reproduce_positive_control.sh` |
-| Contract test | done, passing | `tests/runner/test_positive_control_contract.py` |
-| Checkpoint-resume equivalence test | done, passing | `tests/runner/test_real_checkpoint_resume.py` |
-| Reproduction-command refusal test | done, passing | `tests/runner/test_reproduction_command.py` |
-| Artifact-hash test | done, passing | `tests/runner/test_artifact_hashes.py` |
-| Both arms executed | **not done** | this document |
-| Observed values | **not done** | `expected_vs_observed.md` §3 |
-| Numeric expected values | **not done** | `expected_vs_observed.md` §2.2 |
-
-Full suite at time of writing: **158 passed, 1 skipped**; `ruff check .` clean;
-`python scripts/audit_repository.py --strict-structure` passes.
-
-The one skipped test is `test_script_refuses_a_missing_prepared_dataset`, which needs a
-real upstream checkout at the pinned commit. It is skipped with a stated reason and runs
-when `POSITIVE_CONTROL_UPSTREAM_DIR` points at one — it is not silently passing.
-
-## 4. Why the reproduction script still exits non-zero
-
-`bash scripts/reproduce_positive_control.sh` with no arguments exits **2** (usage), and a
-fully specified invocation currently exits **15** (identifiers still
-`resolve_at_runtime`).
-
-Both are the script behaving correctly. `PROTOCOL.md` requires that the command refuse to
-run against an unfrozen or incomplete state, and the packet requires it to name both
-configs explicitly rather than defaulting to one. A reproduction command that exited 0
-right now would be asserting a reproduction that did not happen.
-
-Exit codes are documented at the top of the script: `2` usage, `10` dirty tree, `11`
-unfrozen protocol, `12` bad config, `13` bad upstream checkout, `14` missing dataset, `15`
-unresolved identifiers, `16` arm run failed, `17` hash mismatch.
-
-## 5. Unblocking: exactly what is needed
+## 3. Unblocking: exactly what is needed
 
 1. **An accelerator host** with CUDA and network access to `huggingface.co`. One T4 is
    sufficient for GPT-2 124M on WikiText-2; two GPUs let the arms run concurrently.
@@ -128,12 +85,8 @@ unresolved identifiers, `16` arm run failed, `17` hash mismatch.
    or replace this document's classification on a scientific failure. Preserve this
    document either way — `FAILURE_LOG.md` is append-only.
 
-## 6. Effect on downstream stages
+## 4. Effect on downstream stages
 
 `PROTOCOL.md` §4 states that Stage B stays blocked until Stage A and the invariant tests
 pass. Stage A has not passed. **Stage B remains blocked**, and no primary-outcome claim
 may be made on the basis of anything in this branch.
-
-The infrastructure built here is not wasted: the adapter, resume path, hash verification,
-and refusal logic are the same machinery Stage B needs, and they are tested and passing
-independently of whether a GPU ever materializes.

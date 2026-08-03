@@ -124,6 +124,23 @@ the run gets added here and to `FAILURE_LOG.md`.
 | 3 | `wandb_disabled=true` | Avoids requiring a Weights & Biases account; upstream logs metrics to disk regardless | None. `eval_results.json` is written either way. |
 | 4 | `transformers` installed from git source, not a pinned release | Upstream's own install instruction | **Material.** Upstream pins no version, so the resolved commit must be recorded at run time or the run is not reproducible. |
 | 5 | Model / tokenizer / dataset revisions unpinned upstream | Upstream names `openai-community/gpt2` with no revision | **Material.** Must be resolved and recorded on the run host; the adapter refuses to proceed otherwise. |
+| 6 | Arms run one generation at a time via `scripts/run_positive_control_arm.py` instead of upstream's single-process `main.py` | Upstream has no resume; a session-capped host loses an interrupted arm entirely | None on the computation. The subprocess commands are identical and pinned by test. |
+| 7 | Generation 0 computed once and shared between arms (default) | Upstream's iteration-0 command is identical for both arms | None, and it removes a nondeterminism source: both arms start from a bit-identical baseline. Disable with `--no-shared-generation-zero`. |
+| 8 | Superseded model directories pruned after hashing (opt-in, `--prune-models`) | Every generation retrains from base GPT-2, so a model is spent once the next generation's data exists | **Material for verification only.** Pruned hashes cannot be re-verified. See §7.1. Metrics and generated data are never pruned. |
+
+### 6.1 Pruned artifacts — fill in if `--prune-models` was used
+
+*Empty. No run has been executed.*
+
+If the run used `--prune-models`, list every pruned artifact here, from
+`pruned_artifacts(run_dir)`. Each row's SHA-256 was computed while the artifact existed and
+remains evidence of what was produced, but the bytes are gone and the hash cannot be
+re-verified. If the run did not prune, write "none — no artifacts pruned" and say so in the
+report.
+
+| Generation | Artifact | SHA-256 | Reason |
+|---|---|---|---|
+| — | — | — | — |
 
 ## 7. Known limitation: no tail-retention measure in Stage A
 

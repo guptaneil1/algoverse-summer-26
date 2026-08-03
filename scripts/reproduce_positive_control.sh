@@ -20,6 +20,12 @@
 #   15  identifiers still set to resolve_at_runtime
 #   16  an upstream arm run failed
 #   17  artifact hash verification failed
+#   20  an arm stopped part-way with generations remaining (resume by re-running)
+#
+# Exit 20 is not a failure. Arms run one generation at a time via
+# scripts/run_positive_control_arm.py, so a session-capped host (Kaggle: 12 h) can do
+# as many generations as fit and the next run continues where this one stopped. Re-run
+# the identical command until it exits 0.
 #
 set -euo pipefail
 
@@ -35,6 +41,10 @@ CONFIG_FULLY_SYNTHETIC=""
 CONFIG_HUMAN_MIXED=""
 OUTPUT_ROOT=""
 PRECHECK_ONLY=0
+CUDA_DEVICE=0
+TIME_BUDGET_SECONDS=""
+PRUNE_MODELS=0
+SHARE_GENERATION_ZERO=1
 
 die() {
   local code="$1"
@@ -53,9 +63,29 @@ usage: reproduce_positive_control.sh
          [--output-root DIR]
          [--repo-root DIR]
          [--precheck-only]
+         [--cuda-device N]
+         [--time-budget-seconds N]
+         [--prune-models]
+         [--no-shared-generation-zero]
 
 Both arm configs must be named explicitly. There are no defaults: a reproduction
 command that silently picks a config is not a reproduction command.
+
+Resuming: arms advance one generation at a time and record each as it completes.
+Re-running this identical command continues from the first incomplete generation.
+Exit 20 means "more generations remain" — run it again.
+
+  --time-budget-seconds N   stop cleanly between generations after N seconds, so a
+                            capped session ends on a recorded boundary instead of
+                            being killed mid-generation
+  --prune-models            delete each superseded model directory after hashing it.
+                            Safe because every generation retrains from base GPT-2,
+                            so a model is spent once the next generation's data
+                            exists. Cuts peak storage from ~11 GB to ~1.5 GB.
+  --no-shared-generation-zero
+                            compute generation 0 separately per arm. By default it is
+                            computed once and shared, because upstream's iteration-0
+                            command is identical for both arms.
 USAGE
   exit 2
 }
@@ -68,6 +98,10 @@ while [[ $# -gt 0 ]]; do
     --output-root) OUTPUT_ROOT="${2:-}"; shift 2 ;;
     --repo-root) REPO_ROOT="${2:-}"; shift 2 ;;
     --precheck-only) PRECHECK_ONLY=1; shift ;;
+    --cuda-device) CUDA_DEVICE="${2:-}"; shift 2 ;;
+    --time-budget-seconds) TIME_BUDGET_SECONDS="${2:-}"; shift 2 ;;
+    --prune-models) PRUNE_MODELS=1; shift ;;
+    --no-shared-generation-zero) SHARE_GENERATION_ZERO=0; shift ;;
     -h|--help) usage ;;
     *) printf 'unknown argument: %s\n' "$1" >&2; usage ;;
   esac
@@ -191,38 +225,51 @@ fi
 
 mkdir -p "${OUTPUT_ROOT}"
 
+INCOMPLETE_ARMS=()
+
+# Upstream's main.py runs an arm as one uninterruptible job. This driver issues the
+# identical src/train.py and src/generate.py commands one generation at a time and
+# records each completion, so a capped session can be resumed instead of restarted.
 run_arm() {
   local arm_name="$1"
   local config_path="$2"
-  local experiment_path="${OUTPUT_ROOT}/${arm_name}/upstream"
-  local log_path="${OUTPUT_ROOT}/${arm_name}/stdout_stderr.log"
+  local work_dir="${OUTPUT_ROOT}/${arm_name}"
 
-  mkdir -p "${experiment_path}" "$(dirname "${log_path}")"
+  mkdir -p "${work_dir}"
 
-  # Overrides come from the config itself, so the executed command and the recorded
-  # command cannot drift apart.
-  local -a overrides
-  mapfile -t overrides < <(python -c '
-import json
-import sys
-from pathlib import Path
-
-config = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-for override in config["upstream"]["overrides"]:
-    print(override)
-' "${config_path}")
+  local -a driver_args
+  driver_args=(
+    --config "${config_path}"
+    --upstream-dir "${UPSTREAM_DIR}"
+    --work-dir "${work_dir}"
+    --cuda-device "${CUDA_DEVICE}"
+  )
+  [[ -n "${TIME_BUDGET_SECONDS}" ]] && driver_args+=(--time-budget-seconds "${TIME_BUDGET_SECONDS}")
+  [[ "${PRUNE_MODELS}" -eq 1 ]] && driver_args+=(--prune-models)
+  if [[ "${SHARE_GENERATION_ZERO}" -eq 1 && "${arm_name}" != "fully_synthetic" ]]; then
+    driver_args+=(--shared-generation-zero "${OUTPUT_ROOT}/fully_synthetic/upstream")
+  fi
 
   printf 'positive-control: running arm %s\n' "${arm_name}"
-  printf '  overrides: %s\n' "${overrides[*]}"
 
-  if ! (
-    cd "${UPSTREAM_DIR}" &&
-    python main.py "${overrides[@]}" "hydra.run.dir=${experiment_path}"
-  ) >"${log_path}" 2>&1; then
-    die 16 "arm ${arm_name} failed during upstream execution" \
-           "full log: ${log_path}" \
-           "classify it in FAILURE_LOG.md before any rerun (PROTOCOL.md rerun rule)"
-  fi
+  set +e
+  python "${REPO_ROOT}/scripts/run_positive_control_arm.py" "${driver_args[@]}"
+  local status=$?
+  set -e
+
+  case "${status}" in
+    0) ;;
+    20)
+      INCOMPLETE_ARMS+=("${arm_name}")
+      printf 'positive-control: arm %s stopped with generations remaining\n' "${arm_name}"
+      return 0
+      ;;
+    *)
+      die 16 "arm ${arm_name} failed during upstream execution" \
+             "full log: ${work_dir}/stdout_stderr.log" \
+             "classify it in FAILURE_LOG.md before any rerun (PROTOCOL.md rerun rule)"
+      ;;
+  esac
 
   printf 'positive-control: ingesting arm %s into frozen contracts\n' "${arm_name}"
   python -c '
@@ -239,11 +286,26 @@ adapt_run(
     output_dir=Path(output_dir),
     repo_root=Path(repo_root),
 )
-' "${config_path}" "${experiment_path}" "${OUTPUT_ROOT}/${arm_name}" "${REPO_ROOT}"
+' "${config_path}" "${work_dir}/upstream" "${work_dir}" "${REPO_ROOT}"
 }
 
+# The fully synthetic arm runs first because, with generation-0 sharing on, the
+# human-mixed arm reuses its generation 0 rather than recomputing an identical model.
 run_arm "fully_synthetic" "${CONFIG_FULLY_SYNTHETIC}"
 run_arm "human_mixed" "${CONFIG_HUMAN_MIXED}"
+
+if [[ ${#INCOMPLETE_ARMS[@]} -gt 0 ]]; then
+  cat >&2 <<EOF
+
+positive-control: STOPPED EARLY, nothing is wrong.
+
+  arms with generations remaining: ${INCOMPLETE_ARMS[*]}
+  completed generations are recorded and will not be recomputed.
+
+Run this identical command again to continue. Repeat until it exits 0.
+EOF
+  exit 20
+fi
 
 # ---------------------------------------------------------------------------------
 # 5. every recorded hash must still verify

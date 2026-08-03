@@ -68,6 +68,38 @@ baseline. Both positive-control arms therefore override it to
 deviation: a positive control must reproduce the *uncorrected* degradation the paper reports, and
 leaving importance sampling on would confound the arm contrast with the paper's intervention.
 
+### Recorded deviation in execution mechanics
+
+Upstream's `main.py` runs an arm as one uninterruptible process: it trains generation 0,
+then loops through every remaining generation with no resume. On a session-capped host an
+interrupted arm is lost entirely. `scripts/run_positive_control_arm.py` issues the
+identical `src/train.py` and `src/generate.py` commands, in the same order with the same
+arguments, one generation at a time, recording each completion. The commands are pinned
+against upstream by `tests/runner/test_positive_control_driver.py`.
+
+This changes the process boundary, not the computation. Two further options build on it,
+each justified by a property read from the upstream source rather than assumed:
+
+- **Shared generation 0** (default on). `main.py`'s initial training command passes
+  neither `--human_data_alpha` nor `--data_selection_strategy`, and `--ai_beta` is `1.0`
+  in both arms, so the two arms would compute an identical generation-0 model twice.
+  It is computed once and shared. Beyond halving that cost, this *removes* a source of
+  nondeterminism: both arms then start from a bit-identical baseline rather than two
+  independently trained models that ought to match but need not, given nondeterministic
+  CUDA kernels. Disable with `--no-shared-generation-zero` to recover upstream's exact
+  process structure; the arm contrast is unaffected either way.
+- **Model pruning** (default off; `--prune-models`). Every generation retrains from base
+  GPT-2 — `main.py` passes `--model_name_or_path model_name` at every iteration, never the
+  previous checkpoint — so generation *i-1*'s weights are needed only to decode generation
+  *i* and are scientifically spent once generation *i*'s `data.json` exists. With pruning
+  on, each superseded model directory is hashed, recorded in a sidecar, then deleted; peak
+  storage falls from roughly 11 GB to roughly 1.5 GB.
+
+  **Limitation, stated because it is real:** a pruned model's SHA-256 is preserved but its
+  bytes are not, so that hash can never be re-verified. `pruned_artifacts()` lists every
+  such artifact with its reason, and any report produced from a pruned run must disclose
+  which artifacts are no longer re-checkable. Metrics and generated data are never pruned.
+
 ### The two arms
 
 The paper describes the fully synthetic mixture as `(alpha=0, beta=1, gamma=0)` and a human-mixed

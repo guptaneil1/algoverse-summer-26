@@ -85,9 +85,10 @@ tokenisation.
 | 12 h hard cap, no idle disconnect | Ample for the smoke test; not enough for a full arm |
 | Hugging Face cache defaults to `/root/.cache` | Ephemeral, and not counted against `/kaggle/working`. Leave it there for the smoke test to preserve working space |
 
-Storage note for later: a full Stage A writes ~22 GPT-2 checkpoints at roughly 500 MB
-each. That exceeds the 20 GB working quota. Stage A on Kaggle needs either aggressive
-checkpoint pruning or a different host.
+Storage and session limits used to rule Kaggle out for the full Stage A run. Section 11
+resolves both: arms advance one generation at a time and can be resumed across sessions,
+and superseded model directories are pruned after hashing, cutting peak storage from
+roughly 11 GB to roughly 1.5 GB.
 
 ## 1. Cell 1 — GPU and environment record
 
@@ -580,3 +581,121 @@ The smoke test does not unblock Stage A on its own. The remaining prerequisites 
 unchanged: resolve the four `resolve_at_runtime` identifiers, extract the published
 expected values into `docs/positive_control/expected_vs_observed.md` §2.2, and commit both
 before either arm runs.
+
+## 11. Running the full Stage A across several Kaggle sessions
+
+Stage A no longer needs to fit in one session. `scripts/run_positive_control_arm.py`
+advances one generation at a time and records each completion, so any number of sessions
+can chip away at it. Section 0.1's two source facts are what make this sound; `PROTOCOL.md`
+records both as declared deviations.
+
+### 11.1 The unit of work
+
+| Work unit | Count |
+|---|---|
+| Generation 0 (computed once, shared by both arms) | 1 |
+| Fully synthetic, generations 1–10 | 10 |
+| Human mixed, generations 1–10 | 10 |
+| **Total** | **21** |
+
+Each unit is one `generate` + one `train` (generation 0 is train only). Multiply your §8
+per-generation measurement by 21 to see how many units fit in a 12 h session, then set
+`--time-budget-seconds` a little under the cap so the session ends on a recorded boundary
+instead of being killed mid-generation.
+
+### 11.2 The command, run once per session
+
+Identical every time. It resumes on its own; there is no "continue" flag to remember.
+
+```python
+# CELL 11 — one session's worth of Stage A
+import subprocess
+from pathlib import Path
+
+REPO = Path("/kaggle/working/algoverse-summer-26")
+UPSTREAM = Path("/kaggle/working/model_collapse")
+RUNS = Path("/kaggle/working/runs/positive_control")
+
+result = subprocess.run([
+    "bash", str(REPO / "scripts/reproduce_positive_control.sh"),
+    "--repo-root", str(REPO),
+    "--upstream-dir", str(UPSTREAM),
+    "--config-fully-synthetic",
+        str(REPO / "configs/experiment/positive_control_fully_synthetic.json"),
+    "--config-human-mixed",
+        str(REPO / "configs/experiment/positive_control_human_mixed.json"),
+    "--output-root", str(RUNS),
+    "--cuda-device", "0",
+    "--time-budget-seconds", "39600",   # 11 h, leaving headroom under the 12 h cap
+    "--prune-models",
+])
+
+print("exit code:", result.returncode)
+if result.returncode == 20:
+    print("Stopped on a recorded boundary. Re-run this cell in the next session.")
+elif result.returncode == 0:
+    print("Stage A complete: both arms finished and every hash verified.")
+```
+
+**Exit 20 is not a failure.** It means generations remain. Completed generations are
+recorded and will not be recomputed.
+
+### 11.3 Carrying state between sessions
+
+Kaggle does not persist `/kaggle/working` across notebook versions by itself. Between
+sessions:
+
+1. *Save Version → Save & Run All (Commit)* at the end of each session.
+2. In the next version, *Add Data → Your Work → Notebook Output*, selecting the previous
+   version's output.
+3. Copy the state back before running cell 11:
+
+```python
+# CELL 11-PRE — restore the previous session's progress
+import shutil
+from pathlib import Path
+
+PREVIOUS = Path("/kaggle/input/<previous-notebook-output-slug>/runs")
+RUNS = Path("/kaggle/working/runs")
+
+if PREVIOUS.exists() and not RUNS.exists():
+    shutil.copytree(PREVIOUS, RUNS)
+    print("restored from", PREVIOUS)
+else:
+    print("nothing to restore; this is either the first session or state already present")
+```
+
+The `<previous-notebook-output-slug>` is visible in the *Add Data* panel once attached —
+**it depends on your notebook's name and cannot be predicted here.**
+
+With `--prune-models` the carried state is small: metrics, generated data, hash sidecars,
+logs, and one live model directory. Without pruning it is tens of gigabytes and will not
+fit as a notebook input.
+
+### 11.4 What pruning costs you
+
+Pruned model directories are hashed before deletion and their SHA-256 values survive in
+the run record, but the bytes do not — so those hashes can never be re-verified. That is a
+genuine weakening of the evidence chain, not a technicality.
+
+After the final session, list them and copy the result into
+`docs/positive_control/expected_vs_observed.md` §6.1:
+
+```python
+# CELL 12 — disclose pruned artifacts
+import json, sys
+sys.path.insert(0, "/kaggle/working/algoverse-summer-26/src")
+from pathlib import Path
+from human_data_budget.runner.positive_control_adapter import (
+    pruned_artifacts, verify_recorded_hashes,
+)
+
+for arm in ("fully_synthetic", "human_mixed"):
+    run_dir = Path("/kaggle/working/runs/positive_control") / arm
+    print(f"--- {arm}")
+    print("hash mismatches:", verify_recorded_hashes(run_dir) or "none")
+    print(json.dumps(pruned_artifacts(run_dir), indent=2))
+```
+
+If you would rather keep every artifact re-verifiable, drop `--prune-models` and run on a
+host with more than 20 GB. That is the honest trade: storage against verifiability.

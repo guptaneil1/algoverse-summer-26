@@ -89,6 +89,14 @@ _PLACEHOLDER_MARKERS = ("TODO", "TBD", "FIXME", "XXX")
 
 _HASH_CHUNK_BYTES = 1024 * 1024
 
+#: Per-generation sidecar written by the driver *before* any pruning, so a hash taken
+#: while the artifact existed survives the artifact itself.
+ARTIFACT_RECORD_NAME = "artifact_record.json"
+
+#: Only model directories may be pruned. Metrics and generated data are small and are
+#: the actual scientific record, so they are never removed.
+PRUNABLE_ARTIFACTS = frozenset({"model_dir"})
+
 
 class PositiveControlError(RuntimeError):
     """Base class for adapter refusals."""
@@ -402,6 +410,52 @@ def read_eval_results(path: Path, config: dict[str, Any]) -> dict[str, float]:
     return metrics
 
 
+def artifact_record_path(experiment_path: Path, generation: int) -> Path:
+    """Return the sidecar path holding hashes taken before any pruning."""
+
+    return experiment_path / str(generation) / ARTIFACT_RECORD_NAME
+
+
+def write_artifact_record(experiment_path: Path, generation: int) -> dict[str, Any]:
+    """Hash this generation's artifacts now and persist the result.
+
+    Called by the driver the moment a generation completes, while every artifact is
+    still on disk. Pruning a model directory afterwards therefore loses the bytes but
+    not the evidence of what those bytes were.
+    """
+
+    paths = upstream_artifact_paths(experiment_path, generation)
+    artifacts: dict[str, Any] = {}
+    for name, path in paths.items():
+        if not path.exists():
+            raise MissingUpstreamArtifactError(
+                f"generation {generation}: cannot record {name}, nothing at {path}"
+            )
+        artifacts[name] = {"path": str(path), "sha256": sha256_path(path), "pruned": False}
+
+    record = {"generation": generation, "artifacts": artifacts}
+    _write_json_atomic(record, artifact_record_path(experiment_path, generation))
+    return record
+
+
+def mark_pruned(experiment_path: Path, generation: int, name: str, reason: str) -> None:
+    """Record that ``name`` was deliberately deleted after being hashed."""
+
+    path = artifact_record_path(experiment_path, generation)
+    if not path.is_file():
+        raise MissingUpstreamArtifactError(
+            f"refusing to mark {name} pruned for generation {generation}: "
+            f"no {ARTIFACT_RECORD_NAME} at {path}. Hash before you delete."
+        )
+    if name not in PRUNABLE_ARTIFACTS:
+        raise PositiveControlError(f"{name} may not be pruned; it is scientific record")
+
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["artifacts"][name]["pruned"] = True
+    record["artifacts"][name]["pruned_reason"] = reason
+    _write_json_atomic(record, path)
+
+
 def ingest_generation(
     config: dict[str, Any],
     *,
@@ -410,21 +464,43 @@ def ingest_generation(
 ) -> dict[str, Any]:
     """Return one generation's record: upstream metrics plus a hash for every artifact.
 
-    Refuses rather than recording a gap when an expected artifact is absent.
+    Prefers the pre-pruning sidecar when one exists, so a generation whose model
+    directory was deleted to fit a storage quota still carries the hash taken while it
+    was present. Refuses rather than recording a gap when an artifact is absent and was
+    never recorded as pruned.
     """
 
     paths = upstream_artifact_paths(experiment_path, generation)
-    record: dict[str, Any] = {"generation": generation, "artifacts": {}}
+    sidecar_path = artifact_record_path(experiment_path, generation)
+    sidecar = (
+        json.loads(sidecar_path.read_text(encoding="utf-8"))["artifacts"]
+        if sidecar_path.is_file()
+        else {}
+    )
 
+    record: dict[str, Any] = {"generation": generation, "artifacts": {}}
     for name, path in paths.items():
-        if not path.exists():
+        recorded = sidecar.get(name)
+        if path.exists():
+            current = sha256_path(path)
+            if recorded is not None and not recorded.get("pruned") and (
+                recorded["sha256"] != current
+            ):
+                raise PositiveControlError(
+                    f"generation {generation}: {name} changed since the run recorded it "
+                    f"(recorded {recorded['sha256'][:12]}…, now {current[:12]}…)"
+                )
+            record["artifacts"][name] = {
+                "path": str(path),
+                "sha256": current,
+                "pruned": False,
+            }
+        elif recorded is not None and recorded.get("pruned"):
+            record["artifacts"][name] = dict(recorded)
+        else:
             raise MissingUpstreamArtifactError(
                 f"generation {generation}: missing upstream artifact {name} at {path}"
             )
-        record["artifacts"][name] = {
-            "path": str(path),
-            "sha256": sha256_path(path),
-        }
 
     record["metrics"] = read_eval_results(paths["eval_results"], config)
     return record
@@ -550,6 +626,11 @@ def verify_recorded_hashes(run_dir: Path) -> list[str]:
         state = json.loads(checkpoint_file.read_text(encoding="utf-8"))
         for record in state.get("records", []):
             for name, artifact in record.get("artifacts", {}).items():
+                if artifact.get("pruned"):
+                    # Deliberately deleted after hashing. Its hash is still evidence of
+                    # what existed; the bytes are simply no longer re-checkable, which
+                    # pruned_artifacts() reports rather than hides.
+                    continue
                 path = Path(artifact["path"])
                 if not path.exists():
                     mismatches.append(
@@ -563,6 +644,38 @@ def verify_recorded_hashes(run_dir: Path) -> list[str]:
                         f"(recorded {artifact['sha256'][:12]}…, now {recomputed[:12]}…)"
                     )
     return mismatches
+
+
+def pruned_artifacts(run_dir: Path) -> list[dict[str, Any]]:
+    """Return every artifact deleted after hashing, so the limitation stays visible.
+
+    A pruned artifact's hash cannot be re-verified. That is a real weakening of the
+    evidence chain and belongs in the report, not in a silence.
+    """
+
+    pruned: list[dict[str, Any]] = []
+    checkpoints_dir = run_dir / "checkpoints"
+    if not checkpoints_dir.is_dir():
+        return pruned
+
+    latest = latest_checkpoint(run_dir)
+    if latest is None:
+        return pruned
+
+    state = json.loads(latest.read_text(encoding="utf-8"))
+    for record in state.get("records", []):
+        for name, artifact in record.get("artifacts", {}).items():
+            if artifact.get("pruned"):
+                pruned.append(
+                    {
+                        "generation": record["generation"],
+                        "artifact": name,
+                        "path": artifact["path"],
+                        "sha256": artifact["sha256"],
+                        "reason": artifact.get("pruned_reason", "unrecorded"),
+                    }
+                )
+    return pruned
 
 
 def build_chain_result(*_args: Any, **_kwargs: Any) -> None:

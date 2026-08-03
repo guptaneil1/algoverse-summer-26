@@ -119,7 +119,7 @@ preference:
 | 12 h hard cap, no idle disconnect | Ample for the smoke test; not enough for a full arm |
 | Hugging Face cache defaults to `/root/.cache` | Ephemeral, and not counted against `/kaggle/working`. Leave it there for the smoke test to preserve working space |
 
-Storage and session limits used to rule Kaggle out for the full Stage A run. Section 11
+Storage and session limits used to rule Kaggle out for the full Stage A run. Section 12
 resolves both: arms advance one generation at a time and can be resumed across sessions,
 and superseded model directories are pruned after hashing, cutting peak storage from
 roughly 11 GB to roughly 1.5 GB.
@@ -607,7 +607,123 @@ print(json.dumps(manifest, indent=2))
 survives otherwise. Model checkpoints are large and are deliberately excluded from
 `stage_a_smoke_record/`; only metrics, logs, and the environment record are preserved.
 
-## 10. After the notebook
+## 10. Cell 10 — resolve the deferred identifiers
+
+The committed configs carry `resolve_at_runtime` in four places, and the adapter refuses to
+run until they are filled. This host has Hugging Face access, so resolve them here and
+commit the result **before** any arm runs.
+
+```python
+# CELL 10 — resolve model, tokenizer, and dataset revisions
+import hashlib, json, subprocess
+from pathlib import Path
+from huggingface_hub import HfApi
+
+REPO = Path("/kaggle/working/algoverse-summer-26")
+UPSTREAM = Path("/kaggle/working/model_collapse")
+api = HfApi()
+
+gpt2_sha = api.model_info("openai-community/gpt2").sha
+detector_sha = api.model_info("GeorgeDrayson/modernbert-ai-detection").sha
+wikitext_sha = api.dataset_info("wikitext").sha
+
+digest = hashlib.sha256()
+with open(UPSTREAM / "data/wikitext2/train.json", "rb") as handle:
+    while chunk := handle.read(1024 * 1024):
+        digest.update(chunk)
+train_sha = digest.hexdigest()
+
+print("gpt2            :", gpt2_sha)
+print("detector        :", detector_sha)
+print("wikitext        :", wikitext_sha)
+print("train.json      :", train_sha)
+
+resolutions = {
+    ("model", "revision"): gpt2_sha,
+    ("model", "tokenizer_revision"): gpt2_sha,
+    ("data", "revision"): wikitext_sha,
+    ("data", "train_manifest_sha256"): train_sha,
+}
+
+for arm in ("fully_synthetic", "human_mixed"):
+    path = REPO / f"configs/experiment/positive_control_{arm}.json"
+    config = json.loads(path.read_text(encoding="utf-8"))
+    for (section, key), value in resolutions.items():
+        assert config[section][key] == "resolve_at_runtime", (
+            f"{arm}: {section}.{key} is already {config[section][key]!r}; "
+            "refusing to overwrite an existing pin"
+        )
+        config[section][key] = value
+    path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    print("resolved", path.name)
+
+# The detector revision is recorded for the record; upstream pins no detector revision
+# either, and the adapter does not gate on it.
+(REPO / "docs/positive_control/resolved_identifiers.json").write_text(
+    json.dumps({
+        "gpt2": gpt2_sha, "detector": detector_sha,
+        "wikitext": wikitext_sha, "train_json_sha256": train_sha,
+    }, indent=2) + "\n", encoding="utf-8")
+
+print(subprocess.run(["git", "-C", str(REPO), "diff", "--stat"],
+                     capture_output=True, text=True).stdout)
+```
+
+The assertion is deliberate: re-running this cell after the identifiers are pinned will
+fail rather than silently re-resolve them against whatever Hugging Face serves that day.
+
+Verify the refusal is now lifted, then commit:
+
+```python
+# CELL 10b — confirm the configs are runnable, then commit
+import subprocess, sys
+from pathlib import Path
+sys.path.insert(0, "/kaggle/working/algoverse-summer-26/src")
+from human_data_budget.runner.positive_control_adapter import assert_resolved, load_arm_config
+
+REPO = Path("/kaggle/working/algoverse-summer-26")
+for arm in ("fully_synthetic", "human_mixed"):
+    assert_resolved(load_arm_config(REPO / f"configs/experiment/positive_control_{arm}.json"))
+print("both arm configs are fully resolved")
+
+for command in (
+    ["git", "-C", str(REPO), "add", "-A"],
+    ["git", "-C", str(REPO), "-c", "user.email=khantushig@example.invalid",
+     "-c", "user.name=khantushig", "commit", "-m",
+     "chore(positive-control): resolve runtime identifiers on the run host"],
+):
+    print(subprocess.run(command, capture_output=True, text=True).stdout)
+```
+
+Push it with the secret re-supplied (the remote was scrubbed in cell 4):
+
+```python
+# CELL 10c — push the freeze
+import subprocess
+from pathlib import Path
+from kaggle_secrets import UserSecretsClient
+
+REPO = Path("/kaggle/working/algoverse-summer-26")
+token = UserSecretsClient().get_secret("GITHUB_PAT")
+url = f"https://x-access-token:{token}@github.com/guptaneil1/algoverse-summer-26.git"
+result = subprocess.run(
+    ["git", "-C", str(REPO), "push", url, "week-2/khantushig-positive-control"],
+    capture_output=True, text=True,
+)
+del token, url
+print("push ok" if result.returncode == 0 else "push failed; see returncode")
+print(result.returncode)
+```
+
+The push output is not printed, because the URL containing the token appears in git's
+progress messages.
+
+**The published expected values are still missing at this point.** Fill
+`docs/positive_control/expected_vs_observed.md` §2.2 from the paper and commit that too
+before running any arm — a frozen expectation is only frozen if its timestamp precedes the
+run.
+
+## 11. After the notebook
 
 1. Download `stage_a_smoke_record/` from the committed notebook's *Output* tab.
 2. Replace §4 of `docs/benchmarks/khantushig_week2.md` with the measured numbers, keeping
@@ -623,14 +739,14 @@ unchanged: resolve the four `resolve_at_runtime` identifiers, extract the publis
 expected values into `docs/positive_control/expected_vs_observed.md` §2.2, and commit both
 before either arm runs.
 
-## 11. Running the full Stage A across several Kaggle sessions
+## 12. Running the full Stage A across several Kaggle sessions
 
 Stage A no longer needs to fit in one session. `scripts/run_positive_control_arm.py`
 advances one generation at a time and records each completion, so any number of sessions
 can chip away at it. Section 0.1's two source facts are what make this sound; `PROTOCOL.md`
 records both as declared deviations.
 
-### 11.1 The unit of work
+### 12.1 The unit of work
 
 | Work unit | Count |
 |---|---|
@@ -644,7 +760,7 @@ per-generation measurement by 21 to see how many units fit in a 12 h session, th
 `--time-budget-seconds` a little under the cap so the session ends on a recorded boundary
 instead of being killed mid-generation.
 
-### 11.2 The command, run once per session
+### 12.2 The command, run once per session
 
 Identical every time. It resumes on its own; there is no "continue" flag to remember.
 
@@ -681,7 +797,7 @@ elif result.returncode == 0:
 **Exit 20 is not a failure.** It means generations remain. Completed generations are
 recorded and will not be recomputed.
 
-### 11.3 Carrying state between sessions
+### 12.3 Carrying state between sessions
 
 Kaggle does not persist `/kaggle/working` across notebook versions by itself. Between
 sessions:
@@ -713,7 +829,7 @@ With `--prune-models` the carried state is small: metrics, generated data, hash 
 logs, and one live model directory. Without pruning it is tens of gigabytes and will not
 fit as a notebook input.
 
-### 11.4 What pruning costs you
+### 12.4 What pruning costs you
 
 Pruned model directories are hashed before deletion and their SHA-256 values survive in
 the run record, but the bytes do not — so those hashes can never be re-verified. That is a
@@ -741,7 +857,7 @@ for arm in ("fully_synthetic", "human_mixed"):
 If you would rather keep every artifact re-verifiable, drop `--prune-models` and run on a
 host with more than 20 GB. That is the honest trade: storage against verifiability.
 
-## 12. Halving wall clock: both arms at once on the two T4s
+## 13. Halving wall clock: both arms at once on the two T4s
 
 §0.1 established that an arm uses one GPU. On a `T4 x2` session the second GPU is idle, and
 the two arms are independent, so they can run concurrently — turning Stage A's wall clock

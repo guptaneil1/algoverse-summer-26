@@ -276,6 +276,10 @@ def run_arm(args: argparse.Namespace) -> int:
     print(f"arm={config['arm']} horizon={horizon} upstream={UPSTREAM_COMMIT[:12]}")
 
     for generation in range(horizon):
+        if args.stop_after_generation is not None and generation > args.stop_after_generation:
+            print(f"\nstopping: --stop-after-generation {args.stop_after_generation} reached")
+            break
+
         if generation_is_complete(experiment_path, generation):
             print(f"generation {generation}: already complete, skipping")
             continue
@@ -387,6 +391,12 @@ def main() -> int:
                         help="delete each superseded model directory after hashing it")
     parser.add_argument("--shared-generation-zero", type=Path, default=None,
                         help="reuse a generation 0 computed once for both arms")
+    parser.add_argument("--stop-after-generation", type=int, default=None,
+                        help=(
+                            "stop once this generation is complete. Use "
+                            "--stop-after-generation 0 to produce the shared generation 0 "
+                            "before launching both arms concurrently on separate GPUs."
+                        ))
     parser.add_argument("--dry-run", action="store_true",
                         help="print the exact upstream commands without running them")
     args = parser.parse_args()

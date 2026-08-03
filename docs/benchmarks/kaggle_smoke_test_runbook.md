@@ -76,7 +76,41 @@ measured by `Trainer` itself and are the trustworthy timing source — more reli
 wall-clock subtraction, which at smoke scale is dominated by model downloads and
 tokenisation.
 
-### 0.5 Kaggle-specific constraints
+### 0.5 Decoding batch size, and why it sets the cost
+
+`src/generate.py:32` defaults `--batch_size` to `32`, and `main.py` never overrides it, so
+every generation decodes the training split in batches of 32 with `max_new_tokens=256`
+(`src/generate.py:90`). For a ~4,600-block WikiText-2 split that is roughly 145 batches ×
+256 sequential decode steps per generation.
+
+Decoding is sequential and memory-bandwidth bound, so it dominates the per-generation cost
+— training the same split is a few hundred optimizer steps and finishes in minutes. Any
+useful estimate of Stage A is therefore an estimate of decode throughput, which is what §7
+measures.
+
+### 0.6 bfloat16 on a T4 — check this before trusting any timing
+
+Upstream sets `torch_dtype: bfloat16` (`config/config.yaml`). The T4 is Turing, compute
+capability 7.5, which has **no bfloat16 tensor cores** — bf16 tensors work but fall back to
+slower paths, and `torch.cuda.is_bf16_supported()` typically reports `False`. Cell 1
+captures both values.
+
+If `torch_bf16_supported` is `False`, decoding may run several times slower than the same
+work in fp16, and the §7 measurement will reflect that. Three responses, in order of
+preference:
+
+1. **Accept it and measure.** The frozen config stays intact; Stage A simply costs more.
+   This is the default and it keeps the reproduction faithful.
+2. **Run on a bf16-capable accelerator** (A100, L4, or Kaggle's TPU-adjacent options are
+   not equivalent — an Ampere-or-later GPU is what is needed). No deviation, faster.
+3. **Change `torch_dtype` to `float16`.** This is a **scientific deviation** from the
+   pinned upstream configuration: fp16 has a narrower exponent range than bf16 and can
+   change training dynamics and generated text. If chosen, it must be recorded in
+   `PROTOCOL.md` and in `expected_vs_observed.md` §6 *before* running, and the reproduction
+   reported as `valid_with_limitation` at best. Do not make this change to save time and
+   then describe the run as a faithful reproduction.
+
+### 0.7 Kaggle-specific constraints
 
 | Constraint | Effect |
 |---|---|
@@ -138,6 +172,13 @@ try:
     env["torch_device_names"] = [
         torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())
     ]
+    env["torch_compute_capability"] = [
+        ".".join(map(str, torch.cuda.get_device_capability(i)))
+        for i in range(torch.cuda.device_count())
+    ]
+    # Upstream sets torch_dtype=bfloat16. Turing (T4, capability 7.5) has no bf16
+    # tensor cores, so bf16 falls back to slow paths. See section 0.6.
+    env["torch_bf16_supported"] = bool(torch.cuda.is_bf16_supported())
 except Exception as exc:
     env["torch_probe_error"] = str(exc)
 
@@ -699,3 +740,78 @@ for arm in ("fully_synthetic", "human_mixed"):
 
 If you would rather keep every artifact re-verifiable, drop `--prune-models` and run on a
 host with more than 20 GB. That is the honest trade: storage against verifiability.
+
+## 12. Halving wall clock: both arms at once on the two T4s
+
+§0.1 established that an arm uses one GPU. On a `T4 x2` session the second GPU is idle, and
+the two arms are independent, so they can run concurrently — turning Stage A's wall clock
+from *two arms* into *one arm*.
+
+The only ordering constraint is the shared generation 0: arm B reuses it, so it must exist
+first. It is a single training run of a few minutes.
+
+```python
+# CELL 13 — generation 0 once, then both arms in parallel
+import subprocess, time
+from pathlib import Path
+
+REPO = Path("/kaggle/working/algoverse-summer-26")
+UPSTREAM = Path("/kaggle/working/model_collapse")
+RUNS = Path("/kaggle/working/runs/positive_control")
+DRIVER = REPO / "scripts/run_positive_control_arm.py"
+CONFIGS = {
+    "fully_synthetic": REPO / "configs/experiment/positive_control_fully_synthetic.json",
+    "human_mixed": REPO / "configs/experiment/positive_control_human_mixed.json",
+}
+BUDGET = "39600"   # 11 h, leaving headroom under the 12 h cap
+
+# Step 1 — generation 0, once, on GPU 0.
+step_one = subprocess.run([
+    "python", str(DRIVER),
+    "--config", str(CONFIGS["fully_synthetic"]),
+    "--upstream-dir", str(UPSTREAM),
+    "--work-dir", str(RUNS / "fully_synthetic"),
+    "--cuda-device", "0",
+    "--stop-after-generation", "0",
+])
+assert step_one.returncode in (0, 20), f"generation 0 failed: {step_one.returncode}"
+
+# Step 2 — both arms concurrently, one per GPU.
+processes = {}
+for index, (arm, config) in enumerate(CONFIGS.items()):
+    command = [
+        "python", str(DRIVER),
+        "--config", str(config),
+        "--upstream-dir", str(UPSTREAM),
+        "--work-dir", str(RUNS / arm),
+        "--cuda-device", str(index),
+        "--time-budget-seconds", BUDGET,
+        "--prune-models",
+    ]
+    if arm != "fully_synthetic":
+        command += ["--shared-generation-zero", str(RUNS / "fully_synthetic" / "upstream")]
+    log = RUNS / arm / "driver.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    processes[arm] = (subprocess.Popen(command, stdout=open(log, "w"),
+                                       stderr=subprocess.STDOUT), log)
+    print(f"launched {arm} on GPU {index}, log: {log}")
+
+started = time.perf_counter()
+for arm, (process, log) in processes.items():
+    code = process.wait()
+    print(f"{arm}: exit {code} after {(time.perf_counter()-started)/3600:.2f} h")
+    if code == 20:
+        print(f"  {arm} has generations remaining — re-run this cell next session")
+    elif code != 0:
+        print(f"  {arm} FAILED — see {log}")
+```
+
+Both arms writing to the same working disk at once roughly doubles the I/O and storage
+rate, so keep `--prune-models` on for this path. Re-running the cell is safe: completed
+generations are skipped and step 1 becomes a no-op.
+
+**One caveat worth stating.** Running two jobs on one machine means they share host RAM,
+disk bandwidth, and dataloader workers, so each arm may be somewhat slower than it would be
+alone. The wall-clock win is still large, but the per-arm timings from this path are not
+clean single-job benchmarks — if you want the numbers for `COMPUTE.md` to be clean
+measurements, take them from the §7 measurement rather than from a parallel run.

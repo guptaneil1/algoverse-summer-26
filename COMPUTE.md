@@ -8,7 +8,7 @@ This file separates forecasts from actual usage.
 
 | Stage | Model | Conditions | Chains | Generations | Estimated accelerator-hours | Storage | Basis of estimate | Status |
 |---|---|---:|---:|---:|---:|---:|---|---|
-| Positive control | GPT-2 124M-class | 2 | TBD | 10 | TBD | TBD | Must be measured from one-generation smoke run — blocked on upstream commit pin, ML framework, and accelerator access; see `docs/benchmarks/khantushig_week1.md` | Not estimated |
+| Positive control | GPT-2 124M (`openai-community/gpt2`) | 2 | 1 seeded chain per arm | 11 (indices 0–10) | ~10–40 T4-hours (estimate, wide) | ~12–15 GB | Formula estimate from the pinned upstream config; decoding, not training, dominates. **Still not the measured one-generation smoke run this column requires.** See `docs/benchmarks/khantushig_week2.md` §4 | Estimated, not measured; unexecuted |
 | Mechanism pilot | 160M-class | TBD | At least 5 initial | 10 | TBD | TBD | Positive-control and smoke-run measurements | Blocked |
 | Powered core | 410M/1B-class | TBD | Power result | 10+ | TBD | TBD | Pilot measurements | Blocked |
 | Independent confirmation | TBD | Decisive contrast only | TBD | TBD | TBD | TBD | Powered-core measurements | Blocked |
@@ -19,7 +19,10 @@ Forecasts must state assumptions and may not be presented as actual usage.
 
 | Run ID | Date | Commit | Model revision | Hardware | Count | Wall time | Accelerator-hours | Peak memory | Storage written | Outcome |
 |---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| None | — | — | — | — | — | — | — | — | — | No runs yet |
+| None | — | — | — | — | — | — | — | — | — | No experimental runs yet |
+| `week2-infrastructure` | 2026-08-03 | `week-2/khantushig-positive-control` | n/a — no model loaded | 4 vCPU x86_64, **no GPU** | 1 | 3.78 s (full test suite) | **0.00** | 40.4 MiB | ~90 KiB (source, configs, tests, docs) | Infrastructure only. No model trained, no accelerator used. Not an experiment. |
+| `positive_control_fully_synthetic_seed42` | — | — | — | — | 0 | — | — | — | — | **Not executed** — no accelerator available; see `docs/positive_control/failure_report.md` |
+| `positive_control_human_mixed_seed42` | — | — | — | — | 0 | — | — | — | — | **Not executed** — no accelerator available; see `docs/positive_control/failure_report.md` |
 
 ## Required accounting
 

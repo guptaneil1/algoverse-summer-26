@@ -18,15 +18,15 @@
   },
   "model": {
     "identifier": "openai-community/gpt2",
-    "revision": "resolve_at_runtime",
-    "tokenizer_revision": "resolve_at_runtime",
+    "revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "tokenizer_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
     "revision_policy": "Upstream pins no revision (config/model/gpt2.yaml). The executing host must resolve and record the Hugging Face commit SHA; the adapter refuses to leave status=planned while this sentinel is unresolved."
   },
   "data": {
     "identifier": "wikitext/wikitext-2-raw-v1",
-    "revision": "resolve_at_runtime",
+    "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
     "train_manifest": "data/wikitext2/train.json",
-    "train_manifest_sha256": "resolve_at_runtime",
+    "train_manifest_sha256": "77557c8514b11406580aa7d48515ad303eeb0b0748247b0fe76fb24e927ef9d6",
     "test_manifest": "data/wikitext2/test.json",
     "preparation_command": "python src/load_data.py"
   },

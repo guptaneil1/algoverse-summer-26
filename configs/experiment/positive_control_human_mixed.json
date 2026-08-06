@@ -26,10 +26,10 @@
     "identifier": "wikitext/wikitext-2-raw-v1",
     "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
     "train_manifest": "data/wikitext2/train.json",
-    "train_manifest_sha256": "f748ba2b8691a02e3997e745fef72a5cfaf3669be60cf1b4cdf94137e5db4d21",
+    "train_manifest_sha256": "68a59c04e937e50201cb0b5845a9ff14c804366a36d59c5fcc6dd776d6bb0ea2",
     "test_manifest": "data/wikitext2/test.json",
     "preparation_command": "python src/load_data.py",
-    "train_manifest_note": "Re-pinned 2026-08-06 under the frozen stack (transformers 4.48.3, datasets 3.2.0). The previous value was produced under transformers 5.15.0.dev0 / datasets 5.0.0, an environment since rejected because upstream cannot run on it. load_data.py:150 runs the ModernBERT detector over the training split, so train.json depends on the framework stack and on GPU inference; it is not a pure function of the raw dataset. Determinism within the frozen stack was verified before re-pinning."
+    "train_manifest_note": "Re-pinned per session. load_data.py:150 runs the ModernBERT detector on GPU and writes its float scores into train.json, so the file is reproducible WITHIN a session but not ACROSS sessions, even on an identical pinned stack (observed 2026-08-05 -> 2026-08-06). This hash certifies which file a given run consumed; it is not a claim that the dataset regenerates identically elsewhere. Detector scores are not read under data_selection=no-selection."
   },
   "upstream": {
     "repository": "https://github.com/GeorgeDrayson/model_collapse",

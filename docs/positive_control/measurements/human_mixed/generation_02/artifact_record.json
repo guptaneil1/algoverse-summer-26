@@ -1,0 +1,20 @@
+{
+  "generation": 2,
+  "artifacts": {
+    "model_dir": {
+      "path": "/kaggle/working/runs/positive_control/human_mixed/upstream/2/model/final_model",
+      "sha256": "14b2cd616bfa77306e99d80c07257b976bbd8fc28d5ff3b29fa2fa1f20796afa",
+      "pruned": false
+    },
+    "eval_results": {
+      "path": "/kaggle/working/runs/positive_control/human_mixed/upstream/2/model/eval_results.json",
+      "sha256": "c8759bcd49355cd2e3b8f1983145bcf258ccf4e8561509815908bcafa3862fb0",
+      "pruned": false
+    },
+    "generated_data": {
+      "path": "/kaggle/working/runs/positive_control/human_mixed/upstream/2/data.json",
+      "sha256": "04e0ddc3fabc06cadb16e6808535a669c0519521bfce80810c0859eb04754299",
+      "pruned": false
+    }
+  }
+}

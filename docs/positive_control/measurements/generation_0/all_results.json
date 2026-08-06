@@ -2,15 +2,15 @@
     "epoch": 1.0,
     "eval_accuracy": 0.38596093890998395,
     "eval_loss": 3.404702663421631,
-    "eval_runtime": 27.2924,
+    "eval_runtime": 24.2429,
     "eval_samples": 553,
-    "eval_samples_per_second": 20.262,
-    "eval_steps_per_second": 1.282,
+    "eval_samples_per_second": 22.811,
+    "eval_steps_per_second": 1.444,
     "perplexity": 30.1053429733233,
     "total_flos": 1219972497408000.0,
     "train_loss": 3.4355736301369864,
-    "train_runtime": 542.7674,
+    "train_runtime": 508.7422,
     "train_samples": 4669,
-    "train_samples_per_second": 8.602,
-    "train_steps_per_second": 0.538
+    "train_samples_per_second": 9.178,
+    "train_steps_per_second": 0.574
 }

@@ -3,12 +3,12 @@
   "artifacts": {
     "model_dir": {
       "path": "/kaggle/working/runs/positive_control/human_mixed/upstream/0/model/final_model",
-      "sha256": "9618072e6665e7d115577b09d86e84f35bfde2f63d68cacf7630123452cf109b",
+      "sha256": "ebf7e55344bf08de904e596bcf7b7cd0920902b0eb2b9bc2d2faf7d2c17d76d5",
       "pruned": false
     },
     "eval_results": {
       "path": "/kaggle/working/runs/positive_control/human_mixed/upstream/0/model/eval_results.json",
-      "sha256": "c89d2c19f0b794bc7aca130318be8c325105527e3ec9cf540bbfd524d694af37",
+      "sha256": "c8b10b43e0effba3ef99cb90a2a4f8e8cd70bc298097d94fa84d9365cfab3622",
       "pruned": false
     }
   }

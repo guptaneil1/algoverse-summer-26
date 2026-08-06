@@ -216,7 +216,7 @@ def run_step(command: list[str], *, upstream_dir: Path, log_path: Path,
         log.write(f"\n===== {printable}\n")
         log.flush()
         result = subprocess.run(command, cwd=upstream_dir, stdout=log,
-                                stderr=subprocess.STDOUT)
+                                stderr=subprocess.STDOUT, env=environment)
     elapsed = time.perf_counter() - start
 
     if result.returncode != 0:

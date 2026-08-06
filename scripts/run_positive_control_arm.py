@@ -150,6 +150,7 @@ def generate_command(config: dict[str, Any], *, experiment_path: Path, data_dir:
         "--detector_path", detector["model_path"],
         "--detector_threshold", str(detector["ai_confidence_threshold"]),
         "--detector_temperature", str(detector["temperature"]),
+        "--self_bleu_n_sample", "50",
     ]
 
 

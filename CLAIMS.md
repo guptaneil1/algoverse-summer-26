@@ -6,12 +6,35 @@ No claim in this file is a result unless its status is explicitly `SUPPORTED BY 
 
 | ID | Type | Exact statement | Evidence needed | Status |
 |---|---|---|---|---|
-| C-000 | Fact about this repository | No Human Data Budget experiment has been run or verified in this repository | Repository audit | Verified |
+| C-000 | Fact about this repository | No **Human Data Budget** experiment — no test of C-002, C-003 or C-005 — has been run or verified in this repository. Stage A, a reproduction of published work by others, has been run; see C-006. | Repository audit | Verified, narrowed 2026-08-07 |
+| C-006 | Reproduction of published work by others | The positive control of Drayson, Yilmaz & Lampos (EMNLP 2025) reproduces on GPT-2 / WikiText-2 under top-k decoding. Fully synthetic recursive training (α=0) degrades test perplexity from 29.6179 to 49.4601 by generation 9 (ratio 1.6699); human-mixed training (α=1, β=1, γ=0) reaches 30.3579 (ratio 1.0250). Both arms fall within 5% of the published values on every quantity the paper reports for them. | Executed run with linked artifacts | **SUPPORTED BY RUN ARTIFACTS**, with recorded gaps — see below |
 | C-001 | Literature-grounded motivation | Recursive training on generated data can degrade model fit, diversity, or tail coverage in studied settings, while the outcome depends strongly on the data workflow and source distribution | Audited primary literature | Supported with scope qualifiers |
 | C-002 | Hypothesis | At equal lifetime human-token budget and total optimizer-token budget, joint allocation across time and under-covered modes reduces chain-level regret relative to the strongest schedule-only and selection-only baselines | Powered recursive-chain experiment | Untested |
 | C-003 | Hypothesis | The advantage of targeted allocation decreases or reverses when the monitoring reference omits globally important modes | Predeclared monitoring-bias intervention | Untested |
 | C-004 | Provisional novelty claim | The exact joint problem of allocating one fixed lifetime stock of human-origin optimizer tokens across recursive generations and monitored human-distribution modes is distinguishable from the closest audited work | Saturated search, external expert review, and continuing 2026 search | Unverified and deliberately narrow |
 | C-005 | Proposed mechanism | Under-covered modes with high projected future regret may have greater marginal value for human anchors | Theory or mechanism intervention plus experiment | Untested |
+
+### C-006 evidence linkage and its gaps
+
+C-006 is the only claim in this ledger with run-artifact status, and it is a claim about
+*someone else's* result reproducing, not about this project's hypotheses. Against the
+result-promotion rule below:
+
+| Required | Present |
+|---|---|
+| Frozen protocol version | yes — `PROTOCOL.md`, frozen 2026-08-03 |
+| Code commit | yes — upstream `feb8511479a2e2dc868e1caf3f63cb99f1fcc746`; this repo's commit recorded per generation |
+| Environment and asset revisions | yes — model, tokenizer, dataset and detector SHAs in both arm configs |
+| Run manifests | **no** — `run_manifest.json` was never emitted; `FAILURE_LOG.md` `PC-2026-08-07-H` |
+| Raw chain-level outcomes | yes — 22 `eval_results.json` under `docs/positive_control/measurements/` |
+| Exact analysis command | partial — `measurements/executed_commands.json` is a reconstruction, not a transcript |
+| Uncertainty calculation | **no** — one seeded chain per arm; no replicate, so no interval |
+| Limitations and failed checks | yes — `FAILURE_LOG.md` A–H, `expected_vs_observed.md` §5–§7 |
+
+C-006 must be quoted with those gaps attached. In particular it rests on **a single chain
+per arm**, so it carries no uncertainty estimate and must not be described as a measured
+effect size. The decision recorded in `expected_vs_observed.md` §5 is
+`valid_with_limitation`, not `valid`.
 
 ## Provisional contribution paragraph
 

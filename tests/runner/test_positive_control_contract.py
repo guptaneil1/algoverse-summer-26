@@ -95,16 +95,43 @@ def test_model_and_data_identifiers_are_declared(arm_name: str) -> None:
 
 
 def test_unresolved_identifiers_block_execution(arm_name: str) -> None:
-    """The sentinel is a contract, not a placeholder: it must actually stop a run."""
+    """The sentinel is a contract, not a placeholder: it must actually stop a run.
+
+    Checked against a config deliberately reverted to the sentinel, rather than against
+    the committed one. Before Stage A ran, the committed configs carried sentinels and
+    this test read them directly; they now carry the identifiers the executed run
+    resolved, so testing the mechanism means constructing the unresolved case.
+    """
 
     config = load_arm_config(ARMS[arm_name])
+    config["model"]["revision"] = UNRESOLVED
+
     unresolved = unresolved_identifiers(config)
-    assert unresolved, "committed configs are expected to defer revisions to the run host"
+    assert unresolved, "reverting an identifier to the sentinel must be detected"
     assert all(value for value in unresolved)
 
     with pytest.raises(Exception) as excinfo:
         assert_resolved(config)
     assert UNRESOLVED in str(excinfo.value)
+
+
+def test_committed_configs_are_fully_resolved(arm_name: str) -> None:
+    """Post-run invariant: the configs must describe the run that actually happened.
+
+    Stage A completed on 2026-08-07, so every deferred identifier now has a real value
+    and no sentinel may reappear. A sentinel here would mean the committed configs no
+    longer describe the executed run.
+    """
+
+    config = load_arm_config(ARMS[arm_name])
+
+    assert unresolved_identifiers(config) == []
+    assert_resolved(config)
+
+    assert config["model"]["revision"] == config["model"]["tokenizer_revision"]
+    assert len(config["model"]["revision"]) == 40
+    assert len(config["data"]["revision"]) == 40
+    assert len(config["data"]["train_manifest_sha256"]) == 64
 
 
 def test_training_generation_and_evaluation_settings_are_frozen(arm_name: str) -> None:

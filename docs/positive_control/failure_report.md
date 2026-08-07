@@ -1,5 +1,24 @@
 # Positive control: reproduction blocked — evidence package
 
+> **SUPERSEDED 2026-08-07.** The block described here was lifted: an accelerator host was
+> obtained and both arms completed all 11 generations. The result is in
+> `report.md`, decision `valid_with_limitation`.
+>
+> This document is retained rather than deleted. The block it records genuinely happened,
+> and `FAILURE_LOG.md` is append-only. Two of its statements are now outdated and are
+> corrected here rather than edited away:
+>
+> - §1's "`report.md` does not exist and must not be created until a run actually
+>   completes" was the correct rule at the time. A run completed, so `report.md` now exists.
+> - §3 lists what unblocking required. Items 1, 2, 5 and 6 were done. Item 3 (extract the
+>   published expected values) was **never** done — `aclanthology.org` stayed unreachable —
+>   which is exactly why the decision is `valid_with_limitation` and not `valid`. Item 4
+>   (upstream's `smoke_test=true`) was abandoned because upstream's smoke path is broken
+>   (`FAILURE_LOG.md` `PC-2026-08-05-C`); the compute basis was measured from a full
+>   generation 0 instead.
+>
+> §2's evidence for the original block is unchanged and remains accurate for 2026-08-03.
+
 **Date:** 2026-08-03
 **Branch:** `week-2/khantushig-positive-control`
 **Stage:** A (published positive control)

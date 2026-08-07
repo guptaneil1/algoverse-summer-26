@@ -172,10 +172,16 @@ def test_ingest_refuses_unresolved_identifiers(
     tmp_path: Path,
     make_upstream_experiment: Callable[..., Path],
 ) -> None:
-    """The committed config must not be runnable until the host resolves its revisions."""
+    """A config carrying the sentinel must not be runnable until the host resolves it.
+
+    The sentinel is set explicitly here. The committed config carried it until Stage A
+    ran on 2026-08-07; it now carries the identifiers that run resolved, so the
+    unresolved case has to be constructed rather than read.
+    """
 
     config = load_arm_config(ROOT / "configs/experiment/positive_control_fully_synthetic.json")
     config["horizon"] = len(FAKE_PERPLEXITIES)
+    config["model"]["revision"] = "resolve_at_runtime"
     experiment_path = make_upstream_experiment(FAKE_PERPLEXITIES)
 
     with pytest.raises(UnresolvedIdentifierError):

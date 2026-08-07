@@ -32,6 +32,8 @@ EXIT_BAD_CONFIG = 12
 EXIT_BAD_UPSTREAM = 13
 EXIT_UNRESOLVED = 15
 
+UNRESOLVED = "resolve_at_runtime"
+
 
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(
@@ -64,6 +66,14 @@ def _make_project(tmp_path: Path, *, resolve_identifiers: bool = False) -> Path:
             config["model"]["tokenizer_revision"] = "0" * 40
             config["data"]["revision"] = "1" * 40
             config["data"]["train_manifest_sha256"] = "2" * 64
+        else:
+            # Set the sentinel explicitly. The committed configs used to carry it, so
+            # copying them unchanged was enough; since Stage A ran they carry the
+            # identifiers it resolved, and the unresolved case has to be constructed.
+            config["model"]["revision"] = UNRESOLVED
+            config["model"]["tokenizer_revision"] = UNRESOLVED
+            config["data"]["revision"] = UNRESOLVED
+            config["data"]["train_manifest_sha256"] = UNRESOLVED
         (project / relative).write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
     _git(project, "init", "--quiet")

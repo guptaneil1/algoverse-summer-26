@@ -1,0 +1,265 @@
+{
+  "schema_version": "1.0",
+  "arms": {
+    "fully_synthetic": {
+      "unretained_artifacts": [
+        {
+          "generation": 0,
+          "artifact": "model_dir",
+          "sha256": "ebf7e55344bf08de904e596bcf7b7cd0920902b0eb2b9bc2d2faf7d2c17d76d5",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/0/model/final_model"
+        },
+        {
+          "generation": 1,
+          "artifact": "model_dir",
+          "sha256": "627f1d5541d951601d6efe80abba65cee56110e4c72f73e1d3451ce127886cee",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/1/model/final_model"
+        },
+        {
+          "generation": 1,
+          "artifact": "generated_data",
+          "sha256": "b9db5cf6f7337613412ce04c7523215a8ce8a20e7419230259e1e6269f3897f7",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/1/data.json"
+        },
+        {
+          "generation": 2,
+          "artifact": "model_dir",
+          "sha256": "7943ed5db93f82cda8cee6b4c0d100e6fae86338e1f628966af5ed93deb2f591",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/2/model/final_model"
+        },
+        {
+          "generation": 2,
+          "artifact": "generated_data",
+          "sha256": "36197e720ca97580f725c8eae515cb733587e2207d53d7bef7b13177a75658cb",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/2/data.json"
+        },
+        {
+          "generation": 3,
+          "artifact": "model_dir",
+          "sha256": "31b84cded55781fc5c879173db6d13741767c0715077bfc3c840293be7674390",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/3/model/final_model"
+        },
+        {
+          "generation": 3,
+          "artifact": "generated_data",
+          "sha256": "b3d71ece8bfea0c2cf8f503f90bdc70636fbeb28829b0de79c5ad2dbc10dc017",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/3/data.json"
+        },
+        {
+          "generation": 4,
+          "artifact": "model_dir",
+          "sha256": "746a26055254d33d0b6629ffa7b536c9e51a6540d0a3290fffb8300175af89e3",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/4/model/final_model"
+        },
+        {
+          "generation": 4,
+          "artifact": "generated_data",
+          "sha256": "4130a726b9711c48d652b3a570ff4785db56323df3771649fa04800f0ded4aaf",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/4/data.json"
+        },
+        {
+          "generation": 5,
+          "artifact": "model_dir",
+          "sha256": "eb712a1e4d8c46eb45d12e827ebb926cad4275e3949b292de757afa897fa34db",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/5/model/final_model"
+        },
+        {
+          "generation": 5,
+          "artifact": "generated_data",
+          "sha256": "f161b058050dc6efcc660b883e1028bcfc28e7981d8e36f17798c1d3f54e7b06",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/5/data.json"
+        },
+        {
+          "generation": 6,
+          "artifact": "model_dir",
+          "sha256": "df3b5fb4ea462b4c75cbbe3b12775a690ca5d13060d3486bbfbd6ad28b941cbf",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/6/model/final_model"
+        },
+        {
+          "generation": 6,
+          "artifact": "generated_data",
+          "sha256": "918c9624379f37af7134578a1a398c604b910b40b3aa204818949b6cd73d5c5e",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/6/data.json"
+        },
+        {
+          "generation": 7,
+          "artifact": "model_dir",
+          "sha256": "5f93e450c25094ef29200ff29e8576ba613a76f9400ba642112d386dffcb65f8",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/7/model/final_model"
+        },
+        {
+          "generation": 7,
+          "artifact": "generated_data",
+          "sha256": "10be947c883bd3f1fa2a3fe3a6e9bfbac2e19a2e09196cfab9e6633060a3faa9",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/7/data.json"
+        },
+        {
+          "generation": 8,
+          "artifact": "model_dir",
+          "sha256": "2d41741eaea047c0e73cfb3bcb6e970bb618b274ca10660a1bdbcd56ad107181",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/8/model/final_model"
+        },
+        {
+          "generation": 8,
+          "artifact": "generated_data",
+          "sha256": "036cb6bf76ce171398dab265ebc016c1df1a9b6f184232f4aad00ebb7df0a4f7",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/8/data.json"
+        },
+        {
+          "generation": 9,
+          "artifact": "model_dir",
+          "sha256": "971400189fd580a9022b36a94e7b25127867ed4dc63827450215d8558d444beb",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/9/model/final_model"
+        },
+        {
+          "generation": 9,
+          "artifact": "generated_data",
+          "sha256": "b485f4136f18c1abc7d67e4b096c56b8f4385d20a97c99d992ee70423efa8edf",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/9/data.json"
+        },
+        {
+          "generation": 10,
+          "artifact": "model_dir",
+          "sha256": "b1dcee9b63c0a1049ca197cf7f58a45a7444507aa2df4bd462180aaf1d914783",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/10/model/final_model"
+        },
+        {
+          "generation": 10,
+          "artifact": "generated_data",
+          "sha256": "08a9d16051308100ac47c705e0f7348eb3d28e2ff6aa99dbdd7be0d4d5c0f268",
+          "recorded_path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/10/data.json"
+        }
+      ]
+    },
+    "human_mixed": {
+      "unretained_artifacts": [
+        {
+          "generation": 0,
+          "artifact": "model_dir",
+          "sha256": "ebf7e55344bf08de904e596bcf7b7cd0920902b0eb2b9bc2d2faf7d2c17d76d5",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/0/model/final_model"
+        },
+        {
+          "generation": 1,
+          "artifact": "model_dir",
+          "sha256": "16ca5f8154f6b8afe6492d7b755ecb511bf1f98553924058f4c1bd2837df76bc",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/1/model/final_model"
+        },
+        {
+          "generation": 1,
+          "artifact": "generated_data",
+          "sha256": "b9db5cf6f7337613412ce04c7523215a8ce8a20e7419230259e1e6269f3897f7",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/1/data.json"
+        },
+        {
+          "generation": 2,
+          "artifact": "model_dir",
+          "sha256": "ddc24916b330081c6db19fa9cda6248e875aca6072073f7023938c5c82f9b9a0",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/2/model/final_model"
+        },
+        {
+          "generation": 2,
+          "artifact": "generated_data",
+          "sha256": "69abed2e25e52eef8b69ed1c98c22793e4cf06ac3bd295988cfc217b3c5f3dba",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/2/data.json"
+        },
+        {
+          "generation": 3,
+          "artifact": "model_dir",
+          "sha256": "4eb48d41022bd9cfadeab293f35030ad7bd421369455b9ca60a4fdbf2f227db0",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/3/model/final_model"
+        },
+        {
+          "generation": 3,
+          "artifact": "generated_data",
+          "sha256": "e51c7acf7d308dbac9cc47398184dbc7e65856e919389ef853425fca35ec6eeb",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/3/data.json"
+        },
+        {
+          "generation": 4,
+          "artifact": "model_dir",
+          "sha256": "fdfee61d1ea800cdd0381f422b72337c53af6ee1d04b1f9622e622bfab8f5238",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/4/model/final_model"
+        },
+        {
+          "generation": 4,
+          "artifact": "generated_data",
+          "sha256": "a5abc8900052d98e0f21889a49f57cffe811cb51191740c8f955d2a981399600",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/4/data.json"
+        },
+        {
+          "generation": 5,
+          "artifact": "model_dir",
+          "sha256": "eb1fa153db058d6e003da0de978118832205158ae898741e43468e78ee3f0d92",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/5/model/final_model"
+        },
+        {
+          "generation": 5,
+          "artifact": "generated_data",
+          "sha256": "5aad8dd2702a3ee054a974f22757d1196b1db10a2fdfaa8c488b0fbdf5cd1bf9",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/5/data.json"
+        },
+        {
+          "generation": 6,
+          "artifact": "model_dir",
+          "sha256": "259e49eb3678aeb9488aae03f3744ea158c91eefe5384c3118891bd226feac7a",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/6/model/final_model"
+        },
+        {
+          "generation": 6,
+          "artifact": "generated_data",
+          "sha256": "12b4a218188afab32f5cdef9d2d07e72432f2e377aa3d2c0c45941219fe91857",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/6/data.json"
+        },
+        {
+          "generation": 7,
+          "artifact": "model_dir",
+          "sha256": "e32a89c269b1592551524d1112c96d2f755b66ca776c0b3fda7e2dfed9807e17",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/7/model/final_model"
+        },
+        {
+          "generation": 7,
+          "artifact": "generated_data",
+          "sha256": "65013599c1cb609667cb037cda0fdeb46714b9c16a91c4ee06ba47af082f3a70",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/7/data.json"
+        },
+        {
+          "generation": 8,
+          "artifact": "model_dir",
+          "sha256": "624c5f341139fb54fa94c0ec8d5d52b2c44702fd68b4f1558d2e73493c78b5b6",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/8/model/final_model"
+        },
+        {
+          "generation": 8,
+          "artifact": "generated_data",
+          "sha256": "a5fe80208a3f62a539bbda57b010da3135f386398ebb5da45053af7ec942e996",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/8/data.json"
+        },
+        {
+          "generation": 9,
+          "artifact": "model_dir",
+          "sha256": "9e5657f4846858884fb7bfa464ee69b27bc03180c89bf4bd5f181d73ce2b2b10",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/9/model/final_model"
+        },
+        {
+          "generation": 9,
+          "artifact": "generated_data",
+          "sha256": "46879269864204450ac9fca41fa2a57c44aff7d861a159f1318833fa44566e2a",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/9/data.json"
+        },
+        {
+          "generation": 10,
+          "artifact": "model_dir",
+          "sha256": "5d8be9e19f8b62567f4f1e009bb6b9f70292489d3919e87a0f446ff5242f4b7b",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/10/model/final_model"
+        },
+        {
+          "generation": 10,
+          "artifact": "generated_data",
+          "sha256": "dbb7359435153a73493943b84c59054177cd47a8bed49e75335162bb630ea620",
+          "recorded_path": "/kaggle/working/runs/positive_control/human_mixed/upstream/10/data.json"
+        }
+      ]
+    }
+  }
+}

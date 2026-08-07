@@ -152,6 +152,28 @@ def test_generate_command_matches_the_frozen_decoding_settings(
     assert flags["--model_path"].endswith("exp/2/model/final_model")
 
 
+    assert flags["--model_path"].endswith("exp/2/model/final_model")
+
+
+def test_self_bleu_sample_is_capped_below_the_upstream_default(
+    resolved_arm_config: Callable[..., dict[str, Any]], tmp_path: Path
+) -> None:
+    """The cap is a cost control on a post-hoc diagnostic, and must stay explicit.
+
+    It is passed on every generation of both arms so the two chains remain comparable,
+    and it is bounded well under upstream's default of 1000 so the saving is real.
+    """
+    for arm in ("fully_synthetic", "human_mixed"):
+        command = driver.generate_command(
+            resolved_arm_config(arm),
+            experiment_path=tmp_path / "exp",
+            data_dir=tmp_path / "data",
+            generation=3,
+            previous_model=tmp_path / "exp/2/model/final_model",
+        )
+        assert _flags(command)["--self_bleu_n_sample"] == str(driver.SELF_BLEU_N_SAMPLE)
+
+
 # ----------------------------------------------------------------------------------
 # resume
 # ----------------------------------------------------------------------------------
@@ -309,3 +331,67 @@ def test_artifact_record_is_written_next_to_the_generation(
     assert payload["generation"] == 1
     assert set(payload["artifacts"]) == {"model_dir", "eval_results", "generated_data"}
     assert all(entry["pruned"] is False for entry in payload["artifacts"].values())
+
+
+# ----------------------------------------------------------------------------------
+# the subprocess environment actually reaches the subprocess
+# ----------------------------------------------------------------------------------
+
+
+def _capture_run_step_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, **kwargs):
+    """Run one step with subprocess.run stubbed, returning the env it was handed."""
+
+    captured: dict[str, Any] = {}
+
+    class _Result:
+        returncode = 0
+
+    def fake_run(command, **call_kwargs):
+        captured["command"] = command
+        captured["kwargs"] = call_kwargs
+        return _Result()
+
+    monkeypatch.setattr(driver.subprocess, "run", fake_run)
+    driver.run_step(
+        ["python", "-c", "pass"],
+        upstream_dir=tmp_path,
+        log_path=tmp_path / "log.txt",
+        dry_run=False,
+        **kwargs,
+    )
+    return captured
+
+
+def test_run_step_passes_its_environment_to_the_child(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The regression that put both arms on one GPU for an hour.
+
+    run_step built an environment dict and called subprocess.run without env=, so
+    every setting it configured was discarded and the child inherited the parent's
+    environment instead. --cuda-device then had no effect whatsoever.
+    """
+
+    captured = _capture_run_step_env(tmp_path, monkeypatch, cuda_device=1)
+
+    assert "env" in captured["kwargs"], (
+        "subprocess.run was called without env=; the configured environment is dropped"
+    )
+    assert captured["kwargs"]["env"]["CUDA_VISIBLE_DEVICES"] == "1"
+
+
+def test_run_step_pins_the_requested_gpu(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for device in (0, 1):
+        captured = _capture_run_step_env(tmp_path, monkeypatch, cuda_device=device)
+        assert captured["kwargs"]["env"]["CUDA_VISIBLE_DEVICES"] == str(device)
+
+
+def test_run_step_disables_wandb_in_the_child(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured = _capture_run_step_env(tmp_path, monkeypatch, cuda_device=0)
+    environment = captured["kwargs"]["env"]
+    assert environment["WANDB_DISABLED"] == "true"
+    assert environment["WANDB_MODE"] == "disabled"

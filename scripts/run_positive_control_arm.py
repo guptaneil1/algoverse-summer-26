@@ -126,6 +126,15 @@ def train_command_generation_zero(config: dict[str, Any], *, experiment_path: Pa
     ]
 
 
+# Upstream's `--self_bleu_n_sample` defaults to 1000, which costs an O(n^2) sweep of
+# roughly a million NLTK BLEU calls per generation — several times the cost of the decoding
+# it is meant to describe. It is computed *after* `data.json` is written and is consumed
+# only by a `wandb.log` (disabled here) and a diagnostic file, so lowering it cannot change
+# any generation's training data or any frozen metric. Recorded as an execution-mechanics
+# deviation in PROTOCOL.md. The emitted command is unchanged by naming it here.
+SELF_BLEU_N_SAMPLE = 50
+
+
 def generate_command(config: dict[str, Any], *, experiment_path: Path, data_dir: Path,
                      generation: int, previous_model: Path) -> list[str]:
     training, decoding, detector = config["training"], config["decoding"], config["detector"]
@@ -150,7 +159,7 @@ def generate_command(config: dict[str, Any], *, experiment_path: Path, data_dir:
         "--detector_path", detector["model_path"],
         "--detector_threshold", str(detector["ai_confidence_threshold"]),
         "--detector_temperature", str(detector["temperature"]),
-        "--self_bleu_n_sample", "50",
+        "--self_bleu_n_sample", str(SELF_BLEU_N_SAMPLE),
     ]
 
 

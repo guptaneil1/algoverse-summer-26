@@ -129,6 +129,15 @@ What this costs:
   of what was produced, not a check anyone can re-run.
 - **No qualitative sample survives.** There is no generation-10 synthetic text to show
   beside the perplexity curve.
+- **No `run_manifest.json` was emitted.** `adapt_run` needs the artifacts on disk and
+  correctly refuses without them; running it now would also stamp the wrong environment
+  into the manifest. The metric half of its output does exist, as
+  `positive_control_result.json` for each arm. See `expected_vs_observed.md` §4.2.
+- **The command log is a reconstruction, not a transcript.** `measurements/executed_commands.json`
+  regenerates all 42 invocations from the same builder functions and the same committed
+  configs, which are pure functions of the config and pinned by test — exact, but not proof
+  of execution. The per-generation `train_results.json` and `eval_results.json` are that
+  proof. See `expected_vs_observed.md` §4.1.
 
 The metrics survived only because an auto-push monitor was committing each generation as it
 completed. Any future run on an ephemeral host must mirror artifacts incrementally.

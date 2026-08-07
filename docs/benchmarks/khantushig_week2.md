@@ -5,8 +5,18 @@ labeled either **measured** (from a command actually run in this environment) or
 **estimate** (a stated-assumption forecast), per `COMPUTE.md`: "forecasts must state
 assumptions and may not be presented as actual usage."
 
-**Nothing here is a positive-control result.** No arm of Stage A was executed — see
-`docs/positive_control/failure_report.md`. `PROTOCOL.md` §5 (no-result rule) applies.
+> **Updated 2026-08-07.** This document was written on 2026-08-03, when Stage A could not
+> be executed. Stage A has since run to completion; §7 records what the forecasts below
+> got right and wrong. **Sections 1–6 are left exactly as written on 2026-08-03** so the
+> pre-run estimates stay comparable against the measurement, which is the point of keeping
+> a forecast at all. Read §7 before quoting any number from §4 or §5.
+>
+> The result itself is in `docs/positive_control/report.md`; measured compute is in
+> `COMPUTE.md`.
+
+**Nothing in §§1–6 is a positive-control result.** They were written before any arm ran —
+see `docs/positive_control/failure_report.md`, now superseded. `PROTOCOL.md` §5 (no-result
+rule) applied at the time of writing.
 
 ## 1. Upstream commit — now pinned
 
@@ -174,3 +184,45 @@ Blocked on external provisioning, unchanged from Week 1 in kind but now fully sp
    measure it, and replace §4's estimate with that measurement.
 5. Run both arms via `scripts/reproduce_positive_control.sh` and append actual usage to
    `COMPUTE.md`.
+
+## 7. Forecast versus measurement — recorded 2026-08-07
+
+Stage A ran on 2026-08-06/07 on Kaggle, 2× Tesla T4, one arm per GPU. Sections 1–6 above
+are unedited; this section scores them.
+
+### 7.1 What the forecast got right
+
+| §4.3 claim | Outcome |
+|---|---|
+| Decoding, not training, dominates | **Correct, and by more than stated.** Training was 8.57 h of ~19.0 accelerator-hours; everything else — decoding, dataset preparation, detector inference — was the remaining ~10.4 h. |
+| Total 10–40 T4-hours for both arms | **Correct.** Measured ~19.0 T4-hours, inside the band. |
+| Each arm plausibly exceeds one free-tier session, so checkpoint-resume is a practical requirement | **Correct, and load-bearing.** The human-mixed arm took ~10.76 h. The run survived three prior session losses only because the driver resumes per generation. |
+| §4.2's sub-GPU-hour training figure | **Correct in kind, wrong in size.** Predicted 0.83 GPU-h of training; measured 8.57 h, about 10× high. The `6ND` estimate assumed ~30% utilization; actual utilization on a T4 at batch size 8 was far lower. The *conclusion* §4.2 was used to draw — that training is not the bottleneck — still holds. |
+
+### 7.2 What the forecast got wrong
+
+- **§4.4 storage could not be checked.** The container was reclaimed before storage was
+  measured (`FAILURE_LOG.md` `PC-2026-08-07-H`). The ~12–15 GB estimate is neither
+  confirmed nor refuted.
+- **§6 step 4 was impossible.** `python main.py smoke_test=true` aborts at `main.py:55`
+  with a `TypeError` at the pinned commit (`PC-2026-08-05-C`). The compute basis was
+  measured from a full generation 0 instead. Anyone following §6 literally will hit this.
+- **§6 step 3 was never completed.** The published expected values remain unobtainable, and
+  that is why the reproduction is `valid_with_limitation` rather than `valid`.
+- **A cost the forecast missed entirely:** upstream's self-BLEU diagnostic defaults to
+  `--self_bleu_n_sample 1000`, an O(n²) NLTK sweep of ~10⁶ pair comparisons per generation,
+  which ran several times longer than the decoding it describes. Capped at 50 mid-run. §4.3
+  modelled decoding and detection but not this.
+
+### 7.3 Effect on the §5 pilot forecast
+
+§5's "on the order of 100+ T4-hours" for 5 chains × 11 generations scales from the §4.3
+range. Substituting the measurement: ~19.0 T4-hours for 2 chains gives ~9.5 T4-hours per
+chain, so 5 chains is **~48 T4-hours** for one treatment family — roughly half the §5
+figure, and now grounded in measurement rather than a range.
+
+Two caveats before that number is used for the compute gate. It carries the self-BLEU cap,
+without which it would be substantially higher. And the two arms are not equal cost: the
+human-mixed arm took 10.76 h against the synthetic arm's 8.26 h, because `alpha=1` trains
+on roughly twice the tokens per generation. A pilot's cost therefore depends on its mixture
+schedule, not on chain count alone.

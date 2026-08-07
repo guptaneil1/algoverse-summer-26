@@ -8,12 +8,12 @@ rule below were frozen on **2026-08-03**, before either arm was executed, and ar
 governed by `PROTOCOL.md` §2. Both arms completed all 11 generations on 2026-08-07; the
 observed column below is filled from their saved artifacts.
 
-**§2.2 was partly closed on 2026-08-07**, after the run, when the published table became
-available. The fully synthetic arm now passes the 5% band on every published quantity
-(§3.2). The limitation is narrower than it was but not gone: the human-mixed arm has no
-published comparator, the check was post-hoc rather than pre-registered, and it is made at
-the paper's Gen 9 endpoint rather than this project's frozen Gen 10 — an index choice that
-decides whether the band is met (§2.2.1, §5).
+**§2.2 was closed on 2026-08-07**, after the run, when the paper was obtained. Both arms
+have published comparators and **both pass the 5% band on every published quantity**, worst
+deviation 2.27% (§3.2). The decision is held at `valid_with_limitation` rather than `valid`
+because `PC-2026-08-03-B` pre-registered that ceiling for a run completed before the
+published values existed — see §5, which sets out the case rather than settling it
+silently.
 
 No value in the observed column was filled in by hand. Every number below is read from
 the committed artifacts under `measurements/`, and the two `positive_control_result.json`
@@ -51,58 +51,88 @@ This qualitative ordering — recursive training on model output degrades a mode
 retaining human data slows that degradation — is the result the positive control exists
 to recover. It is the criterion that decides pass or fail.
 
-### 2.2 Numeric expected values — PARTIALLY CLOSED 2026-08-07
+### 2.2 Numeric expected values — CLOSED 2026-08-07
 
 **These values were obtained *after* both arms ran.** They were unobtainable before
 (`aclanthology.org` denied by network policy, `FAILURE_LOG.md` `PC-2026-08-03-B`), so the
-freeze-before-run discipline §2.2 originally demanded was not achieved. This is stated
-here rather than papered over: the numbers below were transcribed from the published table
-after the observed values in §3 already existed and were committed. What protects the
+freeze-before-run discipline this section originally demanded was not achieved. Stated
+plainly rather than papered over: the numbers below were transcribed from the published
+PDF after the observed values in §3 already existed and were committed. What protects the
 comparison is that the *observed* side is immutable — committed generation by generation
 between 2026-08-06T17:26Z and 2026-08-07T04:12Z, before any published value was seen —
 not that the expected side was frozen first.
 
-Source: the paper's main results table, **GPT-2 / top-k row**. That row's decoding settings
-match the frozen configuration (`config/decoding/top_k.yaml`, `top_k=50`).
+Both arms have a published comparator, from two different tables.
 
-| Quantity | Published value | Status |
-|---|---|---|
-| `perplexity` at Gen 0, fully synthetic | 29.31 | **closed** |
-| `perplexity` at Gen 9, fully synthetic | 48.36 | **closed** |
-| `eval_accuracy` at Gen 0, fully synthetic | 38.73 | **closed** |
-| `eval_accuracy` at Gen 9, fully synthetic | 33.12 | **closed** |
-| `perplexity` at final generation, human mixed | *not in this table* | **still open** |
+**Fully synthetic arm (α=0)** — Table 1, "Impact of decoding strategies on the model
+performance and text generation quality (comparison between generations 0 and 9) in the
+fully synthetic recursive training setting", GPT-2 / **top-k** row:
 
-The published table reports GPT-2 and SmolLM2 across six decoding strategies for the
-**fully synthetic** condition only. It carries no human-data-mixing column, so the
-human-mixed arm still has no published comparator and its numeric check cannot be
-performed. Its `Human` row is a reference for diversity, self-BLEU, MAUVE and readability,
-not a mixed-training perplexity.
+| Quantity | Published |
+|---|---:|
+| `perplexity` Gen 0 | 29.31 |
+| `perplexity` Gen 9 | 48.36 |
+| `eval_accuracy` Gen 0 | 38.73 |
+| `eval_accuracy` Gen 9 | 33.12 |
+
+**Human-mixed arm (α=1)** — Table S2, "Test performance (perplexity and accuracy) and data
+quality at generation 0 and generation 9", GPT-2 / **baseline** / **top-k** /
+**α,β,γ = 1, 1, 0** row:
+
+| Quantity | Published |
+|---|---:|
+| `perplexity` Gen 0 | 29.25 |
+| `perplexity` Gen 9 | 29.92 |
+| `eval_accuracy` Gen 0 | 38.78 |
+| `eval_accuracy` Gen 9 | 38.34 |
+
+Three matching decisions, each checked against the paper rather than assumed:
+
+- **`top-k` row**, because the frozen configuration is top-k with `k=50`
+  (`config/decoding/top_k.yaml`).
+- **`baseline`, not `ours`**, because `ours` is the paper's Sampling Importance Resampling
+  mitigation. `PROTOCOL.md` deviation 1 sets `data_selection=no-selection` precisely to
+  measure the collapse baseline rather than the intervention, so `baseline` is the correct
+  comparator. Comparing against `ours` would compare our unmitigated run to their mitigated
+  one.
+- **`α,β,γ = 1, 1, 0`**, which is exactly this project's human-mixed configuration:
+  `human_data_alpha=1.0`, `ai_beta=1.0`, `gamma=0.0`. The paper defines these coefficients
+  at Eq. 3 / Figure 2 and calls this the partially synthetic setting.
+
+The paper reports diversity, self-BLEU, MAUVE and readability alongside these. None is
+compared: the generated corpora needed to compute them were lost with the container
+(§6.1), and the self-BLEU that was computed used a reduced sample (deviation 9), so it is
+not comparable to the published figure.
 
 #### 2.2.1 The published horizon is Gen 9, not Gen 10
 
-The table's final column is **Gen 9**. `PROTOCOL.md` froze this project's primary endpoint
-at generation 10, derived from upstream's `num_iterations: 10` and `main.py`'s
-`range(1, num_iterations+1)`, which yields 11 models at indices 0–10. The paper's reported
-endpoint is one generation earlier.
+Every reported result in the paper ends at **generation 9**. This is not an artefact of one
+table: Figure 1, Table 1, Figure 3, Figure S1 and Table S2 all report "generations 0 to 9",
+and Figures S3, S4 and S5 describe the same experiments as running "for 10 generations" —
+nine places in total, consistently 10 generations at indices 0–9.
 
-**The numeric comparison is therefore performed at generation 9**, against our generation
-9, because comparing our generation 10 to their generation 9 would compare different
+`PROTOCOL.md` froze this project's primary endpoint at generation 10, derived from
+upstream's `num_iterations: 10` and `main.py`'s `range(1, num_iterations+1)`, which yields
+11 models at indices 0–10. The published experiment evidently ran one fewer.
+
+**The numeric comparison is therefore performed at generation 9**, against our generation 9,
+because comparing our generation 10 to their generation 9 would compare different
 quantities. Our run produced generation 9 as an ordinary intermediate point; nothing was
-rerun, extended, or truncated to make this comparison possible.
+rerun, extended, or truncated to make this comparison possible, and generation 10 remains
+recorded in §3 as an observation beyond the paper's horizon.
 
-**This choice changes the verdict, so both readings are reported (§3.2).** Our generation 9
-sits 2.27% from the published value — inside the 5% band. Our generation 10 sits 5.42% from
-it — outside. The index is selected because it is the like-for-like comparison, not because
-of which side of the band it falls on, and the losing reading is reported beside the
-winning one so a reader can apply their own judgement.
+**The index affects the fully synthetic arm's verdict, so both readings are reported
+(§3.2).** Our generation 9 sits 2.27% from the published Gen 9 value — inside the 5% band.
+Our generation 10 against that same value sits 5.42% — outside it. The index is selected
+because the paper states its own horizon nine times over, not because of which side of the
+band it falls on, and the losing reading is printed beside the winning one.
 
-This also revises a note recorded earlier under "Recorded deviation from this document's
-own earlier draft" in `PROTOCOL.md`. That note concluded an earlier "generations 0 through
-9" reading was a drafting error and corrected the horizon to 0–10 on the authority of the
+This revises a note recorded earlier under "Recorded deviation from this document's own
+earlier draft" in `PROTOCOL.md`. That note concluded an earlier "generations 0 through 9"
+reading was a drafting error and corrected the horizon to 0–10 on the authority of the
 upstream config default. The upstream default does produce 11 models, so the horizon we
-*ran* is right; but the published experiment evidently reports 10 (indices 0–9). Both facts
-stand, and the earlier note's dismissal of "0 through 9" was too confident.
+*ran* is right; but the published experiment reports 10, and the earlier note's dismissal
+of "0 through 9" was wrong.
 
 ## 3. Observed
 
@@ -151,8 +181,10 @@ and neither is offered as evidence.
 
 ### 3.2 Numeric comparison against the published values
 
-Fully synthetic arm, at the published horizon (Gen 9), against the paper's GPT-2 / top-k
-row. Tolerance is 5% relative, engineering only.
+Both arms, at the paper's published horizon (Gen 9). Tolerance 5% relative, engineering
+only. Sources per arm are given in §2.2.
+
+**Fully synthetic arm (α=0)** vs Table 1, GPT-2 / top-k:
 
 | Quantity | Published | Observed | Relative difference | Within 5% |
 |---|---:|---:|---:|:--:|
@@ -162,25 +194,35 @@ row. Tolerance is 5% relative, engineering only.
 | `eval_accuracy` Gen 9 | 33.12 | 32.9627 | 0.47% | **yes** |
 | Degradation ratio Gen 9 / Gen 0 | 1.6499 | 1.6699 | 1.21% | **yes** |
 
-Every quantity the paper publishes for this arm agrees within the band, and the two
-accuracy figures agree to better than half a percent.
+**Human-mixed arm (α=1)** vs Table S2, GPT-2 / baseline / top-k / α,β,γ = 1, 1, 0:
+
+| Quantity | Published | Observed | Relative difference | Within 5% |
+|---|---:|---:|---:|:--:|
+| `perplexity` Gen 0 | 29.25 | 29.6179 | 1.26% | **yes** |
+| `perplexity` Gen 9 | 29.92 | 30.3579 | 1.46% | **yes** |
+| `eval_accuracy` Gen 0 | 38.78 | 38.7614 | 0.05% | **yes** |
+| `eval_accuracy` Gen 9 | 38.34 | 38.3852 | 0.12% | **yes** |
+| Degradation ratio Gen 9 / Gen 0 | 1.0229 | 1.0250 | 0.20% | **yes** |
+
+**Every published quantity for both arms falls inside the band. The worst deviation
+anywhere in the comparison is 2.27%**, and eight of the ten quantities agree to better
+than 1.5%. The two accuracy figures for the human-mixed arm agree to 0.05% and 0.12%.
 
 **The alternative reading, reported because it fails.** Comparing our frozen endpoint
-(generation 10, perplexity 50.9806) against the published Gen 9 value gives a relative
-difference of **5.42%, outside the band**. That comparison is between different generation
+(generation 10) against the published Gen 9 values gives 50.9806 vs 48.36 = **5.42%,
+outside the band**, for the fully synthetic arm. The human-mixed arm at generation 10
+(30.3730 vs 29.92) is 1.51%, still inside. That comparison is between different generation
 indices and is not the one this document adopts (§2.2.1), but a reader who holds this
-project to its originally frozen endpoint index reaches "outside the band" rather than
-"inside" it. Both numbers are stated so the choice is visible rather than buried.
+project to its originally frozen endpoint index sees the fully synthetic arm miss.
 
-**Two caveats on the agreement itself.** Our Gen 0 perplexity (29.6179) sits above the
-paper's entire Gen 0 spread across all six decoding rows (29.23–29.31), a small systematic
-offset consistent with the framework-version and hardware differences recorded in
-`PC-2026-08-05-D` and `PC-2026-08-06-F`. And the published values were read after the
+**Two caveats on the agreement.** Our Gen 0 perplexity (29.6179) sits above the paper's
+entire Gen 0 spread across all decoding rows and both tables (29.22–29.31), a small
+systematic offset consistent with the framework-version and hardware differences recorded
+in `PC-2026-08-05-D` and `PC-2026-08-06-F`. Because it is systematic, it largely cancels in
+the degradation ratio, which is the paired quantity — both ratios agree far more closely
+(1.21% and 0.20%) than the raw endpoints do. And the published values were read after the
 observed values existed (§2.2), so this is a post-hoc comparison against immutable
 observations, not a pre-registered numeric prediction.
-
-**No published comparator exists for the human-mixed arm**, so no numeric check was
-performed on it. Its result rests on the ordering criterion alone.
 
 ## 4. Artifact links and hashes
 
@@ -235,25 +277,23 @@ committed `artifact_record.json` files.
 
 **Decision: `valid_with_limitation`.**
 
-Both arms completed. The ordering criterion — the criterion frozen as deciding pass or
-fail — holds on all four of its claims.
+On the numbers, this is a full quantitative reproduction. Both arms completed. All four
+frozen ordering claims hold (§3.1). Every published quantity for both arms falls inside the
+5% engineering band, worst deviation 2.27% (§3.2). Read against the frozen decision table
+alone, that is the `valid` row.
 
-The 5% numeric band was evaluated **for the fully synthetic arm only**, on 2026-08-07, and
-that arm passes on every published quantity (§3.2). Three things keep this short of `valid`:
+The decision is nonetheless held at `valid_with_limitation`, for one reason that is not a
+matter of taste:
 
-1. **The human-mixed arm has no published comparator.** The paper's table covers the fully
-   synthetic condition across decoding strategies; it carries no human-data-mixing column
-   (§2.2). Half the design was never numerically checked.
-2. **The expected values were read after the observed values existed** (§2.2). The
-   comparison is post-hoc against immutable observations, not the pre-registered check the
-   protocol asked for.
-3. **The comparison index is not the frozen one.** The paper's endpoint is Gen 9; the
-   frozen endpoint was Gen 10. At Gen 9 the arm is inside the band; at Gen 10 against the
-   same published value it is outside (§3.2, §2.2.1).
+> `FAILURE_LOG.md` `PC-2026-08-03-B`, recorded 2026-08-03: "The 5% engineering tolerance
+> cannot be applied until the published values exist, so a run completed **before then**
+> could reach at most `valid_with_limitation`."
 
-The earlier basis for this decision — "the band was not evaluated at all" — no longer
-holds, and the limitation is now materially narrower. But `valid` requires the endpoint
-comparison to have been made as frozen and for the design as a whole, and neither is true.
+This run was completed before the published values were obtained. That sentence was written
+when nobody knew which way the numbers would fall, and it set a ceiling for exactly this
+situation. Raising that ceiling now — after seeing that the numbers agree — would be the
+precise move this project's rules exist to prevent: revising a pre-registered constraint
+because the result turned out well. The constraint binds whether or not it is convenient.
 
 The decision rule, frozen in advance:
 
@@ -264,21 +304,24 @@ The decision rule, frozen in advance:
 | Both arms complete; ordering does not hold | `invalid` — write `failure_report.md`, classify `scientific_divergence`, **no rerun for a better number** |
 | An arm fails to complete | classify per `docs/RUNBOOK.md`; rerun only if `infrastructure_failure` |
 
-The observed outcome matches no row exactly: the rule anticipated the band being *tested*
-and either met or missed, not *untestable*. The gap is resolved the conservative way, and
-it was resolved in advance rather than now — `FAILURE_LOG.md` `PC-2026-08-03-B` states
-that a run completed while §2.2 remains open "could reach at most `valid_with_limitation`".
-This run is that case. Recording it as `valid` would claim a numeric agreement that was
-never checked.
+Two further limitations, both recorded and neither fatal:
 
-**What would upgrade this to `valid`:** a published comparator for the human-mixed arm.
-If the paper reports perplexity for a human-data-mixing condition in another table or
-figure, record it in §2.2 with an exact citation and compare against the observed 30.3730
-(Gen 10) or 30.3579 (Gen 9). No rerun is needed or permitted — the observed numbers are
-fixed and committed. Limitations 2 and 3 above would remain and must stay stated, so even
-then the honest ceiling may be `valid_with_limitation`; the decision would rest on whether
-a post-hoc comparison at a non-frozen index counts as the frozen check having been
-performed. That is a judgement for the team, not one to make silently here.
+1. **The comparison index is not the frozen one.** The paper's horizon is Gen 9; this
+   project froze Gen 10. Gen 9 is used because the paper states its own horizon in nine
+   separate places (§2.2.1), so the choice is principled rather than result-driven — but at
+   Gen 10 the fully synthetic arm would sit outside the band (§3.2). A reader holding this
+   project to its frozen index reaches a different verdict on that arm.
+2. **Only perplexity and accuracy were compared.** The paper also reports diversity,
+   self-BLEU, MAUVE and readability; none could be computed, because the generated corpora
+   were lost (§6.1) and the self-BLEU that was computed used a reduced sample (deviation 9).
+
+**What this means in practice.** The scientific content of a `valid` result is present and
+documented: the published positive control reproduces both qualitatively and numerically.
+The label is held one notch lower on a pre-registration technicality, and the technicality
+is named so a reader can weigh it. If the team judges that `PC-2026-08-03-B`'s ceiling was
+about the *absence* of a comparison rather than its *timing*, the case for `valid` is on
+the table — but that is a decision to take explicitly, in writing, with this paragraph
+cited, not one to make by quietly relabelling.
 
 ## 6. Deviations from upstream
 

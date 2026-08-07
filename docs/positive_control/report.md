@@ -16,16 +16,15 @@ mixture very largely prevents that degradation. Over 11 generations the fully sy
 human-mixed arm (α=1) went from the same baseline to 30.3730, a ratio of **1.0255**. All
 four frozen ordering claims hold.
 
-**Also claimed, added 2026-08-07.** The fully synthetic arm matches the published numbers
-within the 5% engineering band on every quantity the paper reports for it: perplexity at
-Gen 0 (1.05% off), perplexity at Gen 9 (2.27%), accuracy at Gen 0 (0.08%), accuracy at
-Gen 9 (0.47%), and the degradation ratio (1.21%).
+**Also claimed, added 2026-08-07.** The reproduction is also *numeric*. Against the
+published values, **both arms fall inside the 5% engineering band on every quantity the
+paper reports**, at the paper's Gen 9 horizon. Worst deviation anywhere: 2.27%.
 
-**Not claimed.** That the human-mixed arm matches published numbers — the paper's table has
-no human-data-mixing column, so that arm was never numerically checked and rests on the
-ordering criterion alone. Nor that the numeric check was the pre-registered one: the
-published values were read *after* the observed values existed and were committed, and at
-the paper's Gen 9 endpoint rather than this project's frozen Gen 10 (§3).
+**Not claimed.** That the numeric check was the pre-registered one. The published values
+were read *after* the observed values existed and were committed, and the comparison is
+made at the paper's Gen 9 endpoint rather than this project's frozen Gen 10 (§3). Nor that
+the paper's other reported metrics — diversity, self-BLEU, MAUVE, readability — were
+checked; they could not be computed (§5).
 
 **Also not claimed.** That the recorded artifact hashes can be verified. They cannot; the
 bytes are gone (§5).
@@ -67,10 +66,12 @@ Against the criteria frozen on 2026-08-03, before either arm ran:
 
 Full ledger: `expected_vs_observed.md`. Per-generation artifacts: `measurements/`.
 
-## 3. The numeric comparison, and why this is still `valid_with_limitation`
+## 3. The numeric comparison, and why the decision is still `valid_with_limitation`
 
-The published values were obtained on 2026-08-07, after both arms had run. Against the
-paper's GPT-2 / top-k row, at its published Gen 9 horizon:
+The paper was obtained on 2026-08-07, after both arms had run. Both arms have a published
+comparator, from two different tables, and both pass.
+
+**Fully synthetic (α=0)** — Table 1, GPT-2 / top-k:
 
 | Quantity | Published | Observed | Diff | Within 5% |
 |---|---:|---:|---:|:--:|
@@ -80,33 +81,52 @@ paper's GPT-2 / top-k row, at its published Gen 9 horizon:
 | `eval_accuracy` Gen 9 | 33.12 | 32.9627 | 0.47% | yes |
 | Degradation ratio | 1.6499 | 1.6699 | 1.21% | yes |
 
-The fully synthetic arm passes on everything the paper publishes for it. Three limitations
-keep the decision short of `valid`, and none is a matter of taste:
+**Human mixed (α=1)** — Table S2, GPT-2 / baseline / top-k / α,β,γ = 1, 1, 0:
 
-1. **The human-mixed arm has no published comparator.** The paper's table covers the fully
-   synthetic condition across six decoding strategies; there is no human-data-mixing
-   column. Half the design was never numerically checked and rests on ordering alone.
-2. **The check was post-hoc.** `aclanthology.org` was blocked throughout the run
-   (`PC-2026-08-03-B`), so the expected values could not be frozen first as §2.2 required.
-   What protects the comparison is that the observed side is immutable — committed
-   generation by generation before any published value was seen — not that the expected
-   side was frozen.
-3. **The comparison index is not the frozen one, and the index decides the outcome.** The
-   paper's endpoint is Gen 9; this project froze Gen 10. Our Gen 9 is 2.27% from the
-   published value, inside the band. **Our Gen 10 against that same value is 5.42% —
-   outside it.** Gen 9 is the like-for-like comparison and is the one adopted, but the
-   losing reading is stated here rather than buried, because the choice of index is doing
-   real work.
+| Quantity | Published | Observed | Diff | Within 5% |
+|---|---:|---:|---:|:--:|
+| `perplexity` Gen 0 | 29.25 | 29.6179 | 1.26% | yes |
+| `perplexity` Gen 9 | 29.92 | 30.3579 | 1.46% | yes |
+| `eval_accuracy` Gen 0 | 38.78 | 38.7614 | 0.05% | yes |
+| `eval_accuracy` Gen 9 | 38.34 | 38.3852 | 0.12% | yes |
+| Degradation ratio | 1.0229 | 1.0250 | 0.20% | yes |
 
-`FAILURE_LOG.md` `PC-2026-08-03-B` said on 2026-08-03 that a run completed while §2.2
-stayed open could reach at most `valid_with_limitation`. §2.2 is now partly closed and the
-limitation is much narrower than it was, but it is not gone.
+`baseline` is the correct comparator, not `ours`: `ours` is the paper's Sampling Importance
+Resampling mitigation, and this project sets `data_selection=no-selection` specifically to
+measure the unmitigated collapse baseline. Our Gen 0 sits slightly above the paper's whole
+Gen 0 spread (29.22–29.31), a systematic offset consistent with the stack and hardware
+differences in `PC-2026-08-05-D` and `PC-2026-08-06-F` — and because it is systematic it
+largely cancels in the paired ratios, which agree to 1.21% and 0.20%.
 
-**To upgrade:** find a published comparator for the human-mixed arm — another table or
-figure reporting perplexity under human-data mixing — and compare against the observed
-30.3730 (Gen 10) / 30.3579 (Gen 9). Limitations 2 and 3 would survive that and must stay
-stated. Whether a post-hoc comparison at a non-frozen index counts as the frozen check
-having been performed is a judgement for the team; it is not resolved here.
+### Why not `valid`
+
+Read against the frozen decision table alone, this is the `valid` row: both arms complete,
+ordering holds, endpoint inside the band. The decision is held one notch lower because of a
+sentence written on 2026-08-03, before anyone knew how the numbers would fall:
+
+> `FAILURE_LOG.md` `PC-2026-08-03-B`: "The 5% engineering tolerance cannot be applied until
+> the published values exist, so a run completed **before then** could reach at most
+> `valid_with_limitation`."
+
+This run was completed before the published values were obtained. Raising that ceiling now,
+having seen that the numbers agree, would be exactly the move the protocol exists to
+prevent. So it stands.
+
+Two further limitations, recorded and neither fatal:
+
+1. **The comparison index is not the frozen one.** The paper's horizon is Gen 9; this
+   project froze Gen 10. Gen 9 is used because the paper states its own horizon in nine
+   separate places, so the choice is principled rather than result-driven — but at Gen 10
+   the fully synthetic arm sits at 5.42%, outside the band. The human-mixed arm at Gen 10
+   is 1.51%, still inside. Both readings are stated rather than only the one that passes.
+2. **Only perplexity and accuracy were compared.** Diversity, self-BLEU, MAUVE and
+   readability could not be computed: the corpora were lost (§5) and the self-BLEU that ran
+   used a reduced sample.
+
+**The team's call to make explicitly, if it wants to.** The scientific content of a `valid`
+result is present and documented. If the team judges that `PC-2026-08-03-B`'s ceiling was
+about the *absence* of a comparison rather than its *timing*, the case for `valid` is
+available — but it should be taken in writing, citing this section, not by relabelling.
 
 ## 4. How it was run
 

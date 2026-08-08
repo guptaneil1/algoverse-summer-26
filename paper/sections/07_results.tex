@@ -1,8 +1,32 @@
 \section{Results}
-\begin{table}[h]
+
+\begin{table}[htbp]
 \centering
-\caption{Primary chain-level results. This file is automatically replaced by the analysis pipeline.}
+\caption{Primary chain-level outcomes by policy. Values, chain counts, uncertainty intervals, and validity status are generated only from schema-valid immutable chain artifacts. Lower NLL-regret area is better; the direction of the frozen tail metric will be stated by its owner.}
+\label{tab:primary-results}
 \input{tables/primary_results}
 \end{table}
 
-\textbf{RESULT\_PENDING.} No result interpretation may be added until manifests validate, budgets match, the August 7 artifact set is frozen, and the table is generated from immutable chain artifacts.
+\begin{figure}[htbp]
+\centering
+\IfFileExists{figures/primary_trajectory.pdf}{%
+  \includegraphics[width=0.82\linewidth]{figures/primary_trajectory.pdf}%
+}{%
+  \fbox{\parbox[c][1.4in][c]{0.76\linewidth}{\centering RESULT\_PENDING\\Generated trajectory figure not yet available.}}%
+}
+\caption{Held-out human NLL-regret trajectory across the frozen recursive horizon. Curves and uncertainty are generated from paired complete chains; generations are repeated observations, not independent samples.}
+\label{fig:primary-trajectory}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\IfFileExists{figures/allocation_map.pdf}{%
+  \includegraphics[width=0.82\linewidth]{figures/allocation_map.pdf}%
+}{%
+  \fbox{\parbox[c][1.4in][c]{0.76\linewidth}{\centering RESULT\_PENDING\\Generated allocation figure not yet available.}}%
+}
+\caption{Realized human-origin optimizer-token allocation by recursive generation and monitored mode. Totals must equal the frozen lifetime budget for every matched policy.}
+\label{fig:allocation-map}
+\end{figure}
+
+\textbf{RESULT\_PENDING.} No experimental value or interpretation may be entered manually. Results remain pending until the positive control passes or is honestly resolved, all data and method freezes are recorded, manifests validate, human and total token budgets match, required artifacts and hashes exist, and the analysis pipeline regenerates this section's table and figures. Outcome-specific interpretation belongs only after those gates and must follow \texttt{paper/outcome\_contingent\_language.md}.

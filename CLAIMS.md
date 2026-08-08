@@ -10,8 +10,8 @@ No claim in this file is a result unless its status is explicitly `SUPPORTED BY 
 | C-006 | Reproduction of published work by others | The positive control of Drayson, Yilmaz & Lampos (EMNLP 2025) reproduces on GPT-2 / WikiText-2 under top-k decoding. Fully synthetic recursive training (α=0) degrades test perplexity from 29.6179 to 49.4601 by generation 9 (ratio 1.6699); human-mixed training (α=1, β=1, γ=0) reaches 30.3579 (ratio 1.0250). Both arms fall within 5% of the published values on every quantity the paper reports for them. | Executed run with linked artifacts | **SUPPORTED BY RUN ARTIFACTS**, with recorded gaps — see below |
 | C-001 | Literature-grounded motivation | Recursive training on generated data can degrade model fit, diversity, or tail coverage in studied settings, while the outcome depends strongly on the data workflow and source distribution | Audited primary literature | Supported with scope qualifiers |
 | C-002 | Hypothesis | At equal lifetime human-token budget and total optimizer-token budget, joint allocation across time and under-covered modes reduces chain-level regret relative to the strongest schedule-only and selection-only baselines | Powered recursive-chain experiment | Untested |
-| C-003 | Hypothesis | The advantage of targeted allocation decreases or reverses when the monitoring reference omits globally important modes | Predeclared monitoring-bias intervention | Untested |
-| C-004 | Provisional novelty claim | The exact joint problem of allocating one fixed lifetime stock of human-origin optimizer tokens across recursive generations and monitored human-distribution modes is distinguishable from the closest audited work | Saturated search, external expert review, and continuing 2026 search | Unverified and deliberately narrow |
+| C-003 | Hypothesis | The advantage of targeted allocation decreases or reverses when the monitoring reference omits globally important modes | Predeclared monitoring-bias intervention | Untested; directly threatened and motivated by Qiao et al. (2026) |
+| C-004 | Provisional novelty claim | The exact joint problem of allocating one fixed lifetime stock of human-origin optimizer tokens across recursive generations and monitored human-distribution modes is distinguishable from the closest audited work | Saturated search, external expert review, and continuing 2026 search | Primary-source search updated 2026-08-02; external hostile review still pending |
 | C-005 | Proposed mechanism | Under-covered modes with high projected future regret may have greater marginal value for human anchors | Theory or mechanism intervention plus experiment | Untested |
 
 ### C-006 evidence linkage and its gaps
@@ -78,6 +78,18 @@ This project formulates a result-free experimental question about **resource all
 
 **Strongest honest response:** A fixed-fraction policy is a required schedule-only baseline. Joint allocation is useful only if it improves a prespecified chain-level outcome at the same lifetime human and total token budgets. Failure to beat a strong fixed schedule falsifies the practical motivation.
 
+### Threat 6 — Weakness-guided iterative curation already targets where a model is weak
+
+**Closest work:** `luo_2026_kite` diagnoses weak skills, generates candidates beyond dominant modes, and curates them with semantic boundary uncertainty under an equal labeling budget at each iteration.
+
+**Strongest honest response:** KITE substantially weakens any broad claim that recursive targeting or budget-aware curation is new. Its fixed quantity is a per-iteration labeling budget for verified synthetic instructions, not one lifetime stock of human-origin optimizer-consumed tokens, and it does not isolate schedule-only, selection-only, and joint human-rescue policies. The manuscript may claim only the fully qualified constrained comparison. KITE-style weakness targeting is a serious selector analogue and should be discussed as such.
+
+### Threat 7 — Biased reference selection can itself cause tail loss
+
+**Closest work:** `qiao_2026_selection_bias` proves and demonstrates that recursive selection against fragmented local references can accelerate variance, diversity, and minority-mode loss; collaborative proxy references mitigate the failure.
+
+**Strongest honest response:** This work threatens any positive general claim about targeted selection and independently owns much of the monitoring-bias motivation. Our monitoring-omission intervention is therefore a test of whether human-rescue allocation exhibits the same boundary under exact token accounting, not a claim that biased monitoring was newly discovered. If the experiment adds no distinct evidence beyond that setting, C-003 must be reframed as replication or transfer rather than novelty.
+
 ## Allowed wording before results
 
 - “We study” or “we will test” a fixed-lifetime human-data allocation problem.
@@ -136,6 +148,33 @@ C-002 is not supported if the powered interval for the joint-versus-strongest-el
 ### Novelty stop rule
 
 If primary-source review finds a method that already jointly allocates a fixed lifetime human-origin optimizer-token budget across recursive generations and monitored human-distribution modes under comparable feedback and matched baselines, withdraw or rewrite C-004 before implementing the proposed method.
+
+### Current novelty disposition (2026-08-02)
+
+- Backward/forward primary-source review added `luo_2026_kite` and `qiao_2026_selection_bias` as genuine high threats.
+- No audited source yet matches all five qualifiers: recursion, one fixed lifetime human-origin optimizer-token stock, allocation across generation, allocation across monitored human modes, and matched schedule-only/selection-only baselines.
+- This is not a completed novelty finding. A technically qualified external reviewer must still challenge the search and wording; see `docs/evidence/hostile_novelty_review.md`.
+
+## Outcome-dependent wording contracts
+
+### C-002: joint allocation
+
+- **Favorable:** “Under the frozen domain, model, horizon, and budgets, the joint policy improved the preregistered chain-level outcome relative to the strongest eligible non-joint baseline.”
+- **Equivalent:** “The joint policy did not provide a practically meaningful advantage over the simpler frozen baseline in this setting.”
+- **Harmful:** “Joint adaptation worsened the preregistered outcome or stability criterion in this setting.”
+- **Uncertain:** “The interval includes beneficial, equivalent, and/or harmful effects; the experiment is inconclusive.”
+
+### C-003: monitor omission
+
+- **Boundary supported:** “With the preregistered mode omitted from the monitoring reference, targeted allocation lost benefit or caused harm on untouched evaluation.”
+- **No detected boundary:** “This omission intervention did not detect the prespecified failure boundary; it does not establish robustness to other monitor misspecification.”
+- **Invalid/uncertain:** “The intervention was invalid or too imprecise to support a monitoring-bias claim.”
+
+### C-004: novelty
+
+- **External review accepts distinction:** “The audited literature and external review leave a narrow provisional distinction defined by the full five-part qualifier.”
+- **Closest work owns the problem:** “The novelty claim is withdrawn; the experiment is positioned as a controlled comparison, replication, or transfer study.”
+- **Review unresolved:** “Novelty remains unverified and no first-of-kind wording is used.”
 
 ## Result promotion rule
 

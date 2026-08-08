@@ -1,0 +1,15 @@
+{
+  "generation": 0,
+  "artifacts": {
+    "model_dir": {
+      "path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/0/model/final_model",
+      "sha256": "9618072e6665e7d115577b09d86e84f35bfde2f63d68cacf7630123452cf109b",
+      "pruned": false
+    },
+    "eval_results": {
+      "path": "/kaggle/working/runs/positive_control/fully_synthetic/upstream/0/model/eval_results.json",
+      "sha256": "c89d2c19f0b794bc7aca130318be8c325105527e3ec9cf540bbfd524d694af37",
+      "pruned": false
+    }
+  }
+}

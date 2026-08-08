@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "run_id": "positive_control_human_mixed_seed42",
+  "arm": "human_mixed",
+  "stage": "positive_control",
+  "budget_id": "positive-control-wikitext2-gpt2",
+  "chain_seed": 42,
+  "horizon": 11,
+  "lifetime_human_budget": 26400000,
+  "total_optimizer_tokens": 50400000,
+  "budget_status": "planned_estimate",
+  "budget_basis": "Planned pre-run estimate, NOT a measurement. Assumes ~2.4M GPT-2 tokens in the WikiText-2 raw train split after upstream's group-into-blocks preprocessing (block_size=512), 1 epoch per generation, 11 generations. With human_data_alpha=1.0 the full human train split is appended to every recursive generation (src/train.py:548), so generations 1-10 consume ~4.8M tokens each and human tokens are consumed at every generation. The adapter records measured token totals from the executed run and expected_vs_observed.md must reconcile the two.",
+  "mixture": {
+    "human_data_alpha": 1.0,
+    "ai_beta": 1.0,
+    "gamma": 0.0,
+    "accumulate_ai_data": false
+  },
+  "model": {
+    "identifier": "openai-community/gpt2",
+    "revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "tokenizer_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "revision_policy": "Upstream pins no revision (config/model/gpt2.yaml). The executing host must resolve and record the Hugging Face commit SHA; the adapter refuses to leave status=planned while this sentinel is unresolved."
+  },
+  "data": {
+    "identifier": "wikitext/wikitext-2-raw-v1",
+    "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "train_manifest": "data/wikitext2/train.json",
+    "train_manifest_sha256": "68a59c04e937e50201cb0b5845a9ff14c804366a36d59c5fcc6dd776d6bb0ea2",
+    "test_manifest": "data/wikitext2/test.json",
+    "preparation_command": "python src/load_data.py",
+    "train_manifest_note": "Re-pinned per session. load_data.py:150 runs the ModernBERT detector on GPU and writes its float scores into train.json, so the file is reproducible WITHIN a session but not ACROSS sessions, even on an identical pinned stack (observed 2026-08-05 -> 2026-08-06). This hash certifies which file a given run consumed; it is not a claim that the dataset regenerates identically elsewhere. Detector scores are not read under data_selection=no-selection."
+  },
+  "upstream": {
+    "repository": "https://github.com/GeorgeDrayson/model_collapse",
+    "commit": "feb8511479a2e2dc868e1caf3f63cb99f1fcc746",
+    "entrypoint": "main.py",
+    "overrides": [
+      "human_data_alpha=1.0",
+      "ai_beta=1.0",
+      "data_selection=no-selection",
+      "wandb_disabled=true",
+      "seed=42",
+      "num_iterations=10"
+    ]
+  },
+  "training": {
+    "block_size": 512,
+    "loss_on_last_n_tokens": 256,
+    "batch_size": 8,
+    "num_train_epochs": 1,
+    "save_steps": 2000,
+    "torch_dtype": "bfloat16",
+    "low_cpu_mem_usage": true
+  },
+  "decoding": {
+    "strategy": "top_k",
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 50,
+    "beam_search": false
+  },
+  "detector": {
+    "model_path": "GeorgeDrayson/modernbert-ai-detection",
+    "tokenizer_name": "GeorgeDrayson/modernbert-ai-detection",
+    "temperature": 1.359828233718872,
+    "ai_confidence_threshold": 0.8674598932266235
+  },
+  "data_selection": {
+    "strategy": "None",
+    "config": "no-selection",
+    "deviation_note": "Overrides upstream's importance_sampling default. See PROTOCOL.md, 'Recorded deviation from the upstream default configuration'."
+  },
+  "evaluation": {
+    "primary_endpoint": "test_perplexity_at_final_generation",
+    "artifact_template": "{experiment_path}/{generation}/model/eval_results.json",
+    "metric_field": "perplexity",
+    "secondary_metric_field": "eval_loss",
+    "paired_baseline_generation": 0
+  },
+  "expected": {
+    "direction": "degrades_more_slowly",
+    "degradation_ratio_gt": 1.0,
+    "ordering_note": "This arm is expected to show the SMALLER degradation ratio of the two arms. The comparison itself is frozen in PROTOCOL.md, 'Frozen endpoint, ordering, and tolerance'.",
+    "relative_tolerance": 0.05,
+    "tolerance_status": "engineering_only"
+  }
+}

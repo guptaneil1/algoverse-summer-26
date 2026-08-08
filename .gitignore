@@ -55,6 +55,7 @@ results/figures/*
 # Temporary and generated files
 tmp/
 cache/
+.cache/
 dist/
 *.log
 *.tmp

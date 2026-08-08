@@ -21,9 +21,8 @@ This file records project choices. A decision is not evidence that the correspon
 | ID | Question | Evidence needed | Decision deadline |
 |---|---|---|---|
 | U-001 | Continued fine-tuning or controlled from-scratch training? | Positive-control behavior, compute forecast, and claim scope | Before pilot preregistration is frozen |
-| U-002 | Which licensed primary domain? | License audit, split feasibility, and tail-mode definition | Before any data download used for experiments |
 | U-003 | Exact lifetime budgets? | Positive-control token accounting and screening feasibility | Before treatment outcomes are viewed |
-| U-004 | Exact tail-retention metric? | Reliability study and independence from selection score | Before pilot preregistration is frozen. **Now blocking a concrete artifact:** `positive_control_adapter.build_chain_result` refuses to emit a `ChainResult` for Stage A because both schemas require `tail_retention` and no measure exists. |
+| U-004b | Exact `nll_threshold_candidate` value? | Baseline NLL distribution on the validation partition from a real generation-0 model | Before primary outcomes are opened. Narrowed 2026-08-08 from U-004: the metric *choice* (`tail_retention`, ratio-based, primary) is now frozen — `docs/evaluation/tail_retention_freeze.md`. Only the numeric threshold, which needs a real baseline model that does not exist yet, remains open. |
 | U-005 | Final contribution type? | Strength of theorem versus empirical evidence | Before paper drafting |
 | U-006 | Smallest scientifically meaningful effect? | Domain scale, prior variability, and mentor/statistics review | Before power analysis |
 
@@ -53,3 +52,20 @@ Record the date, alternatives considered, evidence available, chosen option, own
 ### Real-execution blocker
 
 Real-model execution is blocked until the team approves a tokenizer-counted real human-token budget and total optimizer-token budget.
+
+## Week 2 data & evaluation freeze decisions
+
+| ID | Date | Owner | Decision | Reason | Status |
+|---|---|---|---|---|---|
+| D-019 | 2026-08-08 | Neil | Finalize WikiText-103-v1 as the primary licensed domain, closing U-002 | Week 1 audit already recommended it (`data/datasheet.md`); Week 2 confirmed real access and licensing are unblocked — the corpus was actually downloaded and built, not just planned. Fallback (OpenWebText2) stays documented, unused. | Frozen. Dataset revision pinned to `b08601e04326c79dfdd32d625aee71d232d685c3`. |
+| D-020 | 2026-08-08 | Neil | Freeze `article_length_quantile` as the primary mode definition over `wikipedia_article_category` | Reliability/independence audit (`docs/data/mode_definition_audit.md`): the category candidate needs Wikipedia metadata absent from the frozen dataset revision, sourced from a live system that can drift after the freeze date. The quantile candidate needs nothing outside the frozen corpus. | Frozen. tail<=1106 tokens, common>2661 tokens, computed from the train split. |
+| D-021 | 2026-08-08 | Neil | Deduplicate the canonical WikiText-103-v1 release by exact content hash (test > validation > train priority) before partitioning | The upstream release contains 241 exact-duplicate articles, including one ("The Hustler (film)") that appears in both train and test — real train/test leakage in the upstream data, found by the Week 2 overlap build, not injected by this project. Priority order guarantees held-out splits are never reduced and no duplicate can leak train↔eval. | Frozen. Full accounting in `docs/data/overlap_report.md`. |
+| D-022 | 2026-08-08 | Neil | Freeze `tail_retention` (ratio-based) as the primary tail-retention metric, `nll_gap` as secondary, closing the metric-choice half of U-004 | Reliability/independence audit (`docs/evaluation/tail_retention_freeze.md`): `tail_retention` is the metric that actually measures retention against a fixed starting point, matching D-006's framing; `nll_gap`'s immediate computability (no reference snapshot needed) is real but doesn't answer the same question. Both are already proven independent of the policy `undercoverage_score`. | Frozen. `nll_threshold_candidate` remains open as U-004b — it needs a real baseline model. |
+
+### Scope note
+
+D-019–D-022 unblock the Stage 4 Human Data Budget pilot's data/evaluation contract. They do
+**not** retroactively unblock Stage A's `positive_control_adapter.build_chain_result` refusal —
+Stage A's upstream pipeline (GPT-2 / WikiText-2) produces no mode-level evaluation at all, so it
+has no input for either tail-retention metric regardless of which is primary
+(`docs/evaluation/tail_retention_freeze.md` §4).

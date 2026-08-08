@@ -10,8 +10,8 @@
 | Paper | Ronit | Scaffold provided | `paper/` placeholders | Results correctly pending |
 | Positive control | Khantushig | Not reproduced | Protocol only | Environment and compute benchmark |
 | Recursive runner | Khantushig | Contract toy runner provided | Tests/fixtures | Real training not implemented |
-| Data manifests | Neil | Fixture only | Toy manifests | Final licensed domain unresolved |
-| Evaluation | Neil | Contract utilities provided | Unit tests | Real tail metric unresolved |
+| Data manifests | Neil | Frozen (real corpus) | `data/manifests/MANIFEST_HASHES.json`, `docs/data/week2_audit_report.md`, branch `week-2/neil-frozen-data-metrics` | None for the freeze itself; tokenizer-dependent optimizer token counts still pending the training config's tokenizer |
+| Evaluation | Neil | Primary metric frozen | `docs/evaluation/tail_retention_freeze.md`, unit tests | `nll_threshold_candidate` still needs a real generation-0 baseline (`DECISIONS.md` U-004b) |
 | Policies | Aarav | Contract baselines provided | Toy simulator | Joint policy not scientifically frozen |
 | Statistics | Aarav | Contract analysis provided | Fake chain results | No real primary runs |
 

@@ -1,0 +1,38 @@
+{
+  "_freeze_status": "AWAITING_JULY_31_FREEZE",
+  "_warning": "NOT EXECUTABLE. Every null below is a frozen scientific choice that must come from the July 31 freeze. scripts/run_chain.sh refuses to launch this file until _freeze_status is FROZEN. Do not invent a value to make it run.",
+  "_condition": "primary pilot: the frozen horizon, budget, total-token match, ordered seeds, outcomes, contrast, and exclusions shared by the schedule_only, selection_only, and joint arms.",
+  "_required_from_freeze": [
+    "model.identifier, model.revision, model.tokenizer_revision",
+    "data.train_manifest and its sha256, plus the five partition manifests",
+    "horizon",
+    "seeds (ordered list, frozen length, matched across all compared arms)",
+    "lifetime_human_budget and total_optimizer_tokens",
+    "policy_configs for schedule_only, selection_only, and joint, each with sha256",
+    "primary_outcome and primary_contrast, from PREREGISTRATION.md",
+    "exclusion_rules, frozen before any chain is audited",
+    "minimum_chains, the preregistered minimum for an interpretable result",
+    "artifact_destination"
+  ],
+  "_budget_matching_note": "Every arm launched from this pilot config shares one lifetime_human_budget and one total_optimizer_tokens. Any arm that differs is a sensitivity analysis and must be labelled as one.",
+  "_freeze_source": null,
+
+  "run_id": null,
+  "budget_id": null,
+  "stage": "pilot",
+  "arms": null,
+  "policy_configs": null,
+  "horizon": null,
+  "seeds": null,
+  "lifetime_human_budget": null,
+  "total_optimizer_tokens": null,
+  "per_generation_human_budget": null,
+  "model": null,
+  "data": null,
+  "primary_outcome": null,
+  "primary_contrast": null,
+  "exclusion_rules": null,
+  "minimum_chains": null,
+  "artifact_destination": null,
+  "output_dir": null
+}

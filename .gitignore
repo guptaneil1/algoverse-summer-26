@@ -19,9 +19,11 @@ venv/
 .vscode/
 
 # Experiment trackers and logs
+# Root-anchored: an unanchored "runs/" also swallowed docs/runs/, silently
+# dropping the packet-prescribed reference run index.
 wandb/
 logs/
-runs/
+/runs/
 external/
 
 # Large model artifacts

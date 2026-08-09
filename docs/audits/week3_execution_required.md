@@ -5,9 +5,25 @@ somebody to **run something, decide something, or ask a real person something**.
 None of it can be written from a desk, and writing it anyway would fabricate
 evidence.
 
-Audited against `main` on 2026-08-09. The Week 3 packet prescribes 53 artifacts;
-22 existed, and the result-independent backfill added the rest of what can be
-built without runs. What remains is listed here.
+Audited on 2026-08-09. The Week 3 packet prescribes 53 artifacts. At the start,
+22 existed. After the result-independent backfill:
+
+| State | Count | Meaning |
+|---|---|---|
+| **Done** | 40 | Real content; nothing awaiting execution |
+| **Placeholder** | 11 | Present and honest, explicitly awaiting a run, review, or the freeze |
+| **Missing** | 2 | `results/validity/week3_classifications.csv` and `results/aggregates/provisional_week3.json` |
+
+The two missing files are deliberately absent. Both are **outputs**: one is
+produced by running the validator over real chains, the other by running
+`scripts/aggregate_chain_results.py` over real chain results. Hand-writing
+either would breach the no-manual-numbers rule, and `.claude/settings.json`
+marks `results/` write-denied for exactly that reason. Their exact schemas are
+documented in sections 2.3 and 3.1 below.
+
+Every placeholder carries a visible banner — `NOT CONDUCTED`, `NOT PERFORMED`,
+`ZERO RUNS RECORDED`, or `AWAITING_JULY_31_FREEZE` — so none can be mistaken for
+completed work. What each one needs is listed here.
 
 ---
 
@@ -36,39 +52,39 @@ config below has no legitimate source for its scientific values.
 
 ## 1. Khantushig — reference runs
 
-### 1.1 Frozen configs — blocked on the freeze, not on effort
+### 1.1 Frozen configs — skeletons exist, values do not
 
-`configs/experiment/primary_no_rescue.json`, `configs/experiment/primary_fresh_random.json`
+`configs/experiment/primary_no_rescue.json`, `primary_fresh_random.json`, and
+`primary_pilot.json` now exist as **skeletons**, each marked
+`"_freeze_status": "AWAITING_JULY_31_FREEZE"` with every scientific value `null`
+and a `_required_from_freeze` checklist of what the freeze must supply.
 
-Deliberately **not** created. Every field is a frozen scientific choice —
-model, tokenizer revision, data manifests, horizon, ordered seed list, lifetime
-human-token budget, total-token budget — and the packet says those come from the
-July 31 freeze. Inventing them would look identical to a real config while
-committing the project to numbers nobody chose.
+They are deliberately not filled. Model, tokenizer revision, data manifests,
+horizon, ordered seed list, lifetime human-token budget, and total-token budget
+are frozen scientific choices; inventing them would produce a file
+indistinguishable from a real config while committing the project to numbers
+nobody chose.
 
-When the freeze exists, each config needs:
+**Two guards make that safe.** `scripts/run_chain.sh` now requires an explicit
+config argument (its hidden `toy_cpu.json` default is gone, per the packet's
+"no hidden scientific defaults") and refuses to launch anything whose
+`_freeze_status` is not `FROZEN`:
 
-```jsonc
-{
-  "experiment_id": "primary_no_rescue",
-  "model": {"identifier": "...", "revision": "...", "tokenizer_revision": "..."},
-  "data": {"train_manifest": "...", "train_manifest_sha256": "..."},
-  "policy": {"name": "no_rescue", "config": "configs/policy/....json"},
-  "horizon": 0,
-  "budget": {"lifetime_human_optimizer_tokens": 0, "total_optimizer_tokens": 0},
-  "seeds": [],
-  "artifact_destination": "..."
-}
+```
+run_chain: refusing to launch configs/experiment/primary_no_rescue.json
+  _freeze_status is 'AWAITING_JULY_31_FREEZE', not 'FROZEN'.
 ```
 
-Fill every value from the freeze. No hidden defaults — `scripts/run_chain.sh`
-must fail loudly on a missing key rather than substituting one.
+And `tests/runner/test_reference_configs.py` (16 passing, 14 skipped) asserts
+today that an awaiting config holds **no** scientific values — so a half-filled
+config fails CI rather than running.
 
-Then write `tests/runner/test_reference_configs.py` asserting: both configs
-parse, every key above is present, budgets are positive integers, seeds are an
-ordered list of the frozen length, and the two arms declare **identical**
-`lifetime_human_optimizer_tokens` and `total_optimizer_tokens`. That last
-assertion is the budget-matching guarantee at config level.
+**To fill them:** replace every `null` with its frozen value, set
+`_freeze_status` to `"FROZEN"`, and record `_freeze_source`. The 14 currently
+skipped tests activate automatically and then enforce positive integer budgets
+and horizon, an ordered de-duplicated seed list, named model and data revisions,
+and — the fairness constraint — **identical budgets and identical seed sets
+across the two reference arms.** Nothing needs rewriting.
 
 ### 1.2 Fix the manifest before spending compute — found by running the validator
 

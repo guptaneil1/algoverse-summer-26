@@ -1,0 +1,32 @@
+{
+  "_freeze_status": "AWAITING_JULY_31_FREEZE",
+  "_warning": "NOT EXECUTABLE. Every null below is a frozen scientific choice that must come from the July 31 freeze. scripts/run_chain.sh refuses to launch this file until _freeze_status is FROZEN. Do not invent a value to make it run.",
+  "_condition": "no_rescue: the chain receives no human rescue after the frozen starting condition, establishing reference behaviour under the preregistered horizon and seed order.",
+  "_required_from_freeze": [
+    "model.identifier, model.revision, model.tokenizer_revision",
+    "data.train_manifest and its sha256, plus the five partition manifests",
+    "horizon",
+    "seeds (ordered list, frozen length)",
+    "lifetime_human_budget and total_optimizer_tokens",
+    "policy_config and its sha256",
+    "artifact_destination"
+  ],
+  "_budget_matching_note": "lifetime_human_budget and total_optimizer_tokens must be IDENTICAL to configs/experiment/primary_fresh_random.json. tests/runner/test_reference_configs.py enforces this once both are FROZEN.",
+  "_freeze_source": null,
+
+  "run_id": null,
+  "budget_id": null,
+  "stage": "pilot",
+  "policy": "no_rescue",
+  "policy_config": null,
+  "policy_config_sha256": null,
+  "horizon": null,
+  "seeds": null,
+  "lifetime_human_budget": null,
+  "total_optimizer_tokens": null,
+  "per_generation_human_budget": 0,
+  "model": null,
+  "data": null,
+  "artifact_destination": null,
+  "output_dir": null
+}

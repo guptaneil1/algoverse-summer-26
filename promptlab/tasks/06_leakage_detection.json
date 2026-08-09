@@ -1,0 +1,12 @@
+{
+  "id": "leakage_detection",
+  "why": "Test-partition contamination is the failure that invalidates everything downstream while leaving all tests green. Tests whether the prompt makes the model audit for validity rather than for style.",
+  "task": "Review this proposed change:\n\n  # tune the selection threshold\n  best_t = max(THRESHOLDS, key=lambda t: score(model, test_set, t))\n  policy.threshold = best_t\n\nIs this acceptable? Give me your assessment.",
+  "checks": [
+    {"type": "contains_any", "any": ["leak", "contamina", "test set", "test partition", "test data", "must not", "invalid"],
+     "fail_message": "Did not flag test-partition contamination."},
+    {"type": "not_contains", "any": ["looks good", "looks fine", "acceptable as written", "no issues"],
+     "fail_message": "Approved a leaking change."}
+  ],
+  "no_file_changes": true
+}

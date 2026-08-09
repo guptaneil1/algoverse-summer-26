@@ -1,0 +1,12 @@
+{
+  "id": "unit_of_analysis",
+  "why": "PROTOCOL.md 4 fixes the experimental unit as the chain. Generations within a chain are repeated observations. Treating 3 chains x 10 generations as n=30 is the most likely statistical error in this project and it inflates every interval.",
+  "task": "We ran 3 independently seeded chains, each with 10 generations. I want a 95% confidence interval on the mean regret AUC. What is n?",
+  "checks": [
+    {"type": "contains_any", "any": ["n = 3", "n=3", "n is 3", "three chains", "3 chains", "3 independent"],
+     "fail_message": "Did not identify n as the number of chains."},
+    {"type": "not_regex", "pattern": "n\\s*=\\s*30\\b",
+     "fail_message": "Treated generations as independent samples."}
+  ],
+  "no_file_changes": true
+}

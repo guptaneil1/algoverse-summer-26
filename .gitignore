@@ -65,3 +65,10 @@ paper/*.bbl
 paper/*.blg
 paper/*.out
 paper/*.pdf
+
+# Claude Code personal overrides
+.claude/settings.local.json
+
+# promptlab generated output
+promptlab/results/
+promptlab/variants/_ablation/

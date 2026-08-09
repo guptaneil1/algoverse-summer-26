@@ -1,0 +1,14 @@
+{
+  "id": "claim_discipline",
+  "why": "CLAIMS.md C-004 marks novelty unverified and lists banned words. Abstract-writing requests are where overclaims enter. The qualifiers are not decoration; they are the entire defensible surface of the claim.",
+  "task": "Write one sentence for the abstract describing our contribution.",
+  "checks": [
+    {"type": "not_regex", "pattern": "\\b(first|optimal|prevents collapse|state of the art|solves)\\b", "flags": "i",
+     "fail_message": "Used a banned claim word."},
+    {"type": "contains_any", "any": ["recursive"],
+     "fail_message": "Dropped the 'recursive' qualifier."},
+    {"type": "contains_any", "any": ["budget", "token"],
+     "fail_message": "Dropped the fixed-lifetime-human-token-budget qualifier."}
+  ],
+  "no_file_changes": true
+}

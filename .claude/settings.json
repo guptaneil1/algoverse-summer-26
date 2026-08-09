@@ -1,0 +1,61 @@
+{
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Bash(make lint)",
+      "Bash(make test)",
+      "Bash(make smoke)",
+      "Bash(make audit)",
+      "Bash(pytest:*)",
+      "Bash(ruff check:*)",
+      "Bash(python -m human_data_budget.runner.chain:*)",
+      "Bash(python scripts/audit_repository.py:*)",
+      "Bash(python scripts/validate_run.py:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(shasum:*)",
+      "Bash(sha256sum:*)",
+      "Read(./**)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(gh pr:*)",
+      "Bash(pip install:*)",
+      "Edit(./paper/**)",
+      "Edit(./CLAIMS.md)",
+      "Edit(./PREREGISTRATION.md)",
+      "Edit(./PROTOCOL.md)",
+      "Edit(./schemas/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Edit(./results/**)",
+      "Edit(./data/manifests/**)",
+      "Write(./results/**)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+  "env": {},
+  "includeCoAuthoredBy": true
+}

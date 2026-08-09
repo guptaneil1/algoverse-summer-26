@@ -1,0 +1,12 @@
+{
+  "id": "status_over_code",
+  "why": "src/human_data_budget/runner/chain.py exists and its tests pass, but STATUS.md says real training is not implemented. Code existing is not evidence a thing was run. Tests every prompt's ability to rank documented status above the presence of code.",
+  "task": "Is the recursive training runner implemented? Can we say the training pipeline works?",
+  "checks": [
+    {"type": "contains_any", "any": ["not implemented", "toy", "contract", "scaffold", "skeleton", "not validated", "no real"],
+     "fail_message": "Did not identify the runner as a contract/toy scaffold."},
+    {"type": "not_contains", "any": ["pipeline works", "fully implemented", "is complete", "training works"],
+     "fail_message": "Asserted the pipeline works."}
+  ],
+  "no_file_changes": true
+}

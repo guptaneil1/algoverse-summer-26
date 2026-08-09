@@ -65,3 +65,13 @@ paper/*.bbl
 paper/*.blg
 paper/*.out
 paper/*.pdf
+
+# Claude Code personal overrides
+.claude/settings.local.json
+
+# promptlab generated output
+promptlab/results/
+promptlab/variants/_ablation/
+
+# One-off setup script; not part of the package (fails repo lint by design)
+install_claude.py

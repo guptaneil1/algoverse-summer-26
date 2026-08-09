@@ -1,0 +1,105 @@
+name: Claude task
+description: A spec-grade task for Claude to execute via @claude
+title: "[claude] "
+labels: ["claude-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is a prompt template. Every field exists because leaving it blank is a
+        known way for the task to go wrong. Fill all of them, then comment `@claude` on
+        the issue to start the run.
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: One sentence. The observable end state, not the activity.
+      placeholder: "tests/evaluation/test_tail.py asserts the tail metric is computed on a partition never used for selection, and make test passes."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Files to read first
+      description: Exact paths, and what each is authoritative for. Claude must not reason from memory about this repo.
+      placeholder: |
+        - docs/interfaces/evaluation.md — the frozen contract
+        - schemas/evaluation.schema.json — output shape
+        - PREREGISTRATION.md — how this metric was predeclared
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: Checkable conditions only. Each item must be provable by a command or a file read — never "looks correct".
+      placeholder: |
+        - [ ] `make lint && make test` pass (paste output)
+        - [ ] New test fails if the core change is reverted
+        - [ ] No schema modified
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Explicitly out of scope
+      description: The adjacent things that must NOT change in the same diff. Leaving this blank is the most common cause of a sprawling, unreviewable PR.
+      placeholder: |
+        - Do not touch src/human_data_budget/runner/
+        - Do not modify any schema
+        - Do not add a dependency
+    validations:
+      required: true
+
+  - type: textarea
+    id: failure_modes
+    attributes:
+      label: How this task usually goes wrong
+      description: Naming the failure mode is worth more than any amount of "please be careful".
+      placeholder: |
+        - Guessing a constant instead of writing TODO(owner)
+        - Evaluating on a partition that also fed selection
+        - Importing across the architecture boundary
+    validations:
+      required: true
+
+  - type: dropdown
+    id: workstream
+    attributes:
+      label: Workstream
+      options:
+        - Ronit — research, claims, paper
+        - Khantushig — training, runner, reproduction
+        - Neil — data, validity, evaluation
+        - Aarav — policies, statistics, analysis
+        - Shared
+    validations:
+      required: true
+
+  - type: dropdown
+    id: freeze
+    attributes:
+      label: Freeze status of touched artifacts
+      description: After a results freeze, only clarity, citations, formatting, packaging, and removal of unsupported claims are allowed.
+      options:
+        - Not frozen — normal implementation allowed
+        - Frozen — restricted edits only
+        - Unsure — Claude should determine and report before acting
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: protocol
+    attributes:
+      label: Protocol acknowledgements
+      options:
+        - label: This task does not let final test data influence prompts, selection, thresholds, early stopping, or hyperparameters
+          required: true
+        - label: This task does not require entering a paper-facing number by hand
+          required: true
+        - label: If Claude cannot determine a value, it writes TODO(owner) rather than a plausible placeholder
+          required: true

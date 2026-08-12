@@ -27,33 +27,77 @@ pytest tests/runner -q
 | Every artifact reference carries a matching hash | `tests/runner/test_artifact_hashes.py` | ✅ passing |
 | Primary configs contain no hidden defaults | `tests/runner/test_reference_configs.py` | ✅ passing (guard mode) |
 | Two-generation chain completes | `tests/runner/test_two_generation_chain.py` | ✅ passing |
+| Manifest emits complete partition provenance | `tests/runner/test_manifest_provenance.py` | ✅ passing |
+| Toy chain certifies end-to-end as `valid` | `tests/runner/test_validate_toy_chain.py` | ✅ passing |
 
-At the last full run: **215 tests pass** across the suite, ruff is clean, and the
-strict repository audit passes.
+At the last full run: **228 tests pass, 14 skipped**, ruff is clean, and the strict
+repository audit passes. The 14 skips are the reference-config assertions in
+`tests/runner/test_reference_configs.py`, which activate when the primary configs
+leave `AWAITING_JULY_31_FREEZE`.
 
-## 2. Open defect — blocks certification of any real chain
+The last two rows are new on `claude/week-3-assignments-boq852`. Until they existed,
+every test stopped either at the manifest or at the validator and none joined the
+two — which is why the defect in section 2 survived a passing suite.
 
-**`run_manifest.json` emits no `data.partitions` block.**
+## 2. Resolved defect — certification was blocked for every chain
 
-Found by running the finished validator against the toy smoke chain:
+**`run_manifest.json` emitted no `data.partitions` block.** Found by running the
+finished validator against the toy smoke chain, and fixed on
+`claude/week-3-assignments-boq852`.
 
-```bash
-python -m human_data_budget.runner.chain --config configs/experiment/toy_cpu.json
-python scripts/validate_run.py runs/fixture_joint_seed1
-# -> invalid, SEPARATION_MISSING_PROVENANCE
+Before:
+
+```
+$ python scripts/validate_run.py runs/fixture_joint_seed1
+"classification": "invalid",
+"reason_codes": ["SEPARATION_MISSING_PROVENANCE"],
+"checks_failed": ["separation_partitions_recorded"]     # 14 checks passed
+EXIT=2
 ```
 
-Fourteen checks passed; one failed. Without partition records the auditor cannot
-verify that the five partitions are disjoint, nor that any training example
-carries `stable_id`, `content_hash`, `source_dataset`, and `origin`.
+After:
 
-**Consequence:** a real chain will be classified `invalid` for the same reason.
-Fix before spending accelerator hours. `schemas/run_manifest.schema.json` already
-permits the block (`additionalProperties: true`), so no contract change is
-needed — `new_manifest` in `src/human_data_budget/runner/manifest.py` must
-populate `data.partitions` from the frozen data manifests.
+```
+$ python scripts/validate_run.py runs/fixture_joint_seed1
+"classification": "valid",
+"reason_codes": [],
+"checks_failed": []                                     # 20 checks passed
+EXIT=0
+```
 
-This is recorded as an open item, not a resolved one.
+`runner/manifest.py` now resolves `data.partitions` from one of two declared
+sources — inline canonical records, or `partition_manifests` mapping each canonical
+partition to a JSONL file loaded through `data/manifest.py:load_manifest_from_jsonl`.
+Declaring neither omits the block, so a run without provenance still classifies
+`invalid`; that behaviour is pinned by
+`tests/runner/test_manifest_provenance.py::test_no_provenance_source_still_classifies_invalid`.
+
+Three properties matter for real chains:
+
+- **Failure is loud and early.** A missing manifest file, an incomplete provenance
+  record, an empty partition, or an unknown partition name raises
+  `ManifestProvenanceError` at manifest creation — before a chain launches, not
+  after compute is spent. Provenance cannot be back-filled after a run.
+- **Leakage stops the run.** `data/separation.py:assert_disjoint` runs as a
+  pre-launch preflight, so a forbidden partition overlap fails before any
+  accelerator time is consumed.
+- **The contract is recorded.** `schemas/run_manifest.schema.json` now declares the
+  block explicitly and `docs/interfaces/run_manifest.md` documents it.
+
+### 2.1 Vocabulary conflict found while fixing this — open, @Neil
+
+Two `data/`-owned modules disagree on partition and field names:
+
+| | Partitions | Fields |
+|---|---|---|
+| `validation/audit.py:29-37` | `base_human_train`, `generation_prompts`, `final_human_test` | `stable_id`, `source_dataset` |
+| `data/manifest.py:12-19` | `base_train`, `prompts`, `test` | `example_id`, `source` |
+
+The validator's vocabulary is canonical — it is the one documented in
+`docs/evaluation/week3_data_evaluation_appendix.md` and covered by the validator's
+adversarial tests. The runner translates in `_DATA_MODULE_PARTITIONS` rather than
+editing a module it does not own. Reconciling the two is @Neil's call; until then the
+mapping is a runner-side workaround, and a rename on either side breaks it silently.
 
 ## 3. Preflight results — NOT PERFORMED
 
@@ -95,11 +139,34 @@ The toy chain runs on CPU and exercises none of these.
 
 ## 6. Unresolved runner limitations
 
-1. **Partition provenance missing from the manifest** (section 2) — highest
-   severity; blocks certification.
+1. **The partition vocabulary conflict is unreconciled** (section 2.1). The runner
+   translates; a rename on either side breaks it silently. @Neil.
 2. **Real training is not implemented.** `docs/STATUS.md`: *"Contract toy runner
    provided … real training not implemented."* Every test above exercises the
    toy path.
 3. **Resume tested only on the toy chain.**
-4. **No compute records exist** — `COMPUTE.md` has no measured accelerator hours
-   because nothing has been run.
+4. **No compute records exist on this branch** — `COMPUTE.md` has no measured
+   accelerator hours here. The positive-control compute *was* measured, on
+   `week-2/khantushig-positive-control`, which is unmerged; see
+   `docs/audits/week2_merge_gap.md`.
+5. **Artifact retention is a live trap for the real runner.** `validation/audit.py`
+   re-hashes every entry in `manifest["artifacts"]` from bytes on disk and
+   `ARTIFACT_MISSING` is invalidating. Nothing populates `artifacts[]` today, and
+   `positive_control_adapter.py` deliberately keeps it empty with hashes in a
+   pre-pruning sidecar. A real chain runner that lists prunable checkpoints in
+   `artifacts[]` and then prunes them to fit ephemeral storage will classify
+   `invalid`. The convention is recorded in `docs/interfaces/run_manifest.md`.
+
+## 7. Determinism evidence for the toy chain
+
+Two consecutive runs of the frozen toy config, same seed, separate output
+directories:
+
+| Artifact | Run 1 | Run 2 |
+|---|---|---|
+| `chain_result.json` | `75a3607e53d3…` | `75a3607e53d3…` |
+| `run_manifest.json` | `97ea999a42b1…` | `97ea999a42b1…` |
+
+Byte-identical, and both certify `valid`. This is CPU-only fixture evidence: it
+demonstrates seed propagation and stable serialisation, and says nothing about GPU
+kernel nondeterminism, dataloader ordering, or mixed precision (section 5).

@@ -19,7 +19,16 @@ Forecasts must state assumptions and may not be presented as actual usage.
 
 | Run ID | Date | Commit | Model revision | Hardware | Count | Wall time | Accelerator-hours | Peak memory | Storage written | Outcome |
 |---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| None | — | — | — | — | — | — | — | — | — | No runs yet |
+| `fixture_joint_seed1` (toy) | 2026-08-12 | `claude/week-3-assignments-boq852` | none — toy path, no model | CPU only, no accelerator | 1 | 0.07 s | 0 | 18.2 MB RSS | 32 kB | Fixture; certifies `valid`. **Not scientific evidence** |
+
+**No primary chain compute has been recorded on this branch.** The row above is the
+toy CPU smoke chain, measured so the fixture cost is not mistaken for zero; it uses
+no accelerator and no model, and generation/training/evaluation are not separable in
+the toy path because none of the three is real.
+
+The positive-control compute **was** measured — on
+`week-2/khantushig-positive-control`, which is unmerged. Those measurements are not
+restated here; see `docs/audits/week2_merge_gap.md` for what lives where.
 
 ## Required accounting
 

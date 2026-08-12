@@ -9,6 +9,14 @@
 > `week-3/*` personal branches, and `results/aggregates/` holds only a README.
 > Week 4 as written takes the August 7 immutable aggregate as its input, so it
 > cannot start as specified. See `docs/audits/week3_execution_required.md`.
+>
+> **This file understates the Week 2 positive control.** The row below still reads
+> *Not reproduced*, but `week-2/khantushig-positive-control` — pushed, 44 commits
+> ahead of `main`, never merged — holds a completed two-arm reproduction with
+> per-generation measurements and pinned upstream revisions. Correcting the row
+> requires an integrator decision on whether Week 2 is accepted, so it is flagged
+> here rather than edited unilaterally. Evidence:
+> `docs/audits/week2_merge_gap.md`.
 
 | Area | Owner | Status | Current evidence | Blocking issue |
 |---|---|---|---|---|
@@ -18,7 +26,7 @@
 | Presentation | Ronit | Layout complete, result-independent | `docs/presentation/final_layout.md` | Slide 9 awaits a generated aggregate |
 | Positive control | Khantushig | Not reproduced | Protocol only | Environment and compute benchmark; upstream commit still unpinned |
 | Recursive runner | Khantushig | Contract toy runner provided | Tests/fixtures | Real training not implemented |
-| Run manifest provenance | Khantushig | Incomplete | Validator returns `invalid` on the toy chain | `run_manifest.json` emits no `data.partitions` block |
+| Run manifest provenance | Khantushig | Implemented, not exercised on a real chain | Toy chain certifies `valid` (exit 0, 20 checks); `tests/runner/test_manifest_provenance.py`, `test_validate_toy_chain.py` | Partition vocabulary conflict between `validation/audit.py` and `data/manifest.py` is unreconciled (`FAILURE_LOG.md` F-002) |
 | Data manifests | Neil | Fixture only | Toy manifests | Final licensed domain unresolved |
 | Evaluation | Neil | Contract utilities provided | Unit tests incl. `tests/evaluation/test_tail_metric.py` | Real tail metric unresolved |
 | Validity audit | Neil | Validator implemented and adversarially tested | `src/human_data_budget/validation/`; 41 tests; `docs/validity/week3_adversarial_audit.md` | Never applied to a primary chain; near-duplicate and ledger-recompute blind spots open |

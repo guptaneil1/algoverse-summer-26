@@ -7,9 +7,8 @@
 > reference chain, because none has run. Sections marked NOT PERFORMED require
 > execution.
 >
-> Against the six-clause completion gate: **clauses 2, 3, 4 and 6 are met or
-> honestly bounded; clause 5 is met at toy level only; clause 1 is unmet and
-> blocked** — see §9.
+> Against the six-clause completion gate: **clauses 2, 3, 4, 5 and 6 are met or
+> honestly bounded; clause 1 is unmet and blocked** — see §9.
 
 Reproduce the unit evidence with:
 
@@ -35,15 +34,19 @@ pytest tests/runner -q
 | Two-generation chain completes | `tests/runner/test_two_generation_chain.py` | ✅ passing |
 | Manifest emits complete partition provenance | `tests/runner/test_manifest_provenance.py` | ✅ passing |
 | Toy chain certifies end-to-end as `valid` | `tests/runner/test_validate_toy_chain.py` | ✅ passing |
+| Resume equivalence on all five frozen dimensions | `tests/runner/test_resume_equivalence.py` | ✅ passing |
+| Whole smoke chain is byte-identical across runs | `tests/runner/test_determinism.py` | ✅ passing |
 
-At the last full run: **228 tests pass, 14 skipped**, ruff is clean, and the strict
+At the last full run: **235 tests pass, 14 skipped**, ruff is clean, and the strict
 repository audit passes. The 14 skips are the reference-config assertions in
 `tests/runner/test_reference_configs.py`, which activate when the primary configs
 leave `AWAITING_JULY_31_FREEZE`.
 
-The last two rows are new on `week-3/khantushig-reference-runs`. Until they existed,
-every test stopped either at the manifest or at the validator and none joined the
-two — which is why the defect in section 2 survived a passing suite.
+The last four rows are new on `week-3/khantushig-reference-runs`. Until the
+validator row existed, every test stopped either at the manifest or at the
+validator and none joined the two — which is why the defect in section 2 survived
+a passing suite. Until the determinism row existed, only the individual step
+functions were checked, never the assembled chain.
 
 ## 2. Resolved defect — certification was blocked for every chain
 
@@ -114,22 +117,57 @@ primary configs are skeletons marked `AWAITING_JULY_31_FREEZE`.
 - Leakage preflight: TODO(khantushig)
 - Budget equality preflight: TODO(khantushig)
 
-## 4. Resume equivalence on a real chain — NOT PERFORMED
+## 4. Resume equivalence — PERFORMED on the smoke condition
 
-The frozen procedure, once chains exist:
+The frozen procedure, and its state:
 
-1. Preserve an uninterrupted deterministic smoke run and its final scientific state.
-2. Stop the same frozen seed and config at an approved checkpoint, resume once, finish.
-3. Compare cumulative token ledgers, generation state, manifest history, metric
-   outputs, and deterministic hashes where the framework allows.
-4. Document unavoidable nondeterminism and its frozen tolerance.
+1. **Preserve an uninterrupted deterministic smoke run and its final scientific
+   state.** ✅ `tests/runner/test_resume_equivalence.py`, fixture
+   `interrupted_and_uninterrupted`.
+2. **Stop the same frozen seed and config at an approved checkpoint, resume once,
+   finish.** ✅ The resumed chain is seeded with generation 0's checkpoint only,
+   simulating a crash immediately after it was written, then run with
+   `resume=True`.
+3. **Compare cumulative token ledgers, generation state, manifest history, metric
+   outputs, and deterministic hashes.** ✅ Each dimension is asserted separately,
+   so a regression names the invariant it broke rather than surfacing as an opaque
+   dict inequality:
 
-- Uninterrupted final state: TODO(khantushig)
-- Resumed final state: TODO(khantushig)
-- Token ledger continues exactly once: ☐
-- Equivalence level achieved: ☐ byte-identical ☐ conclusion-level only
+| Dimension | Test | Result |
+|---|---|---|
+| Cumulative token ledgers continue exactly once | `test_cumulative_token_ledgers_continue_exactly_once` | ✅ human and total ledgers equal the uninterrupted run and stay inside the frozen budget |
+| Generation state | `test_generation_state_matches` | ✅ generations completed, current generation, horizon |
+| Manifest history | `test_manifest_status_history_matches_and_is_terminal` | ✅ identical history, append-only, terminal `complete` |
+| Metric outputs | `test_metric_outputs_match_generation_by_generation` | ✅ generation-by-generation |
+| Deterministic hashes | `test_persisted_artifact_hashes_match` | ✅ `chain_result.json`, `run_manifest.json`, every checkpoint |
 
-**Do not claim byte identity when only conclusion-level reproducibility holds.**
+4. **Document unavoidable nondeterminism and its frozen tolerance.** See §5 and
+   the scope statement below.
+
+- Token ledger continues exactly once: ☑
+- Equivalence level achieved: ☑ byte-identical **(smoke condition only)** ☐ conclusion-level only
+
+The ledger dimension is called out separately because it is the one that fails
+quietly. The classic resume defect re-adds the tokens of the generation resumed
+from, which inflates consumption past the frozen budget and turns a good chain
+into a budget-mismatched one rather than an obviously broken one.
+
+### 4.1 Scope of the byte-identity claim
+
+Byte identity is claimed **only** for the toy CPU smoke condition, which is what
+the packet's test table specifies (*"interrupted and uninterrupted smoke
+chains"*, *"the deterministic smoke condition"*). That path runs no model and no
+accelerator.
+
+It is **not** claimed for real training. Resuming a real chain from a checkpoint
+involves GPU kernel nondeterminism, dataloader ordering, and mixed precision
+(§5), none of which the toy path exercises. When a real chain runs, the honest
+expectation is conclusion-level reproducibility with a stated tolerance, not byte
+identity — and the tolerance must be frozen before the comparison, not chosen
+after seeing the mismatch. `tests/runner/test_real_checkpoint_resume.py` on
+`week-2/khantushig-positive-control` takes the same care: it tests the adapter's
+ingest resume, which *is* a pure function of artifacts on disk, and explicitly
+disclaims any bit-identical-weights claim.
 
 ## 5. Known nondeterminism — NOT CHARACTERISED
 
@@ -150,7 +188,8 @@ The toy chain runs on CPU and exercises none of these.
 2. **Real training is not implemented.** `docs/STATUS.md`: *"Contract toy runner
    provided … real training not implemented."* Every test above exercises the
    toy path.
-3. **Resume tested only on the toy chain.**
+3. **Resume equivalence is proven only on the toy chain** (§4.1). Real training
+   resume is a weaker, separate claim and is not made.
 4. **No primary-chain compute exists.** `COMPUTE.md` now carries the
    positive-control split (training and evaluation measured, generation a
    residual) and the toy fixture cost, but no reference chain has consumed
@@ -219,7 +258,7 @@ and resume behavior are tested; and no result was used to tune the protocol."*
 | 2 | Positive control cleanly verified or honestly mismatched | **Met** | `docs/positive_control/week3_verification.md` — all four frozen ordering claims recomputed from raw artifacts; `valid_with_limitation` |
 | 3 | Every artifact traceable | **Met, bounded** | §7 — 64 of 64 hashed and accounted for; 42 unverifiable, disclosed not hidden |
 | 4 | Gen/training/evaluation compute recorded separately | **Met** | `COMPUTE.md` — training and evaluation measured, generation a residual with stated uncertainty |
-| 5 | Determinism and resume tested | **Partial** | §8 and `tests/runner/` at toy level; real training resume NOT PERFORMED (§4) |
+| 5 | Determinism and resume tested | **Met as specified** | §4 — all five resume dimensions asserted separately; §8 — whole-chain determinism byte-identical. Smoke condition, which is what the packet's test table specifies. Real-hardware nondeterminism remains uncharacterised (§4.1, §5) |
 | 6 | No result used to tune the protocol | **Met** | Nothing has run that could tune anything. The post-hoc numeric comparison in the positive control is labelled post-hoc rather than presented as pre-registered |
 
 ### What clause 1 actually needs
@@ -242,7 +281,9 @@ Not runner work. Four steps, none of them code:
    skipped tests in `tests/runner/test_reference_configs.py` activate on their own
    and enforce identical budgets and seed sets across the two arms.
 
-Clause 5 closes as a by-product of clause 1: once a real chain runs, stop it at an
-approved checkpoint, resume once, and compare ledgers per §4.
+Clause 5 is met at the level the packet specifies (§4). What clause 1 would add is
+the *real-hardware* characterisation in §5 — run a real chain, stop it at an
+approved checkpoint, resume once, and record the achieved equivalence level and
+its frozen tolerance.
 
 Clause 3's unverifiable 42 hashes never close. That evidence is gone.

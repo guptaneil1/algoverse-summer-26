@@ -11,12 +11,15 @@
 > cannot start as specified. See `docs/audits/week3_execution_required.md`.
 >
 > **This file understates the Week 2 positive control.** The row below still reads
-> *Not reproduced*, but `week-2/khantushig-positive-control` — pushed, 44 commits
-> ahead of `main`, never merged — holds a completed two-arm reproduction with
-> per-generation measurements and pinned upstream revisions. Correcting the row
-> requires an integrator decision on whether Week 2 is accepted, so it is flagged
-> here rather than edited unilaterally. Evidence:
-> `docs/audits/week2_merge_gap.md`.
+> *Not reproduced*, but Week 2 **was** integrated on
+> `integration/week-2-jul25-jul31` (PRs #15/#16/#17), and it holds a completed
+> two-arm reproduction with per-generation measurements and pinned upstream
+> revisions — re-verified by recomputation in
+> `docs/positive_control/week3_verification.md`. What did not happen: promotion to
+> `main`, the freeze tag, and Neil's `cd73d39` (the frozen WikiText-103 manifests,
+> mode definition, and tail metric). Correcting the row requires the integrator to
+> promote and tag, so it is flagged here rather than edited unilaterally.
+> Evidence: `docs/audits/week2_merge_gap.md`.
 
 | Area | Owner | Status | Current evidence | Blocking issue |
 |---|---|---|---|---|

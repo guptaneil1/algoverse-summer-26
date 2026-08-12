@@ -1,93 +1,107 @@
-# Week 2 is done and pushed, but unmerged and untagged
+# Week 2 is integrated but not promoted, and one commit is missing
 
-**Audited:** 2026-08-12, from `claude/week-3-assignments-boq852`
+**Audited:** 2026-08-12, from `week-3/khantushig-reference-runs`
 **Author:** Khantushig (runner/training workstream)
 **Status:** report only — no branch was merged, tagged, rebased, or rewritten
 
-This file exists because `docs/STATUS.md` on `main` contradicts work that is
-already pushed to this repository. It records what is where. Acting on it is the
-integrator's call, not this branch's.
+> **Correction.** An earlier version of this file claimed Week 2 was "pushed but
+> unmerged". That was wrong: it checked only whether the Week 2 branches were
+> ancestors of `main`, and reported the answer as if it covered integration in
+> general. Week 2 **was** integrated, on the integration branch. The corrected
+> position is below.
 
-## 1. The gap
+## 1. What actually happened
 
-Every Week 2 branch exists on `origin` and none is an ancestor of `main`:
+Three of the four Week 2 branches were merged into
+`integration/week-2-jul25-jul31` by pull request:
 
-| Branch | Commits ahead of `main` | Head |
-|---|---:|---|
-| `week-2/khantushig-positive-control` | 44 | `8662af6` |
-| `week-2/neil-frozen-data-metrics` | 52 | `cd73d39` |
-| `week-2/aarav-method-preregistration` | 3 | `7966678` |
-| `week-2/ronit-paper-novelty` | 1 | `7410e8c` |
-| `integration/week-2-jul25-jul31` | 51 | `99e563b` |
+| PR | Branch | State |
+|---|---|---|
+| #15 | `week-2/ronit-paper-novelty` | merged into integration |
+| #16 | `week-2/khantushig-positive-control` | merged into integration |
+| #17 | `week-2/aarav-method-preregistration` | merged into integration |
+| — | `week-2/neil-frozen-data-metrics` | **not merged — 1 commit outstanding** |
 
-`main` is at `c2aa23e`. `git ls-remote --tags origin` returns **zero tags**, so
-`week-1-freeze-2026-07-24` and `week-2-freeze-2026-07-31` do not exist.
+So the Week 2 integration branch exists and carries the positive control, the
+preregistration, and the paper work.
 
-The Week 3 packet's start gate — *"do not begin a primary Week 3 chain until
-accepted Week 2 work is merged, `main` points to the tested Week 2 snapshot, and
-tag `week-2-freeze-2026-07-31` exists"* — is therefore unsatisfiable as written,
-not because the work is missing but because it was never integrated.
+## 2. The three gaps
 
-## 2. What `main` is missing from the runner workstream
+**2.1 Neil's freeze commit is not in the integration branch.** One commit,
+`cd73d39` — *"feat(neil/week-2): freeze WikiText-103 manifests, mode definition,
+and tail-retention metric"*. It is not a trivial follow-up; it is the data freeze:
 
-Present on `week-2/khantushig-positive-control`, absent from `main`:
+| Path | What it carries |
+|---|---|
+| `configs/data/wikitext103.json` | `status: frozen`, `mode_definition: article_length_quantile`, `partition_strategy: stable_id_hash_modulo` |
+| `scripts/build_wikitext103_manifests.py` | 363 lines — builds the five partition manifests |
+| `configs/evaluation/primary.json` | frozen evaluator settings |
+| `docs/evaluation/tail_retention_freeze.md` | the frozen primary tail metric |
+| `docs/data/overlap_report.md`, `mode_definition_audit.md`, `week2_audit_report.md` | the audits behind the freeze |
+| `src/human_data_budget/data/manifest.py` | accepts text-free frozen records with precomputed `content_hash`, and rejects a hash that disagrees with its text |
+| `tests/data/test_manifest.py`, `test_token_accounting.py` | 167 lines of tests for the above |
 
-| Path | Size | What it is |
-|---|---:|---|
-| `src/human_data_budget/runner/positive_control_adapter.py` | 699 lines | Translates upstream artifacts into the frozen runner contracts |
-| `scripts/run_positive_control_arm.py` | 422 lines | Advances one arm one generation at a time, resumable across sessions |
-| `docs/benchmarks/kaggle_smoke_test_runbook.md` | 933 lines | The full Kaggle execution procedure |
-| `docs/positive_control/report.md` | 234 lines | Reproduction report |
-| `docs/positive_control/expected_vs_observed.md` | 409 lines | Frozen-vs-observed ledger, including the published-value comparison |
-| `docs/positive_control/measurements/` | 11 generations × 2 arms | Per-generation `eval_results.json`, `train_results.json`, `artifact_record.json` |
-| `configs/experiment/positive_control_{fully_synthetic,human_mixed}.json` | 88 lines each | The executed configs, with pinned revisions |
-| `tests/runner/test_positive_control_{contract,driver}.py`, `test_real_checkpoint_resume.py`, `test_reproduction_command.py` | 1133 lines | Tests for all of the above |
+**This is the blocker for the reference chains.** No-rescue and fresh-random
+consume the five frozen partition manifests; without this commit there is no
+frozen data to consume.
 
-The branches have also diverged rather than simply advanced: `main` carries
-`src/human_data_budget/validation/` (the validator, 41 adversarial tests), which is
-**not** on `integration/week-2-jul25-jul31`. Neither branch is a superset of the
-other, so integration is a real merge, not a fast-forward.
+Note the manifests themselves are **generated, not committed** —
+`data/manifests/` holds only a README, and `configs/data/wikitext103.json` points
+`manifest_hashes` at `data/manifests/MANIFEST_HASHES.json`, which is produced by
+the build script. Merging the commit is necessary but not sufficient; the script
+must then run.
 
-## 3. `docs/STATUS.md` on `main` is wrong about the positive control
+**2.2 The integration branch was never promoted to `main`.** `main` is at
+`c2aa23e`, whose merge history runs Week 1 (PRs #8–#13), dependabot, `#20
+shared/claude-code-setup`, `#21 shared/week3-result-independent`. No Week 2 PR
+appears. `positive_control_adapter.py` and `docs/positive_control/report.md` are
+absent from `main`.
+
+**2.3 The repository has zero tags.** `git ls-remote --tags origin` returns
+nothing, so neither `week-1-freeze-2026-07-24` nor `week-2-freeze-2026-07-31`
+names a commit. Every document referencing the July 31 freeze — including the
+`AWAITING_JULY_31_FREEZE` configs — points at something that does not exist as a
+git object.
+
+## 3. `docs/STATUS.md` on `main` is stale about the positive control
 
 `main` records:
 
 > | Positive control | Khantushig | Not reproduced | Protocol only | Environment and compute benchmark; upstream commit still unpinned |
 
-All three of those statements are contradicted by the Week 2 branch:
+All three are contradicted by work that is merged into the integration branch:
 
-- **"Not reproduced"** — both arms ran to 11 generations. Fully synthetic (α=0) went
-  from perplexity 29.6179 to 50.9806, a degradation ratio of 1.7213; human-mixed
-  (α=1) went from the same baseline to 30.3730, a ratio of 1.0255. All four frozen
-  ordering claims hold. `docs/positive_control/report.md` classifies the result
-  `valid_with_limitation`.
+- **"Not reproduced"** — both arms ran to 11 generations. Fully synthetic (α=0)
+  29.6179 → 50.9806, ratio 1.7213; human-mixed (α=1) → 30.3730, ratio 1.0255.
+  All four frozen ordering claims hold; re-verified by recomputation from raw
+  artifacts in `docs/positive_control/week3_verification.md`.
 - **"Protocol only"** — `docs/positive_control/measurements/` holds per-generation
   train and eval outputs for both arms.
 - **"upstream commit still unpinned"** — `resolved_identifiers.json` pins gpt2
   (`607a30d7…`), the detector (`08f218f1…`), wikitext (`b08601e0…`), and the
-  prepared train file (`77557c85…`). The upstream repository is pinned at
+  prepared train file (`77557c85…`); upstream is pinned at
   `GeorgeDrayson/model_collapse@feb85114…`.
 
-The limitations that keep it at `valid_with_limitation` are recorded on that branch
-and are not restated here.
+The reproduction is `valid_with_limitation`, not a clean pass; the limitations are
+in the verification file and are not restated here.
 
 ## 4. What this branch did not do
 
-No merge, no tag, no cherry-pick, no rebase, no force-push, and no restatement of
-Week 2 measurements as if they were produced here. The numbers in §3 are quoted to
-show the contradiction, and their authoritative home stays
-`week-2/khantushig-positive-control`.
+No merge, no tag, no cherry-pick, no rebase, no force-push. The numbers above are
+quoted to show the contradiction; their authoritative home is
+`week-2/khantushig-positive-control` and the integration branch.
 
 ## 5. What somebody has to decide
 
-1. **Whether Week 2 is accepted.** If yes, integrate the four branches (a real
-   merge — see §2) and tag the result. If no, say so in `docs/STATUS.md`.
-2. **Which commit `week-2-freeze-2026-07-31` names.** Nothing can reference the
-   freeze until it exists.
-3. **Whether `docs/STATUS.md` is corrected before or after that merge.** It is
-   currently the repository's designated ground truth and is wrong about a
-   completed reproduction, which is the more damaging direction of error: it
-   understates evidence that exists.
+1. **Merge `cd73d39`.** Neil opens a PR from `week-2/neil-frozen-data-metrics`
+   into `integration/week-2-jul25-jul31`. Nothing in the reference-chain workstream
+   can proceed without it.
+2. **Promote the integration branch to `main` and tag it**
+   `week-2-freeze-2026-07-31`, so the freeze the configs reference exists.
+3. **Approve real budgets.** `configs/experiment/primary_pilot.json` carries
+   `scientific_status: "fixture_frozen_real_run_blocked"` and an explicit
+   `real_run_blocker` requiring tokenizer-counted human and total token budgets.
+4. **Correct the STATUS row** once (1) and (2) land.
 
-Until (1) and (2) are resolved there is no frozen design to execute, and every
-`AWAITING_JULY_31_FREEZE` config keeps having no legitimate source for its values.
+Until (1)–(3) are resolved there is no executable frozen design, and the
+`AWAITING_JULY_31_FREEZE` configs have no legitimate source for their values.

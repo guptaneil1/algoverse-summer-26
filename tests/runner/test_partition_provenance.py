@@ -113,8 +113,15 @@ def test_manifest_with_partitions_still_validates_against_the_schema() -> None:
     validate_json(manifest, ROOT / "schemas/run_manifest.schema.json")
 
 
-def test_content_hash_is_recomputed_from_text_not_copied() -> None:
-    """A hash is a measurement of the bytes, never a value carried over on trust."""
+def test_emitted_content_hash_matches_the_text_it_describes() -> None:
+    """Every emitted hash is the hash of the emitted text.
+
+    Note what this does NOT show: the shipped fixtures carry no `content_hash`
+    field, so there is nothing for an implementation to copy and this assertion
+    holds for a copying implementation too. The recompute-versus-copy question is
+    settled by `test_a_source_hash_that_disagrees_with_its_text_is_rejected`
+    below, which supplies a record that does carry one.
+    """
     partitions = build_partition_provenance(TOY_SOURCES, root=ROOT)
 
     for entries in partitions.values():
@@ -122,7 +129,35 @@ def test_content_hash_is_recomputed_from_text_not_copied() -> None:
             assert entry["content_hash"] == content_hash(entry["text"])
 
 
-def test_source_hash_disagreeing_with_its_own_text_is_rejected(tmp_path: Path) -> None:
+def test_a_recorded_hash_is_never_propagated_unverified(tmp_path: Path) -> None:
+    """Given a source that DOES carry a hash, the emitted value is the recomputed one.
+
+    This is the case the fixtures cannot exercise: a record carrying a
+    `content_hash` that happens to be correct. A copying implementation and a
+    recomputing one agree here, so the discriminating case is the mismatch test
+    that follows; together they pin that the recorded field is checked, not
+    trusted.
+    """
+    text = "A fixture sentence carrying its own recorded hash."
+    record = {
+        "example_id": "v-1",
+        "text": text,
+        "content_hash": content_hash(text),
+        "origin": "human",
+        "mode": "common",
+        "source": "toy-fixture-corpus/v1",
+        "source_offset": 0,
+        "token_count": 8,
+    }
+    path = tmp_path / "validation.jsonl"
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(record) + "\n")
+
+    emitted = build_partition_provenance({"validation": path}, root=tmp_path)
+    assert emitted["validation"][0]["content_hash"] == content_hash(text)
+
+
+def test_a_source_hash_that_disagrees_with_its_text_is_rejected(tmp_path: Path) -> None:
     """A source claiming a hash its text does not produce must not reach the manifest."""
     record = {
         "example_id": "x-1",

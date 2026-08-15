@@ -14,11 +14,17 @@ They deliberately pin the detector's *limit* as well as its reach — see
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Callable
+from pathlib import Path
 from typing import Any
+
+import pytest
 
 from human_data_budget.data.overlap import _jaccard, _shingle
 from human_data_budget.validation.audit import (
+    FORBIDDEN_PARTITION_PAIRS,
     NEAR_DUPLICATE_THRESHOLD,
+    audit_run,
     check_near_duplicate_separation,
     check_separation,
 )
@@ -102,12 +108,59 @@ def test_clean_corpus_is_not_falsely_flagged() -> None:
     assert "SEPARATION_OVERLAP" not in codes
 
 
-def test_every_forbidden_pair_is_scanned_not_just_the_test_partition() -> None:
-    """base_human_train|rescue_candidates is a forbidden pair too."""
-    partitions = _partitions(UNRELATED)
-    partitions["rescue_candidates"] = [_entry("rc-1", "Ancient trade routes shaped coastal town.")]
+@pytest.mark.parametrize(("left", "right"), FORBIDDEN_PARTITION_PAIRS)
+def test_a_reworded_leak_is_caught_in_every_forbidden_pair(left: str, right: str) -> None:
+    """Each of the five pairs, individually — not one representative pair.
 
-    assert "SEPARATION_NEAR_DUPLICATE" in _codes(check_near_duplicate_separation(partitions))
+    An earlier version of this test claimed to scan every forbidden pair while
+    exercising exactly one, leaving the central train/test constraint uncovered.
+    """
+    seed = "Radiolarian microfossils indicate ancient ocean temperatures."
+    variant = "Radiolarian microfossils indicate ancient ocean temperature."
+
+    partitions = _partitions(UNRELATED)
+    partitions[left] = [_entry(f"{left}-1", seed)]
+    partitions[right] = [_entry(f"{right}-1", variant)]
+
+    assert partitions[left][0]["content_hash"] != partitions[right][0]["content_hash"]
+    codes = _codes(check_near_duplicate_separation(partitions))
+    assert "SEPARATION_NEAR_DUPLICATE" in codes, f"{left}|{right} not scanned"
+
+
+@pytest.mark.parametrize(("left", "right"), FORBIDDEN_PARTITION_PAIRS)
+def test_an_exact_duplicate_is_caught_in_every_forbidden_pair(left: str, right: str) -> None:
+    shared = "Radiolarian microfossils indicate ancient ocean temperatures."
+    partitions = _partitions(UNRELATED)
+    partitions[left] = [_entry(f"{left}-1", shared)]
+    partitions[right] = [_entry(f"{right}-1", shared)]
+
+    assert "SEPARATION_OVERLAP" in _codes(check_separation({"data": {"partitions": partitions}}))
+
+
+def test_a_clean_corpus_is_checked_not_merely_unflagged() -> None:
+    """Asserting the absence of a code cannot distinguish clean from never-checked."""
+    checks = check_near_duplicate_separation(_partitions(UNRELATED))
+    scanned = [c for c in checks if c.name.startswith("separation_near_duplicate:") and c.passed]
+
+    assert len(scanned) == len(FORBIDDEN_PARTITION_PAIRS)
+
+
+def test_a_near_duplicate_leak_makes_the_whole_run_invalid(
+    make_run: Callable[..., Path],
+) -> None:
+    """End to end through audit_run, not just the helper."""
+
+    def leak(manifest: dict[str, Any]) -> None:
+        # The shared conftest fixture uses one-word texts ("alpha", "beta"),
+        # which are too short for character-5-gram similarity to mean anything.
+        # Both sides are replaced with sentence-length text here.
+        partitions = manifest["data"]["partitions"]
+        partitions["final_human_test"] = [_entry("fht-1", TEST_TEXT)]
+        partitions["generation_prompts"] = [_entry("gp-leak", REWORDED_LEAK)]
+
+    report = audit_run(make_run(leak))
+    assert "SEPARATION_NEAR_DUPLICATE" in report.reason_codes
+    assert report.classification == "invalid"
 
 
 # --- "not checked" is never reported as "clean" -----------------------------
@@ -128,6 +181,20 @@ def test_the_five_real_names_mapped_to_empty_lists_do_not_certify_a_run() -> Non
     codes = _codes(check_separation({"data": {"partitions": empty}}))
 
     assert "SEPARATION_MISSING_PROVENANCE" in codes
+
+
+def test_an_unrecognised_partition_name_is_rejected_even_when_all_five_are_valid() -> None:
+    """A complete, valid block plus one junk key must not certify.
+
+    Distinct from the all-junk case above, which is caught by the
+    absent-partition rule. Nothing else covers the unrecognised-name rule.
+    """
+    partitions = _partitions(UNRELATED)
+    partitions["junk"] = [_entry("junk-1", "Smuggled content nobody declared.")]
+
+    assert "SEPARATION_MISSING_PROVENANCE" in _codes(
+        check_separation({"data": {"partitions": partitions}})
+    )
 
 
 def test_a_missing_partition_is_rejected() -> None:

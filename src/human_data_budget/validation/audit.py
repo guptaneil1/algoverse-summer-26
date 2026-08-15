@@ -221,6 +221,10 @@ def check_near_duplicate_separation(
 
     for left, right in FORBIDDEN_PARTITION_PAIRS:
         if left not in partitions or right not in partitions:
+            # Absent, not clean. Silently skipping reported "not checked" as
+            # "checked and clean" — the failure mode this function exists to
+            # avoid — for a manifest that simply omitted a partition.
+            unchecked.append(f"{left}|{right}")
             continue
         left_partition, _ = adapted[left]
         right_partition, _ = adapted[right]
@@ -514,7 +518,10 @@ def check_token_ledger(
         ("human", recomputed_human, chain_result.get("consumed_human_tokens")),
         ("total", recomputed_total, chain_result.get("consumed_total_tokens")),
     ):
-        agrees = declared == recomputed
+        # `declared == recomputed` alone would accept True for 1: bool subclasses
+        # int, so a chain result carrying `"consumed_human_tokens": true` would
+        # certify against a recomputed value of one.
+        agrees = type(declared) is int and declared == recomputed
         checks.append(
             CheckResult(
                 name=f"token_ledger_recomputed:{label}",

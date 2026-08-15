@@ -1,4 +1,4 @@
-{"example_id": "h-common-1", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 0, "text": "A common-mode human fixture.", "token_count": 4}
-{"example_id": "h-common-2", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 1, "text": "A second common-mode fixture.", "token_count": 4}
-{"example_id": "h-tail-1", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 2, "text": "A rare-mode human fixture.", "token_count": 4}
-{"example_id": "h-tail-2", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 3, "text": "A second rare-mode fixture.", "token_count": 4}
+{"example_id": "h-common-1", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 0, "text": "A common-mode human fixture.", "token_count": 10}
+{"example_id": "h-common-2", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 1, "text": "A second common-mode fixture.", "token_count": 10}
+{"example_id": "h-tail-1", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 2, "text": "A rare-mode human fixture.", "token_count": 10}
+{"example_id": "h-tail-2", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 3, "text": "A second rare-mode fixture.", "token_count": 10}

@@ -1,0 +1,2 @@
+{"example_id": "gp-1", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 0, "text": "Describe the migration patterns of temperate songbirds.", "token_count": 7}
+{"example_id": "gp-2", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 1, "text": "Explain how tidal locking affects planetary rotation.", "token_count": 7}

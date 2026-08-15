@@ -41,6 +41,11 @@ data/manifests/*
 !data/fixtures/
 data/fixtures/*
 !data/fixtures/toy_corpus.jsonl
+# Toy partition fixtures backing the smoke chain's data.partitions provenance
+# block. Without these the toy run cannot emit provenance and the validator
+# classifies it invalid, so they are committed like toy_corpus.jsonl above.
+!data/fixtures/partitions/
+!data/fixtures/partitions/*.jsonl
 
 # Results: keep documentation and small generated aggregates only
 results/*

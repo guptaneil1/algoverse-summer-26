@@ -1,6 +1,17 @@
 {
   "run_id": "fixture_joint_seed1",
   "budget_id": "toy-b1",
+  "data": {
+    "train_manifest": "data/fixtures/partitions/base_human_train.jsonl",
+    "train_manifest_sha256": "fixture",
+    "partition_sources": {
+      "base_human_train": "data/fixtures/partitions/base_human_train.jsonl",
+      "rescue_candidates": "data/fixtures/partitions/rescue_candidates.jsonl",
+      "generation_prompts": "data/fixtures/partitions/generation_prompts.jsonl",
+      "validation": "data/fixtures/partitions/validation.jsonl",
+      "final_human_test": "data/fixtures/partitions/final_human_test.jsonl"
+    }
+  },
   "policy": "joint",
   "horizon": 3,
   "chain_seed": 1,

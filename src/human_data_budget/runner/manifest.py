@@ -12,6 +12,11 @@ import platform
 from pathlib import Path
 from typing import Any
 
+from human_data_budget.runner.provenance import (
+    build_partition_provenance,
+    partition_sources_from_config,
+)
+
 _ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     "planned": {"running", "failed", "invalid"},
     "running": {"complete", "failed", "invalid"},
@@ -35,14 +40,38 @@ def _default_environment() -> dict[str, str]:
     return {"python": platform.python_version(), "hardware": "cpu-fixture"}
 
 
+def _data_block(config: dict[str, Any], data_root: Path) -> dict[str, Any]:
+    """Assemble the manifest ``data`` block, including per-example provenance.
+
+    ``PROTOCOL.md`` §3 requires per-example provenance for the five partitions,
+    and the auditor classifies a run ``invalid`` with
+    ``SEPARATION_MISSING_PROVENANCE`` without it. The block is emitted only when
+    the config declares partition sources: a config that declares none produces
+    no block and stays honestly uncertifiable, rather than gaining a synthesised
+    provenance record that no data supports.
+    """
+
+    data = dict(config.get("data", _DEFAULT_DATA))
+    sources = partition_sources_from_config(config)
+    if sources:
+        data["partitions"] = build_partition_provenance(sources, root=data_root)
+    return data
+
+
 def new_manifest(
     config: dict[str, Any],
     *,
     policy_name: str,
     git_commit: str = "0" * 40,
     working_tree_clean: bool = True,
+    data_root: Path = Path("."),
 ) -> dict[str, Any]:
-    """Build the initial run manifest in ``planned`` status."""
+    """Build the initial run manifest in ``planned`` status.
+
+    ``data_root`` resolves relative partition-source paths declared in the
+    config; it defaults to the process working directory, which is the
+    repository root for the documented ``run_chain.sh`` invocation.
+    """
 
     return {
         "schema_version": "1.0",
@@ -51,7 +80,7 @@ def new_manifest(
         "git_commit": git_commit,
         "working_tree_clean": working_tree_clean,
         "model": config.get("model", _DEFAULT_MODEL),
-        "data": config.get("data", _DEFAULT_DATA),
+        "data": _data_block(config, data_root),
         "policy": {
             "name": policy_name,
             "config": config.get("policy_config", "toy_cpu.json"),
@@ -112,9 +141,17 @@ def attach_failure(manifest: dict[str, Any], failure: dict[str, Any]) -> dict[st
 
 
 def write_manifest_atomic(manifest: dict[str, Any], path: Path) -> None:
-    """Atomically write the manifest as JSON."""
+    """Atomically write the manifest as JSON with LF line endings.
+
+    The auditor records ``sha256(run_manifest.json)`` as the run's provenance
+    hash. ``Path.write_text`` translates ``\\n`` to ``\\r\\n`` on Windows, so the
+    same logical run hashed to two different values depending on the operating
+    system that produced it. ``newline="\\n"`` pins the bytes, matching the
+    ``.gitattributes`` policy for content-hashed artifacts.
+    """
 
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    with tmp_path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(manifest, indent=2) + "\n")
     tmp_path.replace(path)

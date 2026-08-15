@@ -61,9 +61,13 @@ def _tail_modes(config: dict[str, Any], mode_statistics: dict[str, float]) -> se
 
 
 def _write_chain_result(result: ChainResult, path: Path) -> None:
+    # newline="\n": the auditor records sha256(chain_result.json), and
+    # Path.write_text would emit CRLF on Windows, so the same logical run
+    # hashed differently per operating system. See write_manifest_atomic.
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(json.dumps(result.as_dict(), indent=2) + "\n", encoding="utf-8")
+    with tmp_path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(result.as_dict(), indent=2) + "\n")
     tmp_path.replace(path)
 
 

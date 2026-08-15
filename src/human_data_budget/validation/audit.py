@@ -12,9 +12,12 @@ import hashlib
 import json
 import math
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from human_data_budget.data.overlap import find_near_duplicate_pairs
+from human_data_budget.data.token_accounting import consumed_tokens
 from human_data_budget.validation.classification import (
     LIMITING_CODES,
     AuditReport,
@@ -24,7 +27,21 @@ from human_data_budget.validation.classification import (
 
 MANIFEST_NAME = "run_manifest.json"
 CHAIN_RESULT_NAME = "chain_result.json"
+BATCH_RECORDS_NAME = "batch_records.jsonl"
 TERMINAL_STATUSES = {"complete", "failed", "invalid"}
+
+# The similarity threshold is a frozen scientific parameter. No freeze record
+# exists yet, so the auditor adopts the default already implemented in
+# ``human_data_budget.data.overlap`` rather than choosing a new value. It needs
+# the data owner's confirmation before any primary chain is certified.
+#
+# Measured behaviour of that detector at this threshold (character 5-gram
+# Jaccard): a verbatim copy scores 1.0 and a punctuation-only variant 0.96, both
+# caught; a semantic paraphrase that reuses little surface text scores far below
+# the threshold and is NOT caught. See
+# ``tests/validation/test_near_duplicate_separation.py``, which pins both the
+# detection and the residual gap.
+NEAR_DUPLICATE_THRESHOLD = 0.8
 
 FORBIDDEN_PARTITION_PAIRS = (
     ("base_human_train", "final_human_test"),
@@ -111,6 +128,105 @@ def check_artifacts(run_directory: Path, manifest: dict[str, Any]) -> list[Check
     return checks
 
 
+@dataclass(frozen=True)
+class _TextExample:
+    """The two attributes ``find_near_duplicate_pairs`` reads from an example.
+
+    A full ``human_data_budget.data.manifest.Example`` is deliberately not built
+    here: it requires ``mode``, ``source_offset``, and ``token_count``, none of
+    which the manifest provenance record carries. Supplying placeholder values
+    for them would put invented numbers into the audit path, so the auditor
+    adapts the record it actually has and reuses the frozen detection logic
+    unchanged.
+    """
+
+    example_id: str
+    text: str
+
+
+@dataclass(frozen=True)
+class _TextPartition:
+    examples: tuple[_TextExample, ...]
+
+
+def _text_partition(entries: list[dict[str, Any]]) -> _TextPartition | None:
+    """Adapt a partition's provenance entries for near-duplicate comparison.
+
+    Returns ``None`` when any entry lacks text, because a partially compared
+    partition would report "no near-duplicates found" while silently skipping
+    the examples it could not read.
+    """
+
+    examples: list[_TextExample] = []
+    for entry in entries:
+        text = entry.get("text")
+        if not isinstance(text, str) or not text.strip():
+            return None
+        examples.append(
+            _TextExample(example_id=str(entry.get("stable_id", "")), text=text)
+        )
+    return _TextPartition(examples=tuple(examples))
+
+
+def check_near_duplicate_separation(
+    partitions: dict[str, list[dict[str, Any]]],
+    *,
+    threshold: float = NEAR_DUPLICATE_THRESHOLD,
+) -> list[CheckResult]:
+    """Reject near-duplicate text across forbidden partition pairs.
+
+    Closes blind spot 2 of ``docs/validity/week3_adversarial_audit.md`` §8: the
+    auditor previously compared exact content hashes only, so a leak that had
+    been reworded even trivially passed as valid. Detection is delegated to
+    ``human_data_budget.data.overlap.find_near_duplicate_pairs``.
+
+    A pair whose text is unavailable produces an explicit
+    ``LIMIT_NEAR_DUPLICATE_NOT_CHECKED`` limitation rather than an unqualified
+    pass, so "not checked" is never recorded as "checked and clean".
+    """
+
+    checks: list[CheckResult] = []
+    adapted = {name: _text_partition(entries) for name, entries in partitions.items()}
+    unchecked: list[str] = []
+
+    for left, right in FORBIDDEN_PARTITION_PAIRS:
+        if left not in partitions or right not in partitions:
+            continue
+        left_partition = adapted.get(left)
+        right_partition = adapted.get(right)
+        if left_partition is None or right_partition is None:
+            unchecked.append(f"{left}|{right}")
+            continue
+
+        pairs = find_near_duplicate_pairs(left_partition, right_partition, threshold)
+        checks.append(
+            CheckResult(
+                name=f"separation_near_duplicate:{left}|{right}",
+                passed=not pairs,
+                code=None if not pairs else "SEPARATION_NEAR_DUPLICATE",
+                detail=(
+                    ""
+                    if not pairs
+                    else (
+                        f"{len(pairs)} near-duplicate pair(s) at threshold "
+                        f"{threshold}: {sorted(pairs)[:5]}"
+                    )
+                ),
+            )
+        )
+
+    if unchecked:
+        checks.append(
+            CheckResult(
+                name="separation_near_duplicate_scanned",
+                passed=False,
+                code="LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+                detail=f"no example text for partition pair(s) {sorted(unchecked)}",
+            )
+        )
+    return checks
+
+
 def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
     """Reject overlap between forbidden partition pairs and missing provenance."""
     checks: list[CheckResult] = []
@@ -156,6 +272,8 @@ def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
                         detail=f"missing {sorted(missing)}",
                     )
                 )
+
+    checks.extend(check_near_duplicate_separation(partitions))
 
     checks.append(
         CheckResult(name="provenance_scanned", passed=True, detail=f"{len(partitions)} partitions")
@@ -204,6 +322,124 @@ def check_budgets(manifest: dict[str, Any], chain_result: dict[str, Any]) -> lis
             detail="" if total_ok else f"planned {planned_total}, consumed {consumed_total}",
         )
     )
+    return checks
+
+
+def _load_batch_records(path: Path) -> list[dict[str, Any]]:
+    """Read realized batch records from JSONL, one record per line."""
+    records: list[dict[str, Any]] = []
+    with path.open(encoding="utf-8") as handle:
+        for lineno, line in enumerate(handle, 1):
+            line = line.strip()
+            if not line:
+                continue
+            record = json.loads(line)
+            if not isinstance(record, dict):
+                raise ValueError(f"line {lineno} is not a JSON object")
+            records.append(record)
+    return records
+
+
+def check_token_ledger(
+    run_directory: Path, manifest: dict[str, Any], chain_result: dict[str, Any]
+) -> list[CheckResult]:
+    """Recompute the token ledger from realized batches instead of trusting it.
+
+    Closes blind spot 3 of ``docs/validity/week3_adversarial_audit.md`` §8. The
+    auditor previously compared the declared consumed totals against the frozen
+    budget, so a ledger that was wrong but internally consistent — the same wrong
+    number in the manifest and the chain result — passed every check.
+
+    Recomputation delegates to
+    ``human_data_budget.data.token_accounting.consumed_tokens``, which already
+    enforces the accounting rules tested in
+    ``tests/data/test_token_accounting.py``: padding excluded via the attention
+    mask, each presentation of a repeated example counted again, every
+    gradient-accumulation micro-batch counted, and a resumed run counted exactly
+    once per realized batch.
+
+    When no batch records exist the auditor says so with
+    ``LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE``. It never falls back silently to
+    comparison, because "the ledger agrees with itself" is precisely the
+    evidence this check exists to distinguish from "the ledger is correct".
+    """
+
+    declared_paths = [
+        reference.get("path", "")
+        for reference in manifest.get("artifacts", [])
+        if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
+    ]
+    candidate = run_directory / (declared_paths[0] if declared_paths else BATCH_RECORDS_NAME)
+
+    if not candidate.is_file():
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
+                detail=(
+                    f"no realized batch records at {candidate.name}; the declared "
+                    "ledger was compared against the frozen budget but not recomputed"
+                ),
+            )
+        ]
+
+    try:
+        records = _load_batch_records(candidate)
+    except (OSError, ValueError) as error:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=f"{candidate.name} could not be read as batch records: {error}",
+            )
+        ]
+
+    if not records:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
+                detail=f"{candidate.name} contains no batch records",
+            )
+        ]
+
+    try:
+        recomputed_total = consumed_tokens(records)
+        recomputed_human = consumed_tokens(records, origin="human")
+    except (KeyError, TypeError, ValueError) as error:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=f"{candidate.name} holds malformed batch records: {error}",
+            )
+        ]
+
+    checks: list[CheckResult] = []
+    for label, recomputed, declared in (
+        ("human", recomputed_human, chain_result.get("consumed_human_tokens")),
+        ("total", recomputed_total, chain_result.get("consumed_total_tokens")),
+    ):
+        agrees = declared == recomputed
+        checks.append(
+            CheckResult(
+                name=f"token_ledger_recomputed:{label}",
+                passed=agrees,
+                code=None if agrees else "BUDGET_LEDGER_MISMATCH",
+                detail=(
+                    ""
+                    if agrees
+                    else (
+                        f"chain result declares {declared} {label} tokens; "
+                        f"{len(records)} realized batch records total {recomputed}"
+                    )
+                ),
+            )
+        )
     return checks
 
 
@@ -387,6 +623,7 @@ def audit_run(
     checks.extend(check_artifacts(run_directory, manifest))
     checks.extend(check_separation(manifest))
     checks.extend(check_budgets(manifest, chain_result))
+    checks.extend(check_token_ledger(run_directory, manifest, chain_result))
     checks.extend(check_protocol(manifest, chain_result))
     checks.extend(check_evaluation(chain_result))
 

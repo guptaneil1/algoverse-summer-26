@@ -20,8 +20,16 @@ CLASSIFICATIONS = (VALID, VALID_WITH_LIMITATION, INVALID)
 # limiting; nothing decides which at audit time.
 INVALIDATING_CODES = {
     "SEPARATION_OVERLAP": "A forbidden partition pair shares at least one example.",
+    "SEPARATION_NEAR_DUPLICATE": (
+        "A forbidden partition pair shares near-duplicate text above the frozen "
+        "similarity threshold."
+    ),
     "SEPARATION_MISSING_ID": "A training example lacks a stable identifier.",
     "SEPARATION_MISSING_PROVENANCE": "A provenance field required by protocol is absent.",
+    "BUDGET_LEDGER_MISMATCH": (
+        "Token totals recomputed from realized batch records disagree with the "
+        "declared ledger."
+    ),
     "BUDGET_HUMAN_MISMATCH": "Consumed lifetime human-origin tokens differ from the frozen budget.",
     "BUDGET_TOTAL_MISMATCH": "Consumed total optimizer tokens differ from the frozen budget.",
     "BUDGET_NEGATIVE": "A recorded token count is negative.",
@@ -43,6 +51,14 @@ LIMITING_CODES = {
     "LIMIT_REDUCED_GENERATIONS": "The chain completed fewer generations than the frozen horizon.",
     "LIMIT_MISSING_OPTIONAL_ARTIFACT": "An optional artifact reference is absent.",
     "LIMIT_ENVIRONMENT_INCOMPLETE": "The environment record is missing non-critical fields.",
+    "LIMIT_NEAR_DUPLICATE_NOT_CHECKED": (
+        "Partition entries carry no text, so near-duplicate overlap could not be "
+        "checked. Exact-hash separation was still verified."
+    ),
+    "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE": (
+        "No realized batch records were available, so the declared token ledger "
+        "could not be recomputed and was only compared against the frozen budget."
+    ),
 }
 
 ALL_CODES = {**INVALIDATING_CODES, **LIMITING_CODES}

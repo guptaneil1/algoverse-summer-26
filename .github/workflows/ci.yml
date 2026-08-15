@@ -54,3 +54,60 @@ jobs:
         with:
           python-version: "3.10"
       - run: python scripts/audit_repository.py --strict-structure
+
+  # The fixture artifact pipeline is not covered by unit-tests alone: those run
+  # without matplotlib, so `make figures` and `make fixture-artifacts` would rot
+  # unnoticed. This job installs the optional `figures` extra and runs the whole
+  # pipeline end to end.
+  #
+  # Not hash-pinned: matplotlib wheels are platform-specific, and a lockfile
+  # generated off-platform would pin hashes this runner can never match. The
+  # version range in pyproject.toml's `figures` extra is the constraint. If
+  # hash-pinning becomes required, generate the lock ON linux-x86_64 and add it
+  # as requirements-figures-lock.txt.
+  fixture-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.10"
+          cache: pip
+      - run: python -m pip install --require-hashes -r requirements-lock.txt
+      - run: python -m pip install -e .
+      - name: Install the exact matplotlib that produced the committed artifacts
+        run: |
+          set -euo pipefail
+          # PNG bytes are matplotlib-version-dependent, and the staleness gate
+          # below compares CI output against artifacts committed from a
+          # developer machine. Installing any version in the `figures` range
+          # would make that comparison version-vs-version instead of
+          # content-vs-content, so the recorded provenance file IS the pin.
+          version=$(python -c "import json;print(json.load(open('results/figures/figure_provenance.json'))['matplotlib_version'])")
+          echo "pinning matplotlib==${version} from figure_provenance.json"
+          python -m pip install "matplotlib==${version}"
+      - name: Build every fixture artifact
+        run: python scripts/build_fixture_artifacts.py --seeds 5
+      - name: Artifacts must be deterministic
+        run: |
+          set -euo pipefail
+          # Regenerating must not change any byte. If it does, the recorded
+          # SHA-256 digests are meaningless and PROTOCOL.md §3's requirement that
+          # generated figures carry content hashes cannot be satisfied.
+          cp results/ARTIFACT_MANIFEST.json /tmp/first.json
+          python scripts/build_fixture_artifacts.py --seeds 5
+          if ! diff -q /tmp/first.json results/ARTIFACT_MANIFEST.json; then
+            echo "artifact generation is not deterministic" >&2
+            diff /tmp/first.json results/ARTIFACT_MANIFEST.json || true
+            exit 1
+          fi
+          echo "artifact generation is byte-reproducible"
+      - name: Committed manifest must match regenerated artifacts
+        run: |
+          set -euo pipefail
+          # Fails when someone edits a generated artifact by hand, or commits a
+          # stale manifest after changing the generator.
+          git diff --exit-code -- results/ || {
+            echo "committed fixture artifacts are stale; run 'make fixture-artifacts'" >&2
+            exit 1
+          }

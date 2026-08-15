@@ -13,6 +13,7 @@ REQUIRED = [
     ".github/CODEOWNERS",
     ".github/pull_request_template.md",
     ".github/workflows/ci.yml",
+    ".github/workflows/paper.yml",
     "README.md",
     "CLAIMS.md",
     "COMPUTE.md",
@@ -20,6 +21,8 @@ REQUIRED = [
     "FAILURE_LOG.md",
     "PROTOCOL.md",
     "PREREGISTRATION.md",
+    "Makefile",
+    "pyproject.toml",
     "docs/PROJECT_CONTEXT.md",
     "docs/GITHUB_SETUP.md",
     "docs/TEAM.md",
@@ -36,24 +39,32 @@ REQUIRED = [
     "configs/experiment/toy_cpu.json",
     "uv.lock",
     "requirements-lock.txt",
-    # Stage A positive-control package (Week 2).
-    "configs/experiment/positive_control_fully_synthetic.json",
-    "configs/experiment/positive_control_human_mixed.json",
-    "scripts/reproduce_positive_control.sh",
-    "src/human_data_budget/runner/positive_control_adapter.py",
-    "docs/positive_control/expected_vs_observed.md",
-    "docs/benchmarks/khantushig_week2.md",
-    "tests/runner/test_positive_control_contract.py",
-    "tests/runner/test_real_checkpoint_resume.py",
-    "tests/runner/test_reproduction_command.py",
-    "tests/runner/test_artifact_hashes.py",
-]
-
-#: Experiment configs that must remain parseable JSON.
-EXPERIMENT_CONFIGS = [
-    "configs/experiment/toy_cpu.json",
-    "configs/experiment/positive_control_fully_synthetic.json",
-    "configs/experiment/positive_control_human_mixed.json",
+    # Evidence artifacts. These record findings that took real work to establish
+    # and that cannot be reconstructed from the code — an upstream commit pin, a
+    # licence audit, sentence-level claim licensing. Losing one silently is the
+    # failure this audit exists to prevent.
+    "docs/evidence/sources.yaml",
+    "docs/evidence/closest_work.csv",
+    "docs/evidence/claims.yaml",
+    "docs/evidence/upstream_pin.md",
+    "docs/evidence/domain_audit.md",
+    "docs/evidence/claim_evidence_matrix.md",
+    # Precommitted process documents. Each must exist *before* the thing it
+    # governs, so their absence is a protocol failure rather than a gap.
+    "docs/outcome_templates.md",
+    "docs/VALIDITY_CERTIFICATE_TEMPLATE.md",
+    "docs/SUBMISSION_CHECKLIST.md",
+    "docs/method/hyperparameters.md",
+    "docs/presentation_outline.md",
+    # Verification entry points referenced by PROTOCOL.md and the weekly plans.
+    "scripts/validate_run.py",
+    "scripts/preflight_budget.py",
+    "scripts/build_fixture_artifacts.py",
+    # Manuscript sources.
+    "paper/main.tex",
+    "paper/references.bib",
+    "paper/sections/10_appendix.tex",
+    "paper/figures/pipeline.tex",
 ]
 
 
@@ -66,8 +77,7 @@ def main() -> None:
         raise SystemExit("missing required repository paths:\n" + "\n".join(missing))
     for path in (ROOT / "schemas").glob("*.json"):
         json.loads(path.read_text(encoding="utf-8"))
-    for config in EXPERIMENT_CONFIGS:
-        json.loads((ROOT / config).read_text(encoding="utf-8"))
+    json.loads((ROOT / "configs/experiment/toy_cpu.json").read_text(encoding="utf-8"))
     if args.strict_structure:
         required_directories = ["src", "tests", "configs", "data", "docs", "paper", "results"]
         absent = [name for name in required_directories if not (ROOT / name).is_dir()]

@@ -6,7 +6,12 @@ assumption forecast, per `COMPUTE.md`'s "forecasts must state assumptions and ma
 as actual usage"). Nothing measured here is a real positive-control or model-collapse result — see
 `PROTOCOL.md` §5 (no-result rule).
 
-## 1. Positive-control commit hash — pending
+## 1. Positive-control commit hash — pending *(resolved 2026-08-15; see addendum)*
+
+> **ADDENDUM 2026-08-15.** The commit is now pinned:
+> `feb8511479a2e2dc868e1caf3f63cb99f1fcc746`. The original Week 1 text below is preserved unedited
+> as the historical record of what was true on 2026-07-25. Full verification record, upstream
+> configuration, and a newly discovered dependency hazard are in `docs/evidence/upstream_pin.md`.
 
 **Status: not pinned.** `PROTOCOL.md` §2 records:
 

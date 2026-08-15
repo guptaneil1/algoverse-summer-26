@@ -1,5 +1,5 @@
 schema_version: '1.1'
-review_completed: '2026-08-02'
+review_completed: '2026-07-22'
 reviewer: Ronit
 sources:
 - id: shumailov_2024
@@ -320,42 +320,6 @@ sources:
   exact_supporting_location: Section 3, influence-ranking invariance and Group Influence; section formulating periodic
     influence maximization; experiments across nine downstream benchmarks; ablation on update frequency and overhead;
     Conclusion.
-  audit_status: reviewed_primary
-- id: luo_2026_kite
-  title: Learning from Synthetic Data without Model Collapse in Iterative Instruction Tuning
-  authors:
-  - Xiaonan Luo
-  - Yue Huang
-  - Kehan Guo
-  - Ping He
-  - Chuan Zou
-  - Ting Hua
-  - Xiangliang Zhang
-  venue: arXiv 2026
-  primary_url: https://arxiv.org/abs/2607.17043
-  relevance: direct
-  topic_group: iterative weakness targeting and semantic-boundary curation
-  exact_supporting_location: Sections 3.1-3.3, iterative accumulation, per-iteration labeling budget, failure-guided
-    weakness profiling, and Kernel Boundary Uncertainty; Section 4.1, five-iteration accumulated protocol and
-    baselines; Appendix 8.2.4, B=500 per iteration; Section 8.4, equal labeling-budget cost comparison.
-  audit_status: reviewed_primary
-- id: qiao_2026_selection_bias
-  title: When Sample Selection Bias Precipitates Model Collapse
-  authors:
-  - Xinbao Qiao
-  - Xianglong Du
-  - Wei Liu
-  - Jingqi Zhang
-  - Peihua Mai
-  - Meng Zhang
-  - Yan Pang
-  venue: arXiv 2026
-  primary_url: https://arxiv.org/abs/2606.13732
-  relevance: direct
-  topic_group: recursive selection bias under fragmented monitoring references
-  exact_supporting_location: Section 3.1 and Theorems 1-3, biased local-reference selection and diversity decay;
-    Sections 4.3-4.4, collaborative proxy-reference mitigations; Section 6, ten-iteration image experiments;
-    Appendix C.5 and Table 3, minority-mode and tail diagnostics.
   audit_status: reviewed_primary
 - id: xie_2023_doremi
   title: 'DoReMi: Optimizing Data Mixtures Speeds Up Language Model Pretraining'

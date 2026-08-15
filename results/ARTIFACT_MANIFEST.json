@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "fixture_only": true,
+  "scientific_evidence": false,
+  "warning": "Fixture artifacts produced by scripts/build_fixture_artifacts.py from analysis.simulator. No language model was trained. These files must be regenerated from immutable chain artifacts before any value enters the manuscript as a result.",
+  "generator": "scripts/build_fixture_artifacts.py",
+  "chain_seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "artifacts": {
+    "results/aggregates/fixture_primary.json": "2d0ed31bd9627cee7ab8d4651f441783a7c10d428d98260fd94e04b1c1bbc1e0",
+    "results/csv/chain_level_long.csv": "4f1605d7e62ee60ef3bcbdd3fd4a16513d38148f7d201ef27fda2a3e29a76ccf",
+    "results/csv/policy_summary.csv": "23a061e2eb24369c543e9180281648d14ade0cb2a14a6b3a725fcfb41c81b054",
+    "results/figures/allocation_by_generation.png": "4cfe9453e2ce6cbe853f2a045e9f143cf62c420087b9cdec9ccf3742d7bb27df",
+    "results/figures/figure_provenance.json": "3cdadb12b3a610786bf487cf5c6c44b11e45b87b63a749e8919ebf796b985d5e",
+    "results/figures/nll_by_generation.png": "faf1549c4c57f19a66c56a78bbbf63d52a8c8d64e7a5afe5b2db27da5f1e093b",
+    "results/figures/paired_difference.png": "792ef302b2c694685cf1006fba9a3f706f84cc2f6aa474e9ccee8b9275c33e4a",
+    "results/figures/tail_retention_by_generation.png": "17569e85bf721f5b56edeed6685adfca17cce84ee505eaee13966e41129ab61c",
+    "results/policy_behavior_report.md": "9ec2f57ab48c03b11aa899e44434e7f2a257b86ae233039893585958fffe6219",
+    "results/tables/fixture_paired_contrasts.tex": "06d7c298f0d4b18f31314f4bc8ed12e46df42a4d5df17931efb94be18fbbcf63",
+    "results/tables/fixture_primary_results.tex": "52e527bf47c96c76964ab8a5bd06337711f1a92416a8c79091576b5125246296",
+    "results/tables/table_provenance.json": "cb34b9b0a73eddcf6b3a1ac2209a0044368617978756da43b97d82abb065c855"
+  }
+}

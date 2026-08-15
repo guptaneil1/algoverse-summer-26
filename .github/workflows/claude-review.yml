@@ -1,0 +1,57 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    # Fork PRs cannot read secrets; skip rather than fail
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 15"
+          prompt: |
+            Review this pull request against the project protocol. Read CLAUDE.md,
+            PROTOCOL.md, and CLAIMS.md first.
+
+            Gate order. Stop at the first failure — do not spend effort on style while
+            scientific validity is broken.
+
+            1. VALIDITY — any path by which an invalid result could look valid?
+               Leakage between partitions, broken budget matching, token accounting
+               from estimates rather than consumed batches, missing seed propagation,
+               test-partition data gaining influence over any decision.
+            2. CLAIMS — any prose (comment, docstring, README, paper, commit message)
+               asserting more than run artifacts support? Check CLAIMS.md statuses and
+               the banned-word list. For each overclaim, give the narrower sentence the
+               evidence actually supports, written out in full.
+            3. FREEZE — given the current freeze state, is this an allowed edit? After
+               a results freeze the allowed set is clarity, citations, formatting,
+               packaging, and removal of unsupported claims.
+            4. CONTRACTS — schema conformance, architecture dependency direction. If a
+               schema changed, was the interface doc updated in the same commit?
+            5. OWNERSHIP — files owned by another workstream per CODEOWNERS?
+            6. ENGINEERING — tests that would actually fail if the logic broke,
+               determinism, atomic writes, error paths. Readability last and briefly.
+
+            Post one review comment. Lead with the verdict — BLOCK, REQUEST CHANGES, or
+            APPROVE — and the single most important reason. Then findings ordered by
+            severity, each with file:line and a concrete fix. Keep "must fix before
+            merge" separate from "worth doing later"; a blended list gets triaged into
+            inaction.
+
+            Do not approve solely because tests pass. Passing tests are not evidence
+            that a scientific result holds.

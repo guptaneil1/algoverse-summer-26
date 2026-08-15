@@ -29,7 +29,15 @@ class ProvenanceError(ManifestError):
 
 @dataclass(frozen=True)
 class Example:
-    """One data example with stable identity and provenance."""
+    """One data example with stable identity and provenance.
+
+    The first eight fields are partition-time identity. The trailing optional
+    fields are training-time provenance required by ``PROTOCOL.md`` §3; they are
+    optional on the dataclass because a base-training example read from a frozen
+    partition has not yet been selected by any policy or seen by any optimizer.
+    Once an example enters training, ``validate_training_provenance`` requires
+    all of them.
+    """
 
     example_id: str
     text: str
@@ -39,18 +47,15 @@ class Example:
     source_offset: int
     token_count: int
     content_hash: str
+    source_revision: str | None = None
+    generation: int | None = None
+    selection_policy: str | None = None
+    selection_score: float | None = None
+    selected: bool | None = None
+    optimizer_presentations: int = 0
 
     @classmethod
     def from_dict(cls, record: dict) -> Example:
-        """Build an Example from a manifest record.
-
-        Two record shapes are accepted. A text-bearing record (fixtures, freshly
-        prepared data) carries ``text`` and its hash is computed here. A frozen,
-        text-free record (the immutable manifests this policy commits to git per
-        ``data/README.md`` — raw text is never committed) carries a precomputed
-        ``content_hash`` instead. If both are present they must agree, so a
-        frozen manifest can never silently drift from the text it was built from.
-        """
         missing_provenance = _PROVENANCE_FIELDS - record.keys()
         if missing_provenance:
             raise ProvenanceError(
@@ -59,38 +64,118 @@ class Example:
         missing = _REQUIRED_FIELDS - record.keys()
         if missing:
             raise ManifestError(f"Missing required fields: {sorted(missing)}")
+
+        # Round-trip fidelity. `to_dict` deliberately emits `content_hash` but not
+        # `text`: a manifest is a reference to a corpus, not a copy of it. Before
+        # this branch, reloading a serialized manifest recomputed the hash from an
+        # absent text, yielding the hash of "" for every example and silently
+        # changing the manifest's identity.
         text = record.get("text")
-        provided_hash = record.get("content_hash")
-        if text is not None:
-            resolved_hash = content_hash(text)
-            if provided_hash is not None and provided_hash != resolved_hash:
-                raise ManifestError(
-                    f"content_hash mismatch for {record.get('example_id')!r}: "
-                    f"recorded {provided_hash!r} does not match text-derived {resolved_hash!r}"
-                )
-            resolved_text = text
-        elif provided_hash is not None:
-            resolved_hash = provided_hash
-            resolved_text = ""
+        supplied_hash = record.get("content_hash")
+        if text is None and supplied_hash is None:
+            raise ManifestError(
+                "record must carry either 'text' or a precomputed 'content_hash'"
+            )
+        if text is None:
+            resolved_hash = supplied_hash
         else:
-            raise ManifestError("record must include either 'text' or a precomputed 'content_hash'")
+            resolved_hash = content_hash(text)
+            if supplied_hash is not None and supplied_hash != resolved_hash:
+                raise ManifestError(
+                    f"content_hash mismatch for {record['example_id']!r}: "
+                    f"recorded {supplied_hash}, computed {resolved_hash}"
+                )
+
+        presentations = int(record.get("optimizer_presentations", 0))
+        if presentations < 0:
+            raise ManifestError("optimizer_presentations must not be negative")
+        selection_score = record.get("selection_score")
         return cls(
             example_id=record["example_id"],
-            text=resolved_text,
+            text=text or "",
             origin=record["origin"],
             mode=record["mode"],
             source=record["source"],
             source_offset=int(record["source_offset"]),
             token_count=int(record["token_count"]),
             content_hash=resolved_hash,
+            source_revision=record.get("source_revision"),
+            generation=(
+                None if record.get("generation") is None else int(record["generation"])
+            ),
+            selection_policy=record.get("selection_policy"),
+            selection_score=(None if selection_score is None else float(selection_score)),
+            selected=record.get("selected"),
+            optimizer_presentations=presentations,
+        )
+
+
+def validate_training_provenance(example: Example) -> None:
+    """Require the full ``PROTOCOL.md`` §3 provenance set for a trained-on example.
+
+    PROTOCOL.md §3 lists eight fields that every training example must retain
+    *after shuffling and batching*: stable ID, content hash, source dataset and
+    revision, human/synthetic origin, recursive generation, selection policy and
+    score, whether it was selected, and number of optimizer presentations.
+
+    Partition-time identity covers the first three. This function enforces the
+    rest, and is the check to call at the point an example is handed to the
+    optimizer — not when it is read from a manifest.
+    """
+    missing: list[str] = []
+    if not example.source_revision:
+        missing.append("source_revision")
+    if example.generation is None:
+        missing.append("generation")
+    if not example.selection_policy:
+        missing.append("selection_policy")
+    if example.selection_score is None:
+        missing.append("selection_score")
+    if example.selected is None:
+        missing.append("selected")
+    if missing:
+        raise ProvenanceError(
+            f"Example {example.example_id!r} is missing training provenance: {sorted(missing)}"
+        )
+    if example.selected and example.optimizer_presentations < 1:
+        raise ProvenanceError(
+            f"Example {example.example_id!r} is marked selected but records "
+            "zero optimizer presentations"
+        )
+    if not example.selected and example.optimizer_presentations:
+        raise ProvenanceError(
+            f"Example {example.example_id!r} is marked unselected but records "
+            f"{example.optimizer_presentations} optimizer presentations"
         )
 
 
 def _manifest_hash(examples: list[Example]) -> str:
-    h = hashlib.sha256()
-    for ex in sorted(examples, key=lambda e: e.example_id):
-        h.update(f"{ex.example_id}:{ex.content_hash}\n".encode())
-    return h.hexdigest()
+    """Content hash identifying one partition.
+
+    Records are framed with ``json.dumps`` rather than ``f"{id}:{hash}\\n"``
+    concatenation. Unframed concatenation lets a crafted ``example_id``
+    containing ``:`` or a newline forge record boundaries, so two different
+    manifests can hash identically — a partition could then be swapped without
+    changing its recorded identity.
+
+    Duplicate ``example_id`` values are rejected rather than hashed, because a
+    partition with two records sharing an id has no well-defined membership.
+    """
+
+    ids = [example.example_id for example in examples]
+    duplicates = sorted({name for name in ids if ids.count(name) > 1})
+    if duplicates:
+        raise ManifestError(f"duplicate example_id values in partition: {duplicates}")
+
+    digest = hashlib.sha256()
+    # Sort on the full (id, hash) pair: id alone is not a total order once two
+    # records can share an id, and a non-total order makes the hash unstable.
+    for example in sorted(examples, key=lambda e: (e.example_id, e.content_hash)):
+        digest.update(
+            json.dumps([example.example_id, example.content_hash]).encode("utf-8")
+        )
+        digest.update(b"\n")
+    return digest.hexdigest()
 
 
 @dataclass(frozen=True)
@@ -114,21 +199,36 @@ class PartitionManifest:
         )
 
     def to_dict(self) -> dict:
+        records = []
+        for e in self.examples:
+            record = {
+                "example_id": e.example_id,
+                "content_hash": e.content_hash,
+                "origin": e.origin,
+                "mode": e.mode,
+                "source": e.source,
+                "source_offset": e.source_offset,
+                "token_count": e.token_count,
+            }
+            # Training-time provenance is emitted only when populated, so frozen
+            # partition manifests keep stable hashes and stable serialized shape.
+            for field_name in (
+                "source_revision",
+                "generation",
+                "selection_policy",
+                "selection_score",
+                "selected",
+            ):
+                value = getattr(e, field_name)
+                if value is not None:
+                    record[field_name] = value
+            if e.optimizer_presentations:
+                record["optimizer_presentations"] = e.optimizer_presentations
+            records.append(record)
         return {
             "partition": self.partition,
             "manifest_hash": self.manifest_hash,
-            "examples": [
-                {
-                    "example_id": e.example_id,
-                    "content_hash": e.content_hash,
-                    "origin": e.origin,
-                    "mode": e.mode,
-                    "source": e.source,
-                    "source_offset": e.source_offset,
-                    "token_count": e.token_count,
-                }
-                for e in self.examples
-            ],
+            "examples": records,
         }
 
 

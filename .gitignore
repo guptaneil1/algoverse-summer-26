@@ -19,11 +19,9 @@ venv/
 .vscode/
 
 # Experiment trackers and logs
-# Root-anchored: an unanchored "runs/" also swallowed docs/runs/, silently
-# dropping the packet-prescribed reference run index.
 wandb/
 logs/
-/runs/
+runs/
 external/
 
 # Large model artifacts
@@ -50,19 +48,46 @@ results/*
 !results/aggregates/
 results/aggregates/*
 !results/aggregates/README.md
+# Small generated aggregates ARE tracked — results/README.md: "Git contains only
+# small validated aggregates, generated tables/figures, and documentation."
+!results/aggregates/*.json
 !results/figures/
 results/figures/*
 !results/figures/README.md
+# Generated figures and their provenance/hash record are tracked for the same
+# reason. Without these negations `make figures` produces output that can never
+# be committed, and PROTOCOL.md §3's requirement that figures carry content
+# hashes becomes unverifiable by anyone else.
+!results/figures/*.png
+!results/figures/figure_provenance.json
+# Generated LaTeX tables and their provenance record.
+!results/tables/
+results/tables/*
+!results/tables/README.md
+!results/tables/*.tex
+!results/tables/table_provenance.json
+# Analysis-ready CSV exports. Small, generated, and the format reviewers open first.
+!results/csv/
+results/csv/*
+!results/csv/README.md
+!results/csv/*.csv
+# Top-level generated reports and the combined artifact hash manifest.
+!results/policy_behavior_report.md
+!results/ARTIFACT_MANIFEST.json
 
 # Temporary and generated files
 tmp/
 cache/
-.cache/
 dist/
 *.log
 *.tmp
 
 # LaTeX build outputs
+# Generated figures must not enter the manuscript tree while inputs are
+# simulated. generate_figures.py no longer mirrors here, and a test enforces it;
+# this is the belt-and-braces layer. When real figures are promoted at a results
+# freeze, negate them individually so the promotion is a deliberate act.
+paper/figures/*.png
 paper/*.aux
 paper/*.bbl
 paper/*.blg
@@ -71,10 +96,3 @@ paper/*.pdf
 
 # Claude Code personal overrides
 .claude/settings.local.json
-
-# promptlab generated output
-promptlab/results/
-promptlab/variants/_ablation/
-
-# One-off setup script; not part of the package (fails repo lint by design)
-install_claude.py

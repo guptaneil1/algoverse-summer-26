@@ -1,0 +1,41 @@
+% Recursive train/generate/allocate/evaluate pipeline.
+% Result-independent: this figure describes the experimental apparatus, not any
+% outcome, so it is safe to include before results exist.
+% Requires \usepackage{tikz} and \usetikzlibrary{arrows.meta,positioning} in main.tex.
+\begin{tikzpicture}[
+  node distance=9mm and 12mm,
+  every node/.style={font=\small},
+  stage/.style={
+    draw, rounded corners=2pt, align=center,
+    minimum height=8mm, minimum width=22mm, inner sep=4pt
+  },
+  frozen/.style={stage, fill=black!5},
+  artifact/.style={stage, densely dashed},
+  flow/.style={-{Stealth[length=2mm]}, thick},
+  feedback/.style={-{Stealth[length=2mm]}, thick, densely dotted},
+]
+
+  \node[frozen] (manifests) {Frozen data\\manifests};
+  \node[stage, right=of manifests] (train) {Train\\generation $g$};
+  \node[stage, right=of train] (generate) {Generate\\synthetic corpus};
+  \node[stage, right=of generate] (allocate) {Allocate human\\rescue $b_{g,m}$};
+
+  \node[frozen, below=of manifests] (budget) {Lifetime budget $B$\\$\sum_{g,m} b_{g,m} = B$};
+  \node[stage, below=of generate] (evaluate) {Held-out\\evaluation};
+  \node[artifact, below=of evaluate] (chain) {Immutable chain\\result + manifest};
+  \node[artifact, right=of chain] (analysis) {Chain-level\\statistics};
+
+  \draw[flow] (manifests) -- (train);
+  \draw[flow] (train) -- (generate);
+  \draw[flow] (generate) -- (allocate);
+
+  % The recursion: this generation's allocation feeds the next generation's training.
+  \draw[feedback] (allocate.north) -- ++(0,6mm) -| node[pos=0.25, above] {generation $g{+}1$} (train.north);
+
+  \draw[flow] (budget) -- (allocate.south -| budget.east) ;
+  \draw[flow] (budget.east) -- (evaluate.west);
+  \draw[flow] (generate.south) -- (evaluate.north);
+  \draw[flow] (evaluate) -- (chain);
+  \draw[flow] (chain) -- (analysis);
+
+\end{tikzpicture}

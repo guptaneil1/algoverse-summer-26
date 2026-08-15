@@ -21,6 +21,13 @@ dev = [
   "pytest>=8.2,<10",
   "ruff>=0.5,<1",
 ]
+# Figure generation only. Deliberately not a core dependency: the runtime package
+# stays at jsonschema alone so a training environment never pulls a plotting stack.
+# Pinned to a minor range because matplotlib version affects PNG bytes, and
+# results/figures/figure_provenance.json records content hashes of those bytes.
+figures = [
+  "matplotlib>=3.10,<4",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -32,6 +39,12 @@ addopts = "--strict-markers --import-mode=importlib"
 [tool.ruff]
 target-version = "py310"
 line-length = 100
+# Claude tooling vendored at the repository root. It is outside src/, outside every
+# CODEOWNERS entry, and imported by nothing in the research package. Before this
+# exclusion it produced 55 lint errors, which made `ruff check .` exit non-zero and
+# therefore made scripts/build_submission.sh fail before reaching `git archive` —
+# the submission target could never complete. Research code and tests are linted.
+extend-exclude = ["install_claude.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

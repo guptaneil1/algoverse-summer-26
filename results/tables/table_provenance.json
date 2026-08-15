@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "fixture_only": true,
+  "scientific_evidence": false,
+  "generator": "scripts/generate_fixture_tables.py",
+  "chain_seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "sha256": {
+    "fixture_primary_results.tex": "52e527bf47c96c76964ab8a5bd06337711f1a92416a8c79091576b5125246296",
+    "fixture_paired_contrasts.tex": "06d7c298f0d4b18f31314f4bc8ed12e46df42a4d5df17931efb94be18fbbcf63",
+    "fixture_primary.json": "2d0ed31bd9627cee7ab8d4651f441783a7c10d428d98260fd94e04b1c1bbc1e0"
+  },
+  "paired_contrasts_joint_minus_baseline": {
+    "random": {
+      "mean_difference": -0.3940000000000019,
+      "interval": [
+        -0.6800000000000039,
+        -0.15900000000000106
+      ]
+    },
+    "schedule_only": {
+      "mean_difference": -0.3940000000000019,
+      "interval": [
+        -0.6800000000000039,
+        -0.15900000000000106
+      ]
+    },
+    "selection_only": {
+      "mean_difference": 0.0,
+      "interval": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "warning": "Fixture tables. paper/tables/primary_results.tex is a separate file and remains RESULT_PENDING until real artifacts exist."
+}

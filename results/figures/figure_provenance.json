@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "fixture_only": true,
+  "scientific_evidence": false,
+  "warning": "Figures generated from analysis.simulator. No language model was trained. These files must be regenerated from immutable chain artifacts before any figure appears in the manuscript as a result.",
+  "generator": "scripts/generate_figures.py",
+  "matplotlib_version": "3.10.8",
+  "chain_seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "policies": [
+    "random",
+    "schedule_only",
+    "selection_only",
+    "joint"
+  ],
+  "figure_sha256": {
+    "nll_by_generation.png": "faf1549c4c57f19a66c56a78bbbf63d52a8c8d64e7a5afe5b2db27da5f1e093b",
+    "tail_retention_by_generation.png": "17569e85bf721f5b56edeed6685adfca17cce84ee505eaee13966e41129ab61c",
+    "allocation_by_generation.png": "4cfe9453e2ce6cbe853f2a045e9f143cf62c420087b9cdec9ccf3742d7bb27df",
+    "paired_difference.png": "792ef302b2c694685cf1006fba9a3f706f84cc2f6aa474e9ccee8b9275c33e4a"
+  },
+  "paired_contrasts_joint_minus_baseline": {
+    "random": {
+      "mean_difference": -0.3940000000000019,
+      "interval": [
+        -0.6800000000000039,
+        -0.15900000000000106
+      ]
+    },
+    "schedule_only": {
+      "mean_difference": -0.3940000000000019,
+      "interval": [
+        -0.6800000000000039,
+        -0.15900000000000106
+      ]
+    },
+    "selection_only": {
+      "mean_difference": 0.0,
+      "interval": [
+        0.0,
+        0.0
+      ]
+    }
+  }
+}

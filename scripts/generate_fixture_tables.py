@@ -70,7 +70,7 @@ def write_chain_results(seeds: list[int], directory: Path) -> list[Path]:
             document = run["chain_result"]
             validate_json(document, SCHEMA)  # enforce "schema-valid", never assume it
             path = directory / f"{policy}_seed{seed}.json"
-            path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+            path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8", newline="\n")
             paths.append(path)
     return paths
 
@@ -148,15 +148,17 @@ def main(argv: list[str] | None = None) -> int:
     aggregated["chain_seeds"] = seeds
 
     args.aggregate_out.parent.mkdir(parents=True, exist_ok=True)
-    args.aggregate_out.write_text(json.dumps(aggregated, indent=2) + "\n", encoding="utf-8")
+    args.aggregate_out.write_text(
+        json.dumps(aggregated, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
 
     args.table_dir.mkdir(parents=True, exist_ok=True)
     primary_path = args.table_dir / "fixture_primary_results.tex"
     contrast_path = args.table_dir / "fixture_paired_contrasts.tex"
 
-    primary_path.write_text(primary_table(aggregated), encoding="utf-8")
+    primary_path.write_text(primary_table(aggregated), encoding="utf-8", newline="\n")
     contrast_text, contrasts = contrast_table(runs_by_seed, seeds)
-    contrast_path.write_text(contrast_text, encoding="utf-8")
+    contrast_path.write_text(contrast_text, encoding="utf-8", newline="\n")
 
     digests = {
         path.name: hashlib.sha256(path.read_bytes()).hexdigest()
@@ -181,6 +183,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
     for name, digest in digests.items():

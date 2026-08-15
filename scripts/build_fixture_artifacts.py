@@ -125,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     manifest_path = RESULTS / "ARTIFACT_MANIFEST.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     print()
     print(f"{len(manifest['artifacts'])} artifacts hashed into {manifest_path.name}")

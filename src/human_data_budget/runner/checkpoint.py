@@ -87,7 +87,7 @@ def save_checkpoint(state: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(path.suffix + ".tmp")
     payload = json.dumps(state, indent=2) + "\n"
-    with open(tmp_path, "w", encoding="utf-8") as handle:
+    with open(tmp_path, "w", encoding="utf-8", newline="\n") as handle:
         handle.write(payload)
         handle.flush()
         os.fsync(handle.fileno())
@@ -98,7 +98,7 @@ def save_checkpoint(state: dict[str, Any], path: Path) -> None:
     # digest (recoverable, reported as unverifiable), whereas the reverse would
     # leave a digest describing a file that does not exist.
     digest_tmp = digest_path(path).with_suffix(".sha256.tmp")
-    digest_tmp.write_text(checkpoint_digest(path) + "\n", encoding="utf-8")
+    digest_tmp.write_text(checkpoint_digest(path) + "\n", encoding="utf-8", newline="\n")
     os.replace(digest_tmp, digest_path(path))
 
 

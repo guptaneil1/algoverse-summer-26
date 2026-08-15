@@ -314,7 +314,9 @@ def main(argv: list[str] | None = None) -> int:
         "paired_contrasts_joint_minus_baseline": contrasts,
     }
     provenance_path = args.output_dir / "figure_provenance.json"
-    provenance_path.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
+    provenance_path.write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
 
     for name, digest in digests.items():
         print(f"{digest}  {name}")

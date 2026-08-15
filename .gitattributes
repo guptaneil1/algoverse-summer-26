@@ -1,0 +1,27 @@
+# Line-ending policy for content-hashed artifacts.
+#
+# PROTOCOL.md §3 requires generated tables and figures to carry content hashes.
+# A hash only means something if the bytes are identical everywhere. Without
+# these rules, a commit from Windows (core.autocrlf=true) stores LF, checks out
+# CRLF locally and LF in Linux CI, and every recorded SHA-256 disagrees with the
+# file it describes — which is exactly what broke CI on 2026-08-15.
+#
+# Scoped deliberately to generated artifacts and shell scripts rather than a
+# repo-wide `* text=auto eol=lf`: the global form would renormalize every tracked
+# text file at once, producing a large one-time diff that buries real changes.
+# Consider adopting it separately, as its own commit.
+
+# Generated artifacts whose bytes are hashed. Never translate these.
+results/**/*.json  -text
+results/**/*.tex   -text
+results/**/*.csv   -text
+results/**/*.md    -text
+
+# Binaries: never translate, never diff as text.
+*.png  binary
+*.jpg  binary
+*.pdf  binary
+*.zip  binary
+
+# Shell scripts must keep LF or they will not execute on Linux.
+*.sh   text eol=lf

@@ -12,17 +12,17 @@
     5
   ],
   "artifacts": {
-    "results/aggregates/fixture_primary.json": "2d0ed31bd9627cee7ab8d4651f441783a7c10d428d98260fd94e04b1c1bbc1e0",
-    "results/csv/chain_level_long.csv": "4f1605d7e62ee60ef3bcbdd3fd4a16513d38148f7d201ef27fda2a3e29a76ccf",
-    "results/csv/policy_summary.csv": "23a061e2eb24369c543e9180281648d14ade0cb2a14a6b3a725fcfb41c81b054",
+    "results/aggregates/fixture_primary.json": "c5655aef86f9d6494025a54fa8281d874373dda57bfde75ab074d1b6b1de5ee9",
+    "results/csv/chain_level_long.csv": "6f4aa051dd7eccfaf0e67c4ddf07efa415b89a6a812602a5c2f36941c389f89b",
+    "results/csv/policy_summary.csv": "803c7b405aa5e227fdc478bf9fd1e2007a8162bf0a9710cf8ed1eebb2e65496f",
     "results/figures/allocation_by_generation.png": "4cfe9453e2ce6cbe853f2a045e9f143cf62c420087b9cdec9ccf3742d7bb27df",
-    "results/figures/figure_provenance.json": "3cdadb12b3a610786bf487cf5c6c44b11e45b87b63a749e8919ebf796b985d5e",
+    "results/figures/figure_provenance.json": "0f2a9fdeff7e9267a592bb78cda5052f84261215dbfb78d4d982d6d4a0d161d5",
     "results/figures/nll_by_generation.png": "faf1549c4c57f19a66c56a78bbbf63d52a8c8d64e7a5afe5b2db27da5f1e093b",
     "results/figures/paired_difference.png": "792ef302b2c694685cf1006fba9a3f706f84cc2f6aa474e9ccee8b9275c33e4a",
     "results/figures/tail_retention_by_generation.png": "17569e85bf721f5b56edeed6685adfca17cce84ee505eaee13966e41129ab61c",
-    "results/policy_behavior_report.md": "9ec2f57ab48c03b11aa899e44434e7f2a257b86ae233039893585958fffe6219",
-    "results/tables/fixture_paired_contrasts.tex": "06d7c298f0d4b18f31314f4bc8ed12e46df42a4d5df17931efb94be18fbbcf63",
-    "results/tables/fixture_primary_results.tex": "52e527bf47c96c76964ab8a5bd06337711f1a92416a8c79091576b5125246296",
-    "results/tables/table_provenance.json": "cb34b9b0a73eddcf6b3a1ac2209a0044368617978756da43b97d82abb065c855"
+    "results/policy_behavior_report.md": "914acce23b4331152aae358f7fb7ec114777acb08778cde16d8d4e9b4414d63e",
+    "results/tables/fixture_paired_contrasts.tex": "0324995fb2ccf52400f872e703dba43726ecd48e0c5728fb426e6565664f0601",
+    "results/tables/fixture_primary_results.tex": "519e4c1bac57c4ccff5dc65ccfd7781849631265caae5c49a49ce498aba5071f",
+    "results/tables/table_provenance.json": "b1221927590a5f1da6a5dfe886babea7f1d806825ab8b1a096b28392a2235516"
   }
 }

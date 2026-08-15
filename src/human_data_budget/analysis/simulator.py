@@ -40,15 +40,9 @@ def build_policy(
         return RandomPolicy(per_generation_budget)
 
     if policy_name == "schedule_only":
-        midpoint = horizon // 2
-
         return ScheduleOnlyPolicy(
             {
-                generation: (
-                    0
-                    if generation < midpoint
-                    else 2 * per_generation_budget
-                )
+                generation: per_generation_budget
                 for generation in range(horizon)
             }
         )

@@ -2,27 +2,19 @@
   "schema_version": "1.0",
   "evaluation_seed": 42,
   "padding_id": 0,
-  "nll_threshold_candidate": null,
+  "nll_threshold_candidate": 3.0,
   "tail_retention_metrics": {
     "primary": "ratio_based (tail_retention from evaluation/tail.py)",
-    "secondary": "nll_gap (nll_gap from evaluation/tail.py)",
-    "freeze_audit": "docs/evaluation/tail_retention_freeze.md"
-  },
-  "reference_mode_scores_contract": {
-    "shape": "Mapping[mode_name: str, mean_held_out_nll: float]",
-    "captured_from": "generation-0 baseline checkpoint, validation partition",
-    "captured_before": "any generation-1 training begins",
-    "modes": "tail modes under the frozen article_length_quantile definition (docs/data/mode_definition_audit.md)"
+    "secondary": "nll_gap (nll_gap from evaluation/tail.py)"
   },
   "test_partition": "test",
-  "status": "primary_metric_frozen",
+  "status": "pending_week2_freeze",
   "notes": [
-    "primary/secondary tail-retention metric choice is frozen 2026-08-08 after a reliability/independence audit (docs/evaluation/tail_retention_freeze.md); this closes the metric-choice half of DECISIONS.md U-004.",
-    "nll_threshold_candidate is null and still pending_week2_freeze in substance: it requires the baseline NLL distribution on the validation partition from a real generation-0 model, which does not exist yet. It is downstream of this freeze, not blocked by it.",
-    "The threshold must not be tuned on or informed by the final test partition once it is set.",
-    "The primary tail_retention metric (ratio-based) requires a reference mode-score snapshot from the baseline model at generation 0; see reference_mode_scores_contract above.",
+    "nll_threshold_candidate will be frozen at Week 2 based on the baseline NLL distribution on the validation partition.",
+    "The threshold must not be tuned on or informed by the final test partition.",
+    "The primary tail_retention metric (ratio-based) requires a reference mode-score snapshot from the baseline model at generation 0.",
     "The nll_gap metric requires no reference — it compares tail vs common NLL on the same checkpoint.",
     "Both metrics are independent of the policy undercoverage_score selection signal.",
-    "PREREGISTRATION.md (Aarav-owned) should incorporate this frozen primary/secondary choice; not edited here to respect file ownership (.github/CODEOWNERS)."
+    "The frozen primary metric and threshold will be recorded here and in PREREGISTRATION.md before primary outcomes are opened."
   ]
 }

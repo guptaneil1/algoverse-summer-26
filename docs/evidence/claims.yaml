@@ -32,3 +32,14 @@ claims:
     evidence_required:
       - hostile_closest_work_search
       - external_novelty_review
+  - id: C-005
+    type: proposed_mechanism
+    statement: Under-covered modes with high projected future regret may have greater marginal value for human anchors.
+    status: untested
+    evidence_required:
+      - theory_or_mechanism_intervention
+      - per_mode_measurement_from_real_chains
+# Sentence-level licensing for the abstract is tracked separately in
+# docs/evidence/claim_evidence_matrix.md, which maps each planned abstract
+# sentence to the artifact that would permit writing it.
+abstract_sentence_matrix: docs/evidence/claim_evidence_matrix.md

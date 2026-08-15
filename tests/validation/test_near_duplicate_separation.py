@@ -113,6 +113,110 @@ def test_every_forbidden_pair_is_scanned_not_just_the_test_partition() -> None:
 # --- "not checked" is never reported as "clean" -----------------------------
 
 
+# --- bypasses found by adversarial review, now closed ----------------------
+
+
+def test_a_junk_partitions_block_does_not_certify_a_run() -> None:
+    """`{"junk": []}` is truthy and previously passed the provenance guard outright."""
+    codes = _codes(check_separation({"data": {"partitions": {"junk": []}}}))
+
+    assert "SEPARATION_MISSING_PROVENANCE" in codes
+
+
+def test_the_five_real_names_mapped_to_empty_lists_do_not_certify_a_run() -> None:
+    empty = {name: [] for name in _partitions(UNRELATED)}
+    codes = _codes(check_separation({"data": {"partitions": empty}}))
+
+    assert "SEPARATION_MISSING_PROVENANCE" in codes
+
+
+def test_a_missing_partition_is_rejected() -> None:
+    partitions = _partitions(UNRELATED)
+    del partitions["final_human_test"]
+
+    assert "SEPARATION_MISSING_PROVENANCE" in _codes(
+        check_separation({"data": {"partitions": partitions}})
+    )
+
+
+def test_blanking_one_decoy_entry_no_longer_disables_the_whole_pair() -> None:
+    """The all-or-nothing text rule was a cheaper bypass than the leak it guarded.
+
+    Blanking `text` on one innocuous example used to suppress near-duplicate
+    checking for every pair touching that partition, downgrading a real leak from
+    `invalid` to `valid_with_limitation`.
+    """
+    partitions = _partitions(REWORDED_LEAK)
+    partitions["final_human_test"].append(_entry("fht-decoy", "An unrelated decoy sentence."))
+    partitions["final_human_test"][-1].pop("text")
+
+    codes = _codes(check_near_duplicate_separation(partitions))
+    assert "SEPARATION_NEAR_DUPLICATE" in codes
+    assert "LIMIT_NEAR_DUPLICATE_NOT_CHECKED" in codes
+
+
+def test_a_blinded_entry_is_named_in_the_report() -> None:
+    partitions = _partitions(UNRELATED)
+    partitions["validation"][0].pop("text")
+
+    detail = " ".join(
+        check.detail for check in check_near_duplicate_separation(partitions) if not check.passed
+    )
+    assert "validation:val-1" in detail
+
+
+# --- residual gap: Jaccard measures no containment --------------------------
+
+
+def test_a_padded_verbatim_leak_is_not_caught_and_that_gap_is_documented() -> None:
+    """A verbatim copy of a test example, padded with filler, evades the check.
+
+    `_jaccard` is symmetric set overlap, so surrounding a stolen example with
+    unrelated text collapses the score even though the example is present
+    character for character. No paraphrasing skill is required — padding suffices.
+
+    Closing this needs an asymmetric containment measure, which would be new
+    detection logic rather than a wiring-in of what exists, so it is pinned here
+    and left to the data owner. Expected to fail when containment lands; delete
+    it then.
+    """
+    filler = (
+        "This introductory sentence is entirely unrelated to the held-out material. "
+        "It exists only to dilute the surface overlap of what follows. "
+    )
+    padded = filler + TEST_TEXT + " " + filler
+
+    assert TEST_TEXT in padded, "the leak must remain verbatim"
+    similarity = _jaccard(_shingle(TEST_TEXT, 5), _shingle(padded, 5))
+    assert similarity < NEAR_DUPLICATE_THRESHOLD
+
+    partitions = _partitions(UNRELATED)
+    partitions["base_human_train"] = [_entry("bht-1", padded)]
+    codes = _codes(check_separation({"data": {"partitions": partitions}}))
+    assert "SEPARATION_NEAR_DUPLICATE" not in codes
+    assert "SEPARATION_OVERLAP" not in codes
+
+
+def test_the_two_shipped_operating_points_disagree() -> None:
+    """0.8 is shared; the metric is not. Pins the contradiction for the data owner.
+
+    `docs/data/overlap_report.md` §3 records the corpus-scale scan as word-8-gram
+    Jaccard; `data/overlap.py`, which the auditor reuses, is character-5-gram.
+    """
+    def word_shingles(text: str, n: int = 8) -> frozenset[str]:
+        words = text.split()
+        if len(words) < n:
+            return frozenset({" ".join(words)}) if words else frozenset()
+        return frozenset(" ".join(words[i : i + n]) for i in range(len(words) - n + 1))
+
+    char_5 = _jaccard(_shingle(TEST_TEXT, 5), _shingle(REWORDED_LEAK, 5))
+    word_8 = _jaccard(word_shingles(TEST_TEXT), word_shingles(REWORDED_LEAK))
+
+    assert char_5 >= NEAR_DUPLICATE_THRESHOLD
+    assert word_8 < NEAR_DUPLICATE_THRESHOLD
+    assert word_8 == 0.0
+
+
 def test_partitions_without_text_report_an_explicit_limitation() -> None:
     partitions = _partitions(UNRELATED)
     for entries in partitions.values():

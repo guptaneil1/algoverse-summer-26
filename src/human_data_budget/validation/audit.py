@@ -30,17 +30,24 @@ CHAIN_RESULT_NAME = "chain_result.json"
 BATCH_RECORDS_NAME = "batch_records.jsonl"
 TERMINAL_STATUSES = {"complete", "failed", "invalid"}
 
-# The similarity threshold is a frozen scientific parameter. No freeze record
-# exists yet, so the auditor adopts the default already implemented in
-# ``human_data_budget.data.overlap`` rather than choosing a new value. It needs
-# the data owner's confirmation before any primary chain is certified.
+# The threshold value 0.8 is taken from ``human_data_budget.data.overlap``'s own
+# default; no new value was chosen here.
 #
-# Measured behaviour of that detector at this threshold (character 5-gram
-# Jaccard): a verbatim copy scores 1.0 and a punctuation-only variant 0.96, both
-# caught; a semantic paraphrase that reuses little surface text scores far below
-# the threshold and is NOT caught. See
-# ``tests/validation/test_near_duplicate_separation.py``, which pins both the
-# detection and the residual gap.
+# UNRESOLVED, needs the data owner (@Neil) before any primary chain is certified:
+# the repository contains two different operating points that share the number
+# 0.8 but not the metric. ``docs/data/overlap_report.md`` §3 records the
+# corpus-scale scan as **word-8-gram** Jaccard with a ±20% length band
+# (``scripts/build_wikitext103_manifests.py``: NEAR_DUP_SHINGLE_WORDS = 8), while
+# ``data/overlap.py`` — the fixture-scale logic this auditor reuses — is
+# **character-5-gram**. They disagree sharply: the reworded leak pinned in
+# ``tests/validation/test_near_duplicate_separation.py`` scores 0.9483 as
+# char-5-gram and 0.0 as word-8-gram. Whichever is the intended audit-time
+# definition, both should not ship.
+#
+# Reach of the char-5-gram detector at 0.8, measured by the tests in that file:
+# it catches near-identical restatements and misses semantic paraphrase. It also
+# misses a *verbatim* copy that has been padded with surrounding text, because
+# Jaccard is symmetric and measures no containment.
 NEAR_DUPLICATE_THRESHOLD = 0.8
 
 FORBIDDEN_PARTITION_PAIRS = (
@@ -52,6 +59,18 @@ FORBIDDEN_PARTITION_PAIRS = (
 )
 
 REQUIRED_PROVENANCE_FIELDS = ("stable_id", "content_hash", "source_dataset", "origin")
+
+# The five partitions PROTOCOL.md §3 requires to be disjoint. All five must be
+# present and non-empty: a truthy-but-meaningless block (an unrecognised key, or
+# the right keys mapped to empty lists) previously satisfied the provenance guard
+# and certified the run with zero reason codes.
+REQUIRED_PARTITIONS = (
+    "base_human_train",
+    "rescue_candidates",
+    "generation_prompts",
+    "validation",
+    "final_human_test",
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -149,23 +168,31 @@ class _TextPartition:
     examples: tuple[_TextExample, ...]
 
 
-def _text_partition(entries: list[dict[str, Any]]) -> _TextPartition | None:
+def _text_partition(entries: list[dict[str, Any]]) -> tuple[_TextPartition, list[str]]:
     """Adapt a partition's provenance entries for near-duplicate comparison.
 
-    Returns ``None`` when any entry lacks text, because a partially compared
-    partition would report "no near-duplicates found" while silently skipping
-    the examples it could not read.
+    Returns the readable examples **and** the stable IDs that carried no text.
+
+    Comparison proceeds over whatever text is present rather than being skipped
+    wholesale. An earlier all-or-nothing rule made the missing-text path a
+    cheaper bypass than the leak it guarded: blanking ``text`` on a single
+    innocuous decoy example disabled near-duplicate checking for every pair
+    touching that partition, so a genuine reworded leak elsewhere in the same
+    partition downgraded from ``invalid`` to ``valid_with_limitation``. Skipped
+    IDs are now reported by name, so a blinded entry is visible in the report
+    instead of silently suppressing the check.
     """
 
     examples: list[_TextExample] = []
+    skipped: list[str] = []
     for entry in entries:
+        stable_id = str(entry.get("stable_id", ""))
         text = entry.get("text")
         if not isinstance(text, str) or not text.strip():
-            return None
-        examples.append(
-            _TextExample(example_id=str(entry.get("stable_id", "")), text=text)
-        )
-    return _TextPartition(examples=tuple(examples))
+            skipped.append(stable_id)
+            continue
+        examples.append(_TextExample(example_id=stable_id, text=text))
+    return _TextPartition(examples=tuple(examples)), skipped
 
 
 def check_near_duplicate_separation(
@@ -187,14 +214,17 @@ def check_near_duplicate_separation(
 
     checks: list[CheckResult] = []
     adapted = {name: _text_partition(entries) for name, entries in partitions.items()}
+    blinded = sorted(
+        f"{name}:{stable_id}" for name, (_, skipped) in adapted.items() for stable_id in skipped
+    )
     unchecked: list[str] = []
 
     for left, right in FORBIDDEN_PARTITION_PAIRS:
         if left not in partitions or right not in partitions:
             continue
-        left_partition = adapted.get(left)
-        right_partition = adapted.get(right)
-        if left_partition is None or right_partition is None:
+        left_partition, _ = adapted[left]
+        right_partition, _ = adapted[right]
+        if not left_partition.examples or not right_partition.examples:
             unchecked.append(f"{left}|{right}")
             continue
 
@@ -221,7 +251,19 @@ def check_near_duplicate_separation(
                 name="separation_near_duplicate_scanned",
                 passed=False,
                 code="LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
-                detail=f"no example text for partition pair(s) {sorted(unchecked)}",
+                detail=f"no example text at all for partition pair(s) {sorted(unchecked)}",
+            )
+        )
+    if blinded:
+        checks.append(
+            CheckResult(
+                name="separation_near_duplicate_coverage",
+                passed=False,
+                code="LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+                detail=(
+                    f"{len(blinded)} example(s) carried no text and were not "
+                    f"compared: {blinded[:10]}"
+                ),
             )
         )
     return checks
@@ -232,7 +274,7 @@ def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
     checks: list[CheckResult] = []
     partitions = manifest.get("data", {}).get("partitions")
 
-    if not partitions:
+    if not isinstance(partitions, dict) or not partitions:
         return [
             CheckResult(
                 name="separation_partitions_recorded",
@@ -241,6 +283,31 @@ def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
                 detail="manifest records no data.partitions block",
             )
         ]
+
+    # A truthy block is not evidence of provenance. Require the five named
+    # partitions to be present and populated, and reject unrecognised names,
+    # otherwise `{"junk": []}` certifies a run with no provenance at all.
+    absent = [name for name in REQUIRED_PARTITIONS if not partitions.get(name)]
+    if absent:
+        checks.append(
+            CheckResult(
+                name="separation_partitions_recorded",
+                passed=False,
+                code="SEPARATION_MISSING_PROVENANCE",
+                detail=f"partition(s) absent or empty: {sorted(absent)}",
+            )
+        )
+
+    unexpected = sorted(set(partitions) - set(REQUIRED_PARTITIONS))
+    if unexpected:
+        checks.append(
+            CheckResult(
+                name="separation_partitions_recognised",
+                passed=False,
+                code="SEPARATION_MISSING_PROVENANCE",
+                detail=f"unrecognised partition name(s): {unexpected}",
+            )
+        )
 
     for left, right in FORBIDDEN_PARTITION_PAIRS:
         left_ids = {item.get("content_hash") for item in partitions.get(left, [])}
@@ -364,11 +431,34 @@ def check_token_ledger(
     evidence this check exists to distinguish from "the ledger is correct".
     """
 
-    declared_paths = [
-        reference.get("path", "")
-        for reference in manifest.get("artifacts", [])
-        if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
-    ]
+    declared_paths = sorted(
+        {
+            str(reference.get("path", ""))
+            for reference in manifest.get("artifacts", [])
+            if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
+        }
+    )
+    default_present = (run_directory / BATCH_RECORDS_NAME).is_file()
+
+    # The manifest is the artifact under audit, so it does not get to choose which
+    # evidence the auditor is allowed to see. Previously the first declared path
+    # won outright: a run could keep truthful records at the default location and
+    # declare a hash-correct decoy elsewhere, and the decoy alone was read.
+    ambiguous = list(declared_paths)
+    if default_present and BATCH_RECORDS_NAME not in declared_paths:
+        ambiguous.append(BATCH_RECORDS_NAME)
+    if len(ambiguous) > 1:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=(
+                    "run carries more than one batch-record ledger "
+                    f"({sorted(ambiguous)}); which one realized the run is ambiguous"
+                ),
+            )
+        ]
     candidate = run_directory / (declared_paths[0] if declared_paths else BATCH_RECORDS_NAME)
 
     if not candidate.is_file():
@@ -624,16 +714,24 @@ def audit_run(
     checks.extend(check_separation(manifest))
     checks.extend(check_budgets(manifest, chain_result))
     checks.extend(check_token_ledger(run_directory, manifest, chain_result))
+
+    # The batch records decide the ledger verdict, so the report records their
+    # hash alongside the manifest's and the chain result's. Without it the
+    # verdict is not reproducible against the evidence that produced it.
+    input_hashes = {
+        "run_manifest": sha256_file(manifest_path),
+        "chain_result": sha256_file(result_path),
+    }
+    batch_path = run_directory / BATCH_RECORDS_NAME
+    if batch_path.is_file():
+        input_hashes["batch_records"] = sha256_file(batch_path)
     checks.extend(check_protocol(manifest, chain_result))
     checks.extend(check_evaluation(chain_result))
 
     return _build_report(
         run_id=str(chain_result.get("run_id") or manifest.get("run_id") or run_directory.name),
         checks=checks,
-        input_hashes={
-            "run_manifest": sha256_file(manifest_path),
-            "chain_result": sha256_file(result_path),
-        },
+        input_hashes=input_hashes,
         validator_commit=validator_commit,
         audited_at=audited_at,
     )

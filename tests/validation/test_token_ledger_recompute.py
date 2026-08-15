@@ -55,7 +55,7 @@ def _ledger_codes(
     total: int = TRUE_TOTAL,
 ) -> set[str]:
     run = tmp_path / "run"
-    run.mkdir(exist_ok=True)
+    run.mkdir(parents=True, exist_ok=True)
     if batches is not None:
         _write_batches(run, batches)
     chain_result = {"consumed_human_tokens": human, "consumed_total_tokens": total}
@@ -147,6 +147,59 @@ def test_cannot_recompute_is_a_limitation_not_a_clean_pass(tmp_path: Path) -> No
 
     assert checks, "an unrecomputable ledger must emit a check, not nothing"
     assert all(not check.passed for check in checks)
+
+
+# --- bypasses found by adversarial review ------------------------------------
+
+
+def test_two_contradictory_ledgers_are_ambiguous_not_silently_resolved(
+    tmp_path: Path,
+) -> None:
+    """The manifest must not choose which evidence the auditor is allowed to see.
+
+    A run previously could keep truthful records at the default location and
+    declare a hash-correct decoy elsewhere; the decoy alone was read and the run
+    certified valid.
+    """
+    run = tmp_path / "run"
+    (run / "decoy").mkdir(parents=True)
+    _write_batches(run, BATCHES)
+    _write_batches(run / "decoy", [{"attention_mask": [[1] * 40], "origins": ["human"]}])
+
+    manifest = {"artifacts": [{"path": "decoy/batch_records.jsonl", "sha256": "x"}]}
+    chain_result = {"consumed_human_tokens": 40, "consumed_total_tokens": 40}
+
+    assert _codes(check_token_ledger(run, manifest, chain_result)) == {
+        "ARTIFACT_SCHEMA_INVALID"
+    }
+
+
+def test_the_batch_records_hash_is_recorded_in_the_report(
+    make_run: Callable[..., Path],
+) -> None:
+    """The evidence that decided the ledger verdict must be identifiable."""
+    run = make_run()
+    _write_batches(run, BATCHES)
+
+    assert "batch_records" in audit_run(run).input_hashes
+
+
+def test_deleting_the_records_still_downgrades_rather_than_certifies(
+    tmp_path: Path,
+) -> None:
+    """Documented escape hatch: deleting evidence cannot yield a clean pass.
+
+    It does move a wrong ledger from `invalid` to `valid_with_limitation`, which
+    is the strongest the auditor can do — it cannot compel an artifact to exist.
+    That residual weakness is recorded here rather than hidden.
+    """
+    wrong_with_evidence = _ledger_codes(tmp_path, human=40, total=50)
+    assert wrong_with_evidence == {"BUDGET_LEDGER_MISMATCH"}
+
+    wrong_without_evidence = _ledger_codes(
+        tmp_path / "b", batches=None, human=40, total=50
+    )
+    assert wrong_without_evidence == {"LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"}
 
 
 # --- the frozen accounting rules ---------------------------------------------

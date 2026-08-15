@@ -1,12 +1,30 @@
 """Per-example partition provenance for the run manifest.
 
-``PROTOCOL.md`` §3 requires every training example to retain a stable ID, a
-content hash, its source dataset, and whether it is human or synthetic. The
-auditor (``human_data_budget.validation.audit.check_separation``) verifies both
-that requirement and partition disjointness, and it can only do so if the run
+The auditor (``human_data_budget.validation.audit.check_separation``) verifies
+partition disjointness and per-example provenance, and can only do so if the run
 manifest actually carries the per-example record. A manifest without it is
 classified ``invalid`` with ``SEPARATION_MISSING_PROVENANCE`` — correctly, since
 separation is unverifiable rather than verified-absent.
+
+**Partial coverage of PROTOCOL.md §3, stated plainly.** §3 "Provenance" requires
+every training example to retain eight things: stable ID; content hash; source
+dataset *and revision*; human or synthetic origin; recursive generation;
+selection policy and score; whether it was selected; and number of optimizer
+presentations.
+
+This module emits the four the auditor checks — ``stable_id``,
+``content_hash``, ``source_dataset``, ``origin`` — plus ``source_revision`` when
+the source carries one, and ``text`` for the near-duplicate comparison. The four
+remaining fields (generation, selection policy and score, selected, optimizer
+presentations) are training-time facts that a partition manifest cannot know:
+they are produced when a policy selects an example and an optimizer consumes it.
+``human_data_budget.data.manifest.validate_training_provenance`` enforces those
+at that point instead. Closing the gap end to end means recording selection and
+presentation counts into the manifest as a chain runs, which is the runner
+owner's work and is **not** done here.
+
+Emitting these four satisfies the auditor and `docs/audits/week3_execution_required.md`
+§1.2, which names exactly these four. It does not by itself satisfy §3.
 
 Provenance is built **only** from declared partition sources. When a config
 declares none, no block is emitted and the run stays uncertifiable. Synthesising

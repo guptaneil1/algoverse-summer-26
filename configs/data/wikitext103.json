@@ -1,29 +1,38 @@
 {
   "dataset_name": "wikitext-103-v1",
-  "source_url": "https://huggingface.co/datasets/wikitext",
+  "source_url": "https://huggingface.co/datasets/Salesforce/wikitext",
+  "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
   "license": "CC-BY-SA-3.0",
   "version": "wikitext-103-v1",
   "primary_domain": true,
   "fallback_domain": false,
-  "mode_definition": "pending_week2_freeze",
-  "mode_candidates": [
-    "wikipedia_article_category (broad topic label assigned to each article)",
-    "article_length_quantile (tail = bottom decile by token count, common = upper 50%)"
-  ],
+  "mode_definition": "article_length_quantile",
+  "mode_thresholds": {
+    "tail_cutoff_tokens": 1106,
+    "common_cutoff_tokens": 2661,
+    "computed_from": "train split (base_train + rescue_candidates + prompts), post-exact-dedup"
+  },
+  "mode_definition_audit": "docs/data/mode_definition_audit.md",
   "partition_strategy": "stable_id_hash_modulo",
-  "status": "pending_week2_freeze",
+  "build_script": "scripts/build_wikitext103_manifests.py",
+  "manifest_hashes": "data/manifests/MANIFEST_HASHES.json",
+  "overlap_report": "docs/data/overlap_report.md",
+  "status": "frozen",
+  "frozen_date": "2026-08-08",
   "notes": [
     "WikiText-103 is derived from verified Good and Featured English Wikipedia articles.",
     "Train/valid/test splits already exist in the canonical release.",
-    "For this project the canonical train split is re-partitioned into base_train and rescue_candidates.",
+    "For this project the canonical train split is re-partitioned into base_train, rescue_candidates, and prompts by a stable-ID hash modulo split (80/15/5).",
     "The canonical test split is held out as the final test partition.",
-    "Partition paths, SHA-256 hashes, and the frozen mode definition will be recorded here at Week 2 integration."
+    "The canonical release contains 241 exact-duplicate articles, including one that crosses the train/test boundary; scripts/build_wikitext103_manifests.py removes all of them before partitioning (docs/data/overlap_report.md).",
+    "Raw manifest files are not committed to git (data/README.md); only hashes are. Rebuild with scripts/build_wikitext103_manifests.py against the pinned revision above.",
+    "The frozen tokenizer identifier (for optimizer-consumed token counts) is owned by the training config and is not yet pinned; token counts here are whitespace-split estimates."
   ],
   "why_selected": [
     "Permissive license (CC-BY-SA) is compatible with ML training and publication.",
     "Well-studied benchmark: positive-control reproduction is straightforward.",
     "Clear article-level structure enables principled mode definition.",
-    "Moderate size (~103M tokens) fits a 124M–160M screening model on available compute.",
+    "Moderate size (~100M tokens) fits a 124M–160M screening model on available compute.",
     "No personal-data concerns; Wikipedia content is encyclopedic."
   ]
 }

@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "run_id": "positive_control_human_mixed_seed42",
+  "arm": "human_mixed",
+  "upstream_commit": "feb8511479a2e2dc868e1caf3f63cb99f1fcc746",
+  "metric_field": "perplexity",
+  "generations_ingested": 11,
+  "horizon": 11,
+  "metric_by_generation": {
+    "0": 29.61786322018836,
+    "1": 29.92700567022776,
+    "2": 30.108436709378243,
+    "3": 30.21940357369591,
+    "4": 30.29044046925423,
+    "5": 30.322392125704045,
+    "6": 30.329210236740686,
+    "7": 30.342641264438875,
+    "8": 30.36280257848861,
+    "9": 30.357873181370326,
+    "10": 30.373004122157884
+  },
+  "baseline_generation": 0,
+  "baseline_value": 29.61786322018836,
+  "final_generation": 10,
+  "final_value": 30.373004122157884,
+  "degradation_ratio": 1.0254961303709038,
+  "artifact_bytes_retained": false,
+  "artifact_retention_note": "Model directories and generated corpora were hashed at run time and those hashes stand as the record, but the bytes were lost when the ephemeral Kaggle container was reclaimed at session end. This was not a deliberate prune. See docs/positive_control/expected_vs_observed.md section 6.1."
+}

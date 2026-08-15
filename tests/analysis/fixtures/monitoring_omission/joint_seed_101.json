@@ -1,0 +1,70 @@
+{
+  "budget_id": "fixture-budget-100",
+  "chain_seed": 101,
+  "consumed_human_tokens": 100,
+  "consumed_total_tokens": 10000,
+  "exclusion_reason": null,
+  "fixture_only": true,
+  "generations_completed": 10,
+  "hidden_modes": [
+    "tail"
+  ],
+  "metrics": [
+    {
+      "generation": 0,
+      "human_nll": 3.18,
+      "tail_retention": 0.7
+    },
+    {
+      "generation": 1,
+      "human_nll": 3.21,
+      "tail_retention": 0.6
+    },
+    {
+      "generation": 2,
+      "human_nll": 3.25,
+      "tail_retention": 0.5
+    },
+    {
+      "generation": 3,
+      "human_nll": 3.3,
+      "tail_retention": 0.4
+    },
+    {
+      "generation": 4,
+      "human_nll": 3.35,
+      "tail_retention": 0.30000000000000004
+    },
+    {
+      "generation": 5,
+      "human_nll": 3.4,
+      "tail_retention": 0.20000000000000007
+    },
+    {
+      "generation": 6,
+      "human_nll": 3.45,
+      "tail_retention": 0.10000000000000009
+    },
+    {
+      "generation": 7,
+      "human_nll": 3.5,
+      "tail_retention": 1.1102230246251565e-16
+    },
+    {
+      "generation": 8,
+      "human_nll": 3.5,
+      "tail_retention": 0.0
+    },
+    {
+      "generation": 9,
+      "human_nll": 3.5,
+      "tail_retention": 0.0
+    }
+  ],
+  "policy": "joint",
+  "run_id": "fixture-joint-seed-101",
+  "schema_version": "1.0",
+  "scientific_evidence": false,
+  "valid": true,
+  "warning": "FIXTURE - NOT SCIENTIFIC EVIDENCE"
+}

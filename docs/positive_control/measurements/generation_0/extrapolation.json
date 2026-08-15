@@ -1,0 +1,9 @@
+{
+  "measured_train_runtime_seconds": 508.7422,
+  "measured_eval_runtime_seconds": 24.2429,
+  "measured_per_sample_decode_seconds": 0.36143328532501073,
+  "measured_train_record_count": 4669,
+  "derived_generation_decode_seconds": 1714.705246525973,
+  "estimated_fully_synthetic_arm_hours": 6.391635712572149,
+  "estimated_human_mixed_arm_hours": 7.804808490349927
+}

@@ -42,6 +42,15 @@ class Example:
 
     @classmethod
     def from_dict(cls, record: dict) -> Example:
+        """Build an Example from a manifest record.
+
+        Two record shapes are accepted. A text-bearing record (fixtures, freshly
+        prepared data) carries ``text`` and its hash is computed here. A frozen,
+        text-free record (the immutable manifests this policy commits to git per
+        ``data/README.md`` — raw text is never committed) carries a precomputed
+        ``content_hash`` instead. If both are present they must agree, so a
+        frozen manifest can never silently drift from the text it was built from.
+        """
         missing_provenance = _PROVENANCE_FIELDS - record.keys()
         if missing_provenance:
             raise ProvenanceError(
@@ -50,16 +59,30 @@ class Example:
         missing = _REQUIRED_FIELDS - record.keys()
         if missing:
             raise ManifestError(f"Missing required fields: {sorted(missing)}")
-        text = record.get("text", "")
+        text = record.get("text")
+        provided_hash = record.get("content_hash")
+        if text is not None:
+            resolved_hash = content_hash(text)
+            if provided_hash is not None and provided_hash != resolved_hash:
+                raise ManifestError(
+                    f"content_hash mismatch for {record.get('example_id')!r}: "
+                    f"recorded {provided_hash!r} does not match text-derived {resolved_hash!r}"
+                )
+            resolved_text = text
+        elif provided_hash is not None:
+            resolved_hash = provided_hash
+            resolved_text = ""
+        else:
+            raise ManifestError("record must include either 'text' or a precomputed 'content_hash'")
         return cls(
             example_id=record["example_id"],
-            text=text,
+            text=resolved_text,
             origin=record["origin"],
             mode=record["mode"],
             source=record["source"],
             source_offset=int(record["source_offset"]),
             token_count=int(record["token_count"]),
-            content_hash=content_hash(text),
+            content_hash=resolved_hash,
         )
 
 

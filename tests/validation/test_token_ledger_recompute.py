@@ -62,6 +62,25 @@ def _ledger_codes(
     return _codes(check_token_ledger(run, {}, chain_result))
 
 
+def test_the_expected_totals_match_the_fixture_they_describe() -> None:
+    """Guard against TRUE_HUMAN/TRUE_TOTAL drifting away from BATCHES.
+
+    Counted here by plain arithmetic over the mask rows, deliberately NOT via
+    ``consumed_tokens``: deriving the expected value from the function under test
+    would make every assertion below tautological. These are hand-countable
+    constants describing a literal three lines above them, not measurements.
+    """
+    human = sum(
+        sum(mask)
+        for batch in BATCHES
+        for mask, origin in zip(batch["attention_mask"], batch["origins"], strict=True)
+        if origin == "human"
+    )
+    total = sum(sum(mask) for batch in BATCHES for mask in batch["attention_mask"])
+
+    assert (human, total) == (TRUE_HUMAN, TRUE_TOTAL) == (9, 12)
+
+
 # --- the blind spot, closed -------------------------------------------------
 
 

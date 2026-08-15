@@ -72,7 +72,7 @@ def load_results(paths: list[Path]) -> list[dict]:
 def write_long(documents: list[dict], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=LONG_COLUMNS)
+        writer = csv.DictWriter(handle, fieldnames=LONG_COLUMNS, lineterminator="\n")
         writer.writeheader()
         for document in sorted(documents, key=lambda d: (d["policy"], d["chain_seed"])):
             for metric in document["metrics"]:
@@ -104,7 +104,7 @@ def write_summary(documents: list[dict], path: Path) -> None:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=SUMMARY_COLUMNS)
+        writer = csv.DictWriter(handle, fieldnames=SUMMARY_COLUMNS, lineterminator="\n")
         writer.writeheader()
         for policy, values in sorted(by_policy.items()):
             writer.writerow(

@@ -102,12 +102,31 @@ jobs:
             exit 1
           fi
           echo "artifact generation is byte-reproducible"
-      - name: Committed manifest must match regenerated artifacts
+      - name: Committed text artifacts must match regenerated ones
         run: |
           set -euo pipefail
-          # Fails when someone edits a generated artifact by hand, or commits a
-          # stale manifest after changing the generator.
-          git diff --exit-code -- results/ || {
-            echo "committed fixture artifacts are stale; run 'make fixture-artifacts'" >&2
+          # Scoped deliberately. PNG bytes are NOT reproducible across operating
+          # systems even at a pinned matplotlib version, because text rendering
+          # depends on the platform's freetype/fontconfig. Artifacts committed
+          # from a developer's Windows machine will never byte-match ones
+          # regenerated on this Linux runner, so comparing them would fail
+          # permanently and teach everyone to ignore a red job.
+          #
+          # Excluded for that reason: results/figures/*.png, and the two
+          # provenance files that embed PNG hashes (figure_provenance.json and
+          # ARTIFACT_MANIFEST.json).
+          #
+          # What still IS enforced, and is genuinely portable:
+          #   * the step above - regenerating twice in ONE environment must be
+          #     byte-identical, which is what makes the digests meaningful
+          #   * tests/scripts/test_artifact_generation.py - the committed
+          #     manifest's hashes must match the committed files, both of which
+          #     travel through git together
+          git diff --exit-code -- \
+            results/tables/ \
+            results/csv/ \
+            results/aggregates/ \
+            results/policy_behavior_report.md || {
+            echo "committed fixture text artifacts are stale; run 'make fixture-artifacts'" >&2
             exit 1
           }

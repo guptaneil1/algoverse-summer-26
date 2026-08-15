@@ -178,6 +178,50 @@ def test_semantic_paraphrase_is_not_caught_at_the_frozen_threshold() -> None:
     )
 
 
+def test_only_five_of_ten_partition_pairs_are_checked_at_all() -> None:
+    """Pins a pre-existing gap this task inherits rather than introduces.
+
+    `PROTOCOL.md` §3 lists five partitions and requires them to be disjoint,
+    which is ten pairs. `FORBIDDEN_PARTITION_PAIRS` enumerates five, so the other
+    five are checked for neither exact nor near-duplicate overlap — the
+    near-duplicate wiring reuses the same list and inherits the same reach.
+
+    Widening the list would reclassify runs, so it is the validator owner's
+    decision, not a side effect of closing this blind spot. Pinned in the style
+    of `FAILURE_LOG.md` F-001: this test is expected to fail when the list is
+    widened, and should be deleted then.
+    """
+    from itertools import combinations
+
+    from human_data_budget.runner.provenance import RUN_MANIFEST_PARTITIONS
+    from human_data_budget.validation.audit import FORBIDDEN_PARTITION_PAIRS
+
+    checked = {frozenset(pair) for pair in FORBIDDEN_PARTITION_PAIRS}
+    every_pair = {frozenset(pair) for pair in combinations(RUN_MANIFEST_PARTITIONS, 2)}
+
+    assert len(every_pair) == 10
+    assert len(checked) == 5
+    assert {tuple(sorted(pair)) for pair in every_pair - checked} == {
+        ("base_human_train", "generation_prompts"),
+        ("base_human_train", "validation"),
+        ("generation_prompts", "rescue_candidates"),
+        ("generation_prompts", "validation"),
+        ("rescue_candidates", "validation"),
+    }
+
+
+def test_an_unchecked_pair_leaks_verbatim_without_detection() -> None:
+    """Demonstrates the consequence: an identical copy in an unchecked pair passes."""
+    shared = "Municipal archives catalogue property records."
+    partitions = _partitions(UNRELATED)
+    partitions["base_human_train"] = [_entry("bht-1", shared)]
+    partitions["validation"] = [_entry("val-1", shared)]
+
+    codes = _codes(check_separation({"data": {"partitions": partitions}}))
+    assert "SEPARATION_OVERLAP" not in codes
+    assert "SEPARATION_NEAR_DUPLICATE" not in codes
+
+
 def test_reworded_leak_scores_above_the_threshold_and_paraphrase_below() -> None:
     """The measured separation between what is and is not caught."""
     caught = _jaccard(_shingle(TEST_TEXT, 5), _shingle(REWORDED_LEAK, 5))

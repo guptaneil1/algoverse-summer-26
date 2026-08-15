@@ -46,6 +46,7 @@ data/fixtures/*
 # classifies it invalid, so they are committed like toy_corpus.jsonl above.
 !data/fixtures/partitions/
 !data/fixtures/partitions/*.jsonl
+!data/fixtures/partitions/README.md
 
 # Results: keep documentation and small generated aggregates only
 results/*

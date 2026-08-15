@@ -40,7 +40,7 @@ def _default_environment() -> dict[str, str]:
     return {"python": platform.python_version(), "hardware": "cpu-fixture"}
 
 
-def _data_block(config: dict[str, Any], data_root: Path) -> dict[str, Any]:
+def _data_block(config: dict[str, Any], data_root: Path | None) -> dict[str, Any]:
     """Assemble the manifest ``data`` block, including per-example provenance.
 
     ``PROTOCOL.md`` §3 requires per-example provenance for the five partitions,
@@ -64,13 +64,15 @@ def new_manifest(
     policy_name: str,
     git_commit: str = "0" * 40,
     working_tree_clean: bool = True,
-    data_root: Path = Path("."),
+    data_root: Path | None = None,
 ) -> dict[str, Any]:
     """Build the initial run manifest in ``planned`` status.
 
     ``data_root`` resolves relative partition-source paths declared in the
-    config; it defaults to the process working directory, which is the
-    repository root for the documented ``run_chain.sh`` invocation.
+    config. It defaults to the repository root located by
+    ``runner.provenance.project_root``, not the process working directory, so a
+    run's recorded provenance does not depend on the directory the command was
+    typed in.
     """
 
     return {

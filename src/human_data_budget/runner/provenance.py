@@ -52,6 +52,23 @@ class PartitionSourceError(ValueError):
     """Raised when a declared partition source cannot be resolved or loaded."""
 
 
+def project_root() -> Path:
+    """Locate the repository root by walking up to the directory holding pyproject.toml.
+
+    Partition sources are declared repository-relative, so resolving them against
+    the process working directory would make a run's provenance depend on where
+    the command happened to be typed. Deriving the root from ``__file__`` matches
+    how the rest of the repository locates itself (for example
+    ``scripts/validate_run.py``'s ``ROOT``), and keeps the chain runnable from any
+    directory. Falls back to the working directory when no marker is found.
+    """
+
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "pyproject.toml").is_file():
+            return parent
+    return Path()
+
+
 def _resolve(source: str | Path, root: Path) -> Path:
     candidate = Path(source)
     return candidate if candidate.is_absolute() else root / candidate
@@ -60,7 +77,7 @@ def _resolve(source: str | Path, root: Path) -> Path:
 def build_partition_provenance(
     sources: dict[str, str | Path],
     *,
-    root: Path = Path("."),
+    root: Path | None = None,
     include_text: bool = True,
 ) -> dict[str, list[dict[str, Any]]]:
     """Build the manifest ``data.partitions`` block from declared sources.
@@ -78,6 +95,7 @@ def build_partition_provenance(
     decision — not a correctness one — for a full corpus.
     """
 
+    root = project_root() if root is None else root
     unknown = sorted(set(sources) - set(RUN_MANIFEST_PARTITIONS))
     if unknown:
         raise PartitionSourceError(

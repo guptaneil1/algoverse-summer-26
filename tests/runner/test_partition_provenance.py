@@ -152,6 +152,25 @@ def test_unknown_partition_name_is_rejected() -> None:
         build_partition_provenance({"not_a_partition": "x.jsonl"}, root=ROOT)
 
 
+def test_provenance_does_not_depend_on_the_working_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A run's recorded provenance must not change with the directory it was launched from.
+
+    Partition sources are declared repository-relative. Resolving them against
+    the process working directory made every chain-running test fail when pytest
+    was invoked from anywhere but the repository root, and would have made a real
+    run's manifest depend on the operator's shell location.
+    """
+    from_root = new_manifest(_config_with_sources(), policy_name="joint")
+
+    monkeypatch.chdir(tmp_path)
+    from_elsewhere = new_manifest(_config_with_sources(), policy_name="joint")
+
+    assert from_elsewhere["data"]["partitions"] == from_root["data"]["partitions"]
+    assert from_root["data"]["partitions"]["final_human_test"]
+
+
 def test_toy_partition_fixtures_are_mutually_disjoint() -> None:
     """The shipped fixtures must not themselves contain a leak."""
     partitions = build_partition_provenance(TOY_SOURCES, root=ROOT)

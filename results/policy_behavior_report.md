@@ -32,20 +32,14 @@ produce a meaningful contrast no matter how many chains are run.
 
 | Policy A | Policy B | Allocations identical | Regret AUC identical |
 |---|---|---|---|
-| `random` | `schedule_only` | YES | YES |
+| `random` | `schedule_only` | no | no |
 | `random` | `selection_only` | no | no |
 | `random` | `joint` | no | no |
 | `schedule_only` | `selection_only` | no | no |
 | `schedule_only` | `joint` | no | no |
-| `selection_only` | `joint` | YES | YES |
+| `selection_only` | `joint` | no | no |
 
-**Degenerate pairs found: 2.**
-- `random` and `schedule_only` allocate identically on every seed.
-- `selection_only` and `joint` allocate identically on every seed.
-
-This is recorded as **F-001** in `FAILURE_LOG.md`. Until it is resolved,
-any contrast between a degenerate pair is structurally zero and the
-four-family decomposition required by C-002 is not yet testable.
+**Degenerate pairs found: 0.**
 
 ## 3. Allocation across generations and modes
 
@@ -54,9 +48,9 @@ Chain seed 1. Each cell is human tokens allocated to that mode.
 | Policy | g0 | g1 | g2 | g3 | g4 | g5 | g6 | g7 | g8 | g9 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `random` | common:10 | tail:10 | common:10 | common:10 | common:10 | common:10 | common:10 | tail:10 | common:10 | tail:10 |
-| `schedule_only` | common:10 | tail:10 | common:10 | common:10 | common:10 | common:10 | common:10 | tail:10 | common:10 | tail:10 |
+| `schedule_only` | - | - | - | - | - | common:10, tail:10 | common:10, tail:10 | common:10, tail:10 | common:10, tail:10 | common:10, tail:10 |
 | `selection_only` | tail:10 | tail:10 | common:10 | tail:10 | common:10 | tail:10 | tail:10 | common:10 | tail:10 | tail:10 |
-| `joint` | tail:10 | tail:10 | common:10 | tail:10 | common:10 | tail:10 | tail:10 | common:10 | tail:10 | tail:10 |
+| `joint` | - | tail:10 | tail:10 | - | tail:10 | common:10 | tail:10 | tail:10 | common:10, tail:10 | common:10, tail:10 |
 
 ## 4. Monitoring-omission sensitivity
 
@@ -67,9 +61,9 @@ state; only the monitor is blinded.
 | Policy | Full monitor | Tail hidden | Change |
 |---|---:|---:|---:|
 | `random` | 29.2090 | 29.2090 | +0.0000 |
-| `schedule_only` | 29.2090 | 29.2090 | +0.0000 |
+| `schedule_only` | 30.4400 | 30.4400 | +0.0000 |
 | `selection_only` | 28.8150 | 30.3000 | +1.4850 |
-| `joint` | 28.8150 | 30.3000 | +1.4850 |
+| `joint` | 29.4900 | 30.5350 | +1.0450 |
 
 A policy that ignores mode identity shows no change; a policy that targets
 modes is harmed. That separation is the intervention working as designed.

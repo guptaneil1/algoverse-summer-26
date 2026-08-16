@@ -1,5 +1,5 @@
 policy,chain_count,mean_nll_regret_auc
-joint,5,28.815000
+joint,5,29.490000
 random,5,29.209000
-schedule_only,5,29.209000
+schedule_only,5,30.440000
 selection_only,5,28.815000

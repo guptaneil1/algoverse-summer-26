@@ -11,30 +11,30 @@
     5
   ],
   "sha256": {
-    "fixture_primary_results.tex": "519e4c1bac57c4ccff5dc65ccfd7781849631265caae5c49a49ce498aba5071f",
-    "fixture_paired_contrasts.tex": "0324995fb2ccf52400f872e703dba43726ecd48e0c5728fb426e6565664f0601",
-    "fixture_primary.json": "c5655aef86f9d6494025a54fa8281d874373dda57bfde75ab074d1b6b1de5ee9"
+    "fixture_primary_results.tex": "72b72f9ca635862ee786c0f23245a6526e4fb2c16b3d3f33c3af2c2856de65a6",
+    "fixture_paired_contrasts.tex": "011ba4ffc8036ab0ab477829912faa034563043791265b086053e5afd09a9810",
+    "fixture_primary.json": "ba8d512378e430f4620d0b711138351a2a543092521564564d208a394ecfda9c"
   },
   "paired_contrasts_joint_minus_baseline": {
     "random": {
-      "mean_difference": -0.3940000000000019,
+      "mean_difference": 0.28100000000000236,
       "interval": [
-        -0.6800000000000039,
-        -0.15900000000000106
+        -0.004999999999999716,
+        0.5160000000000032
       ]
     },
     "schedule_only": {
-      "mean_difference": -0.3940000000000019,
+      "mean_difference": -0.9499999999999957,
       "interval": [
-        -0.6800000000000039,
-        -0.15900000000000106
+        -0.9499999999999957,
+        -0.9499999999999957
       ]
     },
     "selection_only": {
-      "mean_difference": 0.0,
+      "mean_difference": 0.6750000000000043,
       "interval": [
-        0.0,
-        0.0
+        0.6750000000000043,
+        0.6750000000000043
       ]
     }
   },

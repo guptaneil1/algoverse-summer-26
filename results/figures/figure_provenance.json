@@ -19,31 +19,31 @@
     "joint"
   ],
   "figure_sha256": {
-    "nll_by_generation.png": "faf1549c4c57f19a66c56a78bbbf63d52a8c8d64e7a5afe5b2db27da5f1e093b",
-    "tail_retention_by_generation.png": "17569e85bf721f5b56edeed6685adfca17cce84ee505eaee13966e41129ab61c",
-    "allocation_by_generation.png": "4cfe9453e2ce6cbe853f2a045e9f143cf62c420087b9cdec9ccf3742d7bb27df",
-    "paired_difference.png": "792ef302b2c694685cf1006fba9a3f706f84cc2f6aa474e9ccee8b9275c33e4a"
+    "nll_by_generation.png": "4dd41831404a7274f7199ee5f14f1fedb75cc5e1246c22f074fe3aed24053fa3",
+    "tail_retention_by_generation.png": "1c554197ca3ecdc334cb3d170fdb4d884675cd5cafbd11ac29c3f579c9f33657",
+    "allocation_by_generation.png": "75eb1bdaa56e624c57e3176894719e2bb4633951db2538fb02542c4e2054693f",
+    "paired_difference.png": "6c2b84fae909bdcd6a365c645a63c8066348bbc56e1bf1a5f4b7b8ee788c2c1a"
   },
   "paired_contrasts_joint_minus_baseline": {
     "random": {
-      "mean_difference": -0.3940000000000019,
+      "mean_difference": 0.28100000000000236,
       "interval": [
-        -0.6800000000000039,
-        -0.15900000000000106
+        -0.004999999999999716,
+        0.5160000000000032
       ]
     },
     "schedule_only": {
-      "mean_difference": -0.3940000000000019,
+      "mean_difference": -0.9499999999999957,
       "interval": [
-        -0.6800000000000039,
-        -0.15900000000000106
+        -0.9499999999999957,
+        -0.9499999999999957
       ]
     },
     "selection_only": {
-      "mean_difference": 0.0,
+      "mean_difference": 0.6750000000000043,
       "interval": [
-        0.0,
-        0.0
+        0.6750000000000043,
+        0.6750000000000043
       ]
     }
   }

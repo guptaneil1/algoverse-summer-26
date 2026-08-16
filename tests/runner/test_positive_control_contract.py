@@ -23,6 +23,7 @@ from human_data_budget.runner.positive_control_adapter import (
     unresolved_identifiers,
     validate_arm_config,
 )
+from tests.runner._stage_a_gate import requires_stage_a_freeze
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -53,6 +54,7 @@ def test_upstream_is_pinned_to_the_protocol_commit(arm_name: str) -> None:
     assert len(config["upstream"]["commit"]) == 40
 
 
+@requires_stage_a_freeze
 def test_protocol_pins_the_same_upstream_commit() -> None:
     """The config and PROTOCOL.md must not be allowed to drift apart."""
 

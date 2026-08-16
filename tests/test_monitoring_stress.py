@@ -39,13 +39,29 @@ def auc(policy: str, hidden: frozenset[str], seed: int = 1) -> float:
     return regret_auc([metric["human_nll"] for metric in run["chain_result"]["metrics"]])
 
 
-def test_hidden_mode_is_removed_from_policy_visible_state() -> None:
-    """The omitted mode must not appear in any allocation the policy made."""
+def test_hidden_mode_scores_zero_rather_than_being_excluded() -> None:
+    """An omitted mode is unseen by the monitor, not deleted from the candidate pool.
+
+    This previously asserted that a hidden mode must never appear in any
+    allocation. That contradicts the frozen method: `docs/method/week2_method_freeze.md`
+    §"Missing monitoring" states *"A partially missing mode receives score zero"*,
+    and `configs/policy/joint.json` records
+    `partially_missing_mode_behavior: assign_score_zero`. Score zero deprioritises
+    a candidate; it does not remove it.
+
+    The stricter assertion was written on 2026-08-15, after commit `243f58b` had
+    already reverted `policies/joint.py` to the Week-1 scaffold, so it encoded the
+    scaffold's incidental behaviour rather than the frozen rule. Its own sibling
+    `test_hidden_mode_still_degrades_in_the_true_state` insists hiding must not
+    remove the mode from reality — exclusion would have done exactly that, and
+    would have rewarded the policy for ignoring it.
+    """
     run = simulate_policy("joint", chain_seed=1, hidden_modes=HIDE_TAIL)
     assert run["hidden_modes"] == ["tail"]
+
     for step in run["allocations"]:
-        assert "tail" not in step["mode_allocations"], (
-            "a hidden mode was still allocated to, so the monitor was not actually blinded"
+        assert "tail" not in step.get("monitored_modes", []), (
+            "a hidden mode was visible to the monitor, so it was not actually blinded"
         )
 
 

@@ -14,6 +14,7 @@ They deliberately pin the detector's *limit* as well as its reach — see
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -63,6 +64,22 @@ def _partitions(prompt_text: str | None, **overrides: Any) -> dict[str, list[dic
 
 def _codes(checks: list[Any]) -> set[str]:
     return {check.code for check in checks if not check.passed}
+
+
+def _load_corpus_scanner() -> Any:
+    """Load the real corpus-scale scanner so its metric is used, not a copy of it.
+
+    Importing the shipped `_word_shingles` rather than reimplementing it is the
+    point: a hand-copied version could drift and the comparison below would then
+    prove nothing about the operating point the data workstream actually froze.
+    """
+    root = Path(__file__).resolve().parents[2]
+    spec = importlib.util.spec_from_file_location(
+        "build_wikitext103_manifests", root / "scripts" / "build_wikitext103_manifests.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 # --- the blind spot, closed -------------------------------------------------
@@ -269,19 +286,31 @@ def test_the_two_shipped_operating_points_disagree() -> None:
 
     `docs/data/overlap_report.md` §3 records the corpus-scale scan as word-8-gram
     Jaccard; `data/overlap.py`, which the auditor reuses, is character-5-gram.
+
+    The texts here are deliberately 16 words long. The short sentences used
+    elsewhere in this file fall into `_word_shingles`' `len(words) < n` fallback,
+    which collapses the whole string into one shingle and reduces word-8-gram to
+    exact-string equality — that would show a disagreement produced by the
+    degenerate path rather than by 8-gram overlap. The shingle-count assertion
+    below pins that the real path ran.
     """
-    def word_shingles(text: str, n: int = 8) -> frozenset[str]:
-        words = text.split()
-        if len(words) < n:
-            return frozenset({" ".join(words)}) if words else frozenset()
-        return frozenset(" ".join(words[i : i + n]) for i in range(len(words) - n + 1))
+    _word_shingles = _load_corpus_scanner()._word_shingles
 
-    char_5 = _jaccard(_shingle(TEST_TEXT, 5), _shingle(REWORDED_LEAK, 5))
-    word_8 = _jaccard(word_shingles(TEST_TEXT), word_shingles(REWORDED_LEAK))
+    long_a = (
+        "Radiolarian microfossils recovered from deep ocean sediment cores "
+        "indicate ancient sea surface temperatures across long intervals."
+    )
+    long_b = long_a.replace("temperatures", "temperature")
 
+    real_shingles = _word_shingles(long_a)
+    assert len(real_shingles) > 1, "fallback path taken; the comparison would be degenerate"
+
+    char_5 = _jaccard(_shingle(long_a, 5), _shingle(long_b, 5))
+    word_8 = _jaccard(real_shingles, _word_shingles(long_b))
+
+    # One word changed: caught by the auditor's metric, missed by the corpus scan's.
     assert char_5 >= NEAR_DUPLICATE_THRESHOLD
     assert word_8 < NEAR_DUPLICATE_THRESHOLD
-    assert word_8 == 0.0
 
 
 def test_partitions_without_text_report_an_explicit_limitation() -> None:

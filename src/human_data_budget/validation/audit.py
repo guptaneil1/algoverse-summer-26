@@ -64,6 +64,19 @@ REQUIRED_PROVENANCE_FIELDS = ("stable_id", "content_hash", "source_dataset", "or
 # present and non-empty: a truthy-but-meaningless block (an unrecognised key, or
 # the right keys mapped to empty lists) previously satisfied the provenance guard
 # and certified the run with zero reason codes.
+#
+# OPEN QUESTION for the validator owner, recorded rather than decided here: does
+# any legitimate arm ship an *empty* partition? The `no_rescue` reference arm
+# spends nothing (`configs/experiment/primary_no_rescue.json` sets
+# `per_generation_human_budget: 0`), which would make an empty `rescue_candidates`
+# plausible — and this rule would then classify every no-rescue chain `invalid`.
+# Two things say otherwise today: that config's own `_required_from_freeze` lists
+# "the five partition manifests", and `rescue_candidates` is the candidate *pool*,
+# not the selected set, so a chain that never draws from it still has one. The
+# question is also not live yet: `runner.chain.policy_from_config` cannot build a
+# `no_rescue` policy at all (`unknown policy: no_rescue`), so no such run exists
+# to misclassify. Erring strict is deliberate — a false `invalid` is visible and
+# fixable, a false `valid` is not — but confirm before the first reference run.
 REQUIRED_PARTITIONS = (
     "base_human_train",
     "rescue_candidates",

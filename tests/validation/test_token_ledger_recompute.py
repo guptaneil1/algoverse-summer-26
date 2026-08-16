@@ -152,6 +152,36 @@ def test_cannot_recompute_is_a_limitation_not_a_clean_pass(tmp_path: Path) -> No
 # --- bypasses found by adversarial review ------------------------------------
 
 
+def test_a_manifest_declared_ledger_path_is_honoured(tmp_path: Path) -> None:
+    """Records declared away from the default location are still read.
+
+    Mutation testing found this branch dead: replacing the declared path with the
+    default name unconditionally broke no test, so nothing established that a
+    non-default declaration was honoured at all.
+    """
+    run = tmp_path / "run"
+    (run / "ledger").mkdir(parents=True)
+    _write_batches(run / "ledger", BATCHES)
+    manifest = {"artifacts": [{"path": "ledger/batch_records.jsonl", "sha256": "x"}]}
+
+    correct = {"consumed_human_tokens": TRUE_HUMAN, "consumed_total_tokens": TRUE_TOTAL}
+    assert _codes(check_token_ledger(run, manifest, correct)) == set()
+
+    wrong = {"consumed_human_tokens": 40, "consumed_total_tokens": 50}
+    assert _codes(check_token_ledger(run, manifest, wrong)) == {"BUDGET_LEDGER_MISMATCH"}
+
+
+def test_a_declared_ledger_is_not_confused_with_a_missing_one(tmp_path: Path) -> None:
+    """Declaring a path that does not exist must not silently read the default."""
+    run = tmp_path / "run"
+    run.mkdir()
+    manifest = {"artifacts": [{"path": "ledger/batch_records.jsonl", "sha256": "x"}]}
+
+    assert _codes(check_token_ledger(run, manifest, {"consumed_human_tokens": 1})) == {
+        "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    }
+
+
 def test_two_contradictory_ledgers_are_ambiguous_not_silently_resolved(
     tmp_path: Path,
 ) -> None:

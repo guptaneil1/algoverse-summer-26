@@ -75,5 +75,15 @@ def test_mask_and_origin_length_mismatch_is_rejected() -> None:
         consumed_tokens([corrupt])
 
 
-def test_single_condition_is_trivially_matched() -> None:
-    assert validate_matched_budgets({"joint": [matched_batch()]}) == (3, 5)
+def test_a_single_condition_is_rejected_rather_than_trivially_matched() -> None:
+    """One condition compared nothing, so it must not report success.
+
+    This asserted the opposite — that a lone condition returns `(3, 5)`. That was
+    the defect: budget matching is the fairness constraint of `PROTOCOL.md` §4, and
+    a check that passes having compared nothing is the shape of a constraint that
+    can never fail. `data/token_accounting.py` was fixed to raise, and
+    `tests/data/test_token_accounting.py::test_a_single_condition_cannot_match_itself`
+    already pins the corrected contract; this test still encoded the old one.
+    """
+    with pytest.raises(ValueError, match="at least two"):
+        validate_matched_budgets({"joint": [matched_batch()]})

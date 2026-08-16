@@ -43,7 +43,9 @@ def completed_run(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return output_dir
 
 
-def test_toy_chain_classifies_valid(completed_run: Path) -> None:
+def test_toy_chain_classifies_valid_with_documented_limitations(
+    completed_run: Path,
+) -> None:
     result = subprocess.run(
         [sys.executable, "scripts/validate_run.py", str(completed_run)],
         cwd=ROOT,
@@ -53,10 +55,21 @@ def test_toy_chain_classifies_valid(completed_run: Path) -> None:
     )
     report = json.loads(result.stdout)
 
-    assert report["classification"] == "valid", report["checks_failed"]
-    assert report["reason_codes"] == []
-    assert report["checks_failed"] == []
-    assert result.returncode == 0
+    # Was `valid` / no reason codes. The auditor has since gained two checks that
+    # correctly report "cannot check" on this run rather than passing it silently:
+    #   LIMIT_NEAR_DUPLICATE_NOT_CHECKED  - the manifest carries the four required
+    #     provenance fields and no example text, so surface overlap is uncomparable.
+    #   LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE - nothing in the repository emits
+    #     batch_records.jsonl, so the declared ledger cannot be recomputed.
+    # Both are honest limitations of the toy chain, not defects in it. The run is
+    # still certifiable; it is simply not certifiable as unqualified `valid`.
+    assert report["classification"] == "valid_with_limitation", report["checks_failed"]
+    assert set(report["reason_codes"]) == {
+        "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+        "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
+    }
+    assert not report["schema_failures"]
+    assert result.returncode == 1
 
 
 def test_toy_chain_manifest_records_every_partition(completed_run: Path) -> None:

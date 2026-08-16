@@ -24,6 +24,29 @@ sys.modules[_SPEC.name] = validate_run
 _SPEC.loader.exec_module(validate_run)
 
 
+
+def _partitions() -> dict:
+    """Minimal complete provenance: five disjoint partitions, one example each."""
+    import hashlib
+
+    def example(stable_id: str, text: str) -> dict:
+        return {
+            "stable_id": stable_id,
+            "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "source_dataset": "toy/v1",
+            "origin": "human",
+            "text": text,
+        }
+
+    return {
+        "base_human_train": [example("bt-1", "Ancient trade routes shaped coastal towns.")],
+        "rescue_candidates": [example("rc-1", "Glassblowing guilds preserved furnace technique.")],
+        "generation_prompts": [example("gp-1", "Describe temperate songbird migration.")],
+        "validation": [example("val-1", "Municipal archives catalogue property records.")],
+        "final_human_test": [example("ft-1", "Radiolarian microfossils indicate sea temperature.")],
+    }
+
+
 def manifest(**overrides) -> dict:
     document = {
         "schema_version": "1.0",
@@ -36,7 +59,15 @@ def manifest(**overrides) -> dict:
             "revision": "main",
             "tokenizer_revision": "main",
         },
-        "data": {"train_manifest": "manifests/train.json", "train_manifest_sha256": "b" * 64},
+        # `data.partitions` is required: without it the independent audit reports
+        # SEPARATION_MISSING_PROVENANCE and the run cannot be certified at all.
+        # That is the defect docs/audits/week3_execution_required.md S1.2 records,
+        # so a fixture standing in for a *good* run has to carry provenance.
+        "data": {
+            "train_manifest": "manifests/train.json",
+            "train_manifest_sha256": "b" * 64,
+            "partitions": _partitions(),
+        },
         "policy": {
             "name": "joint",
             "config": "configs/policy/joint.json",
@@ -74,11 +105,40 @@ def chain_result(**overrides) -> dict:
     return document
 
 
-def write_run(tmp_path: Path, manifest_doc: dict, result_doc: dict) -> Path:
+def write_batch_records(run_dir: Path, result_doc: dict) -> None:
+    """Realized batches consistent with the result's own declared ledger.
+
+    The auditor recomputes the ledger rather than trusting it, so a run without
+    these can never classify better than `valid_with_limitation`
+    (LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE). Derived from the declaration so that
+    mutating a fixture's token counts keeps its batches in step.
+    """
+    human = result_doc.get("consumed_human_tokens")
+    total = result_doc.get("consumed_total_tokens")
+    if not isinstance(human, int) or not isinstance(total, int) or total < human or human < 0:
+        return
+    rows = [([1] * human, "human")] if human else []
+    if total - human:
+        rows.append(([1] * (total - human), "synthetic"))
+    if not rows:
+        return
+    record = {
+        "attention_mask": [mask for mask, _ in rows],
+        "origins": [origin for _, origin in rows],
+    }
+    with (run_dir / "batch_records.jsonl").open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(record) + "\n")
+
+
+def write_run(
+    tmp_path: Path, manifest_doc: dict, result_doc: dict, *, batch_records: bool = True
+) -> Path:
     run_dir = tmp_path / "run"
     run_dir.mkdir(exist_ok=True)
     (run_dir / "run_manifest.json").write_text(json.dumps(manifest_doc), encoding="utf-8")
     (run_dir / "chain_result.json").write_text(json.dumps(result_doc), encoding="utf-8")
+    if batch_records:
+        write_batch_records(run_dir, result_doc)
     return run_dir
 
 
@@ -205,9 +265,13 @@ def test_blocking_failure_outranks_limitation(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("state", "code"),
     [
+        # Exit contract per `docs/audits/week3_execution_required.md` S3.1:
+        # 0 valid, 1 valid_with_limitation, 2 invalid. This file previously
+        # asserted the last two inverted, contradicting that document and
+        # `tests/validation/test_validator_cli.py`. See FAILURE_LOG.md F-006.
         (validate_run.VALID, 0),
-        (validate_run.VALID_WITH_LIMITATION, 2),
-        (validate_run.INVALID, 1),
+        (validate_run.VALID_WITH_LIMITATION, 1),
+        (validate_run.INVALID, 2),
     ],
 )
 def test_exit_codes_are_distinct(state: str, code: int) -> None:
@@ -255,6 +319,7 @@ def test_unreadable_artifact_does_not_abort_a_batch(tmp_path: Path) -> None:
     good.mkdir()
     (good / "run_manifest.json").write_text(json.dumps(manifest()), encoding="utf-8")
     (good / "chain_result.json").write_text(json.dumps(chain_result()), encoding="utf-8")
+    write_batch_records(good, chain_result())
 
     bad = tmp_path / "bad"
     bad.mkdir()
@@ -318,27 +383,34 @@ def test_usage_error_does_not_masquerade_as_a_limitation() -> None:
     assert validate_run.EXIT_USAGE not in validate_run._EXIT_CODES.values()
 
 
-def test_main_returns_two_for_a_genuine_limitation(tmp_path: Path) -> None:
+def test_main_returns_one_for_a_genuine_limitation(tmp_path: Path) -> None:
     """Exercise main() end to end for the middle state, not just the dict."""
-    run_dir = write_run(tmp_path, manifest(stage="fixture"), chain_result())
-    assert validate_run.main([str(run_dir)]) == 2
+    run_dir = write_run(tmp_path, manifest(status="failed"), chain_result())
+    assert validate_run.main([str(run_dir)]) == 1
 
 
 def test_batch_worst_state_includes_the_limitation_case(tmp_path: Path) -> None:
-    """valid + valid_with_limitation must report 2, not 0."""
+    """valid + valid_with_limitation must report 1, not 0.
+
+    The limitation case uses `status="failed"`. It previously used
+    `stage="fixture"`, which no longer downgrades: being a contract fixture is a
+    statement about what a run IS, not about whether it executed validly.
+    """
     good = tmp_path / "good"
     good.mkdir()
     (good / "run_manifest.json").write_text(json.dumps(manifest()), encoding="utf-8")
     (good / "chain_result.json").write_text(json.dumps(chain_result()), encoding="utf-8")
+    write_batch_records(good, chain_result())
 
     limited = tmp_path / "limited"
     limited.mkdir()
     (limited / "run_manifest.json").write_text(
-        json.dumps(manifest(stage="fixture")), encoding="utf-8"
+        json.dumps(manifest(status="failed")), encoding="utf-8"
     )
     (limited / "chain_result.json").write_text(json.dumps(chain_result()), encoding="utf-8")
+    write_batch_records(limited, chain_result())
 
-    assert validate_run.main([str(good), str(limited)]) == 2
+    assert validate_run.main([str(good), str(limited)]) == 1
 
 
 def test_batch_returns_worst_state(tmp_path: Path, capsys) -> None:
@@ -346,6 +418,7 @@ def test_batch_returns_worst_state(tmp_path: Path, capsys) -> None:
     good.mkdir()
     (good / "run_manifest.json").write_text(json.dumps(manifest()), encoding="utf-8")
     (good / "chain_result.json").write_text(json.dumps(chain_result()), encoding="utf-8")
+    write_batch_records(good, chain_result())
 
     bad = tmp_path / "bad"
     bad.mkdir()
@@ -354,5 +427,5 @@ def test_batch_returns_worst_state(tmp_path: Path, capsys) -> None:
         json.dumps(chain_result(consumed_human_tokens=1)), encoding="utf-8"
     )
 
-    assert validate_run.main([str(good), str(bad)]) == 1
+    assert validate_run.main([str(good), str(bad)]) == 2
     assert validate_run.main([str(good)]) == 0

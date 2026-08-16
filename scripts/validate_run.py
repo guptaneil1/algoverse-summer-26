@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from human_data_budget.runner.schema import validate_json
+from human_data_budget.validation.audit import audit_run
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -49,9 +50,19 @@ VALID = "valid"
 VALID_WITH_LIMITATION = "valid_with_limitation"
 INVALID = "invalid"
 
-_EXIT_CODES = {VALID: 0, VALID_WITH_LIMITATION: 2, INVALID: 1}
+# Exit contract, as documented in `docs/audits/week3_execution_required.md` §3.1:
+# 0 valid, 1 valid_with_limitation, 2 invalid. A missing run directory exits 3.
+#
+# This file previously used {valid: 0, valid_with_limitation: 2, invalid: 1},
+# inverting the last two against that document and against
+# `tests/validation/test_validator_cli.py`. A CI wrapper treating 2 as "proceed
+# with acknowledgement" would have proceeded on an INVALID run.
+_EXIT_CODES = {VALID: 0, VALID_WITH_LIMITATION: 1, INVALID: 2}
 _SEVERITY = {VALID: 0, VALID_WITH_LIMITATION: 1, INVALID: 2}
-EXIT_USAGE = 64  # sysexits.h EX_USAGE; keeps 2 exclusive to valid_with_limitation
+EXIT_USAGE = 3  # a run directory that does not exist; the validator produced no verdict
+
+#: Recorded in every fixture run's report, but never classification-changing.
+_FIXTURE_NOTE = "stage is 'fixture'"
 
 
 @dataclass
@@ -277,33 +288,92 @@ def validate_run(run_directory: Path) -> Verdict:
     return verdict
 
 
+def _merged_report(directory: Path, *, audited_at: str) -> dict[str, object]:
+    """Combine the independent audit with this module's own checks.
+
+    Two check suites exist and neither subsumes the other. `validation/audit.py`
+    carries the adversarial coverage recorded in
+    `docs/validity/week3_adversarial_audit.md` — partition provenance and
+    disjointness, near-duplicate overlap, token-ledger recomputation, artifact
+    hashes. This module carries checks that suite lacks: budget matching against
+    the frozen plan, metric-series contiguity, run_id/policy/seed identity, and
+    status/scope. Shipping only one would silently drop the other's coverage.
+
+    The audit report is authoritative for the classification vocabulary and the
+    reason codes; this module's blocking failures are folded in as schema/contract
+    failures and can only make the verdict worse, never better.
+    """
+
+    report = audit_run(directory, audited_at=audited_at).to_dict()
+    verdict = validate_run(directory)
+
+    report["schema_failures"] = list(verdict.blocking)
+    report["checks_failed"] = sorted({*report["checks_failed"], *verdict.blocking})
+    report["limitations"] = sorted({*report["limitations"], *verdict.limitations})
+
+    # `stage: fixture` is recorded, but it does not downgrade the verdict. It is a
+    # statement about what the run IS — a contract artifact, not scientific
+    # evidence — not about whether it was validly executed. Letting it downgrade
+    # would mean no fixture run could ever classify `valid`, which is precisely
+    # what the validator's own adversarial suite uses as its clean baseline.
+    downgrading = [note for note in verdict.limitations if not note.startswith(_FIXTURE_NOTE)]
+
+    if verdict.state == INVALID:
+        report["classification"] = INVALID
+    elif downgrading and report["classification"] == VALID:
+        report["classification"] = VALID_WITH_LIMITATION
+
+    return report
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("run_directory", nargs="+", type=Path)
+    parser.add_argument("--report", type=Path, help="write the JSON report to this path")
     parser.add_argument(
-        "--json", action="store_true", help="emit machine-readable verdicts"
+        "--audited-at",
+        default="",
+        help="caller-supplied timestamp, so identical inputs produce identical reports",
+    )
+    parser.add_argument(
+        "--text", action="store_true", help="human-readable summary instead of JSON"
     )
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
-        # argparse exits 2 on usage errors, colliding with valid_with_limitation.
-        # --help exits 0 and must stay 0.
         return EXIT_USAGE if exc.code else 0
 
-    verdicts = [validate_run(directory) for directory in args.run_directory]
+    missing = [d for d in args.run_directory if not d.is_dir()]
+    if missing:
+        # The validator produced no verdict at all; that must not be confusable
+        # with a run it examined and classified.
+        print(f"validate_run: no such run directory: {missing[0]}", file=sys.stderr)
+        return EXIT_USAGE
 
-    if args.json:
-        print(json.dumps([verdict.as_dict() for verdict in verdicts], indent=2))
-    else:
-        for verdict in verdicts:
-            print(f"{verdict.state.upper()}  {verdict.run_directory}")
-            for reason in verdict.blocking:
-                print(f"    BLOCKING:   {reason}")
-            for reason in verdict.limitations:
+    reports = [
+        _merged_report(directory, audited_at=args.audited_at)
+        for directory in args.run_directory
+    ]
+
+    if args.text:
+        for directory, report in zip(args.run_directory, reports, strict=True):
+            print(f"{str(report['classification']).upper()}  {directory}")
+            for reason in report["checks_failed"]:
+                print(f"    FAILED:     {reason}")
+            for reason in report["limitations"]:
                 print(f"    LIMITATION: {reason}")
+    else:
+        payload = reports[0] if len(reports) == 1 else reports
+        print(json.dumps(payload, indent=2))
 
-    worst = max(verdicts, key=lambda verdict: _SEVERITY[verdict.state])
-    return _EXIT_CODES[worst.state]
+    if args.report is not None:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        with args.report.open("w", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(reports[0] if len(reports) == 1 else reports, indent=2))
+            handle.write("\n")
+
+    worst = max(reports, key=lambda report: _SEVERITY[str(report["classification"])])
+    return _EXIT_CODES[str(worst["classification"])]
 
 
 if __name__ == "__main__":

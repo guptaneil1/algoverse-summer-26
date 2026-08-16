@@ -149,10 +149,11 @@ def test_generate_command_matches_the_frozen_decoding_settings(
     assert flags["--block_size"] == "512"
     assert flags["--classify_text"] == "1"
     assert flags["--detector_path"] == "GeorgeDrayson/modernbert-ai-detection"
-    assert flags["--model_path"].endswith("exp/2/model/final_model")
-
-
-    assert flags["--model_path"].endswith("exp/2/model/final_model")
+    # Compared as path components, not as a string suffix: on Windows the driver
+    # emits `...\exp\2\model\final_model`, which never ends with a forward-slash
+    # spelling, so this assertion failed on Windows only and for a reason that
+    # had nothing to do with the decoding settings under test.
+    assert Path(flags["--model_path"]).parts[-4:] == ("exp", "2", "model", "final_model")
 
 
 def test_self_bleu_sample_is_capped_below_the_upstream_default(

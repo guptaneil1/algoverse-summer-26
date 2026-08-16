@@ -1,0 +1,2 @@
+{"example_id":"toy-val-1","text":"A common-mode human validation fixture.","origin":"human","mode":"common","source":"runner-fixture/toy-v1","source_offset":30,"token_count":6}
+{"example_id":"toy-val-2","text":"A rare-mode human validation fixture.","origin":"human","mode":"tail","source":"runner-fixture/toy-v1","source_offset":31,"token_count":6}

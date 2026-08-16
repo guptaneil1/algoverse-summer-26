@@ -1,105 +1,190 @@
-# Draft Preregistration
 
-> **DRAFT — NOT FROZEN, NOT REGISTERED, AND NOT EVIDENCE OF COMPLETED WORK.**
+# Human Data Budget Pilot Preregistration
 
-This document will be frozen only after the published positive control passes and before novel treatment outcomes are inspected.
+> **Version:** week2-fixture-v1
+> **Date:** 2026-07-31
+> **Scientific-config SHA-256:** `33d268deb5a7b1c13a95f4f5e4171af77403872b49dc79f2afd2a7b19d63261b`
+> **Status:** Fixture comparison frozen; real-model execution blocked.
+> **Evidence warning:** FIXTURE - NOT SCIENTIFIC EVIDENCE.
+
+No primary novel-treatment outcome was used to select any rule in this
+document.
 
 ## Research question
 
-Under a fixed lifetime budget of human-origin optimizer tokens, does jointly allocating those tokens across recursive generations and under-covered human-distribution modes reduce recursive-training degradation relative to the strongest schedule-only and selection-only policies?
+Under a fixed lifetime budget of optimizer-consumed human-origin tokens,
+does jointly choosing when to spend human tokens and which under-covered
+modes to target reduce recursive-training degradation relative to the
+strongest eligible schedule-only or selection-only baseline?
 
 ## Primary estimand
 
-The paired chain-level difference between the proposed joint policy and the strongest eligible non-joint baseline in area under the held-out human NLL-regret curve over the frozen recursive horizon.
+The primary estimand is the paired chain-level difference:
 
-## Experimental unit
+`joint NLL-regret AUC - selected non-joint baseline NLL-regret AUC`
 
-One complete independently seeded recursive training chain.
+Lower values favor the joint policy.
 
-## Proposed design
+One complete independently seeded recursive chain is one experimental
+unit. Generations within one chain are dependent observations and are not
+treated as separate experimental units.
 
-| Item | Draft choice |
+## Frozen fixture design
+
+| Item | Choice |
 |---|---|
-| Screening model | Pythia-160M or frozen equivalent |
-| Primary domain | TBD after license and split audit |
-| Horizon | Ten generations |
-| Initial variance sample | At least five paired chain seeds |
-| Final seed count | Simulation-based power result |
-| Budget levels | Zero plus two nonzero lifetime budgets, values TBD |
-| Pairing | Same chain seed and starting assets across policies |
+| Horizon | 10 generations |
+| Lifetime human-token budget | 100 |
+| Total optimizer-token budget | 10000 |
+| Ordered primary seeds | 101, 202, 303, 404, 505 |
+| Ordered replacement seeds | 606, 707, 808, 909, 1010 |
+| Primary outcome | Held-out human NLL-regret AUC |
+| Confirmatory outcome | Frozen primary tail-retention metric |
+| Primary contrast | Joint minus strongest eligible non-joint baseline |
+| Meaningful-effect threshold | 2% relative NLL-regret AUC |
 
-## Treatment families
+Human-origin tokens are included inside the total optimizer-token budget.
+Synthetic-origin optimizer tokens must be reduced so every policy
+consumes exactly the same total optimizer-token budget.
 
-1. No rescue.
-2. Fresh random rescue.
-3. Strongest schedule-only baseline.
-4. Strongest selection-only baseline.
-5. Joint time-and-mode policy.
-6. Oracle allocation as a non-deployable upper bound.
+## Real-run blocker
 
-## Primary outcomes
+Real-model execution is blocked until the team approves a tokenizer-counted real human-token budget and total optimizer-token budget.
 
-1. Chain-level area under held-out human NLL regret across generations.
-2. Chain-level tail-retention score on a held-out evaluation partition.
+The values above are frozen only for fixtures and software-validation
+tests. They may not be represented as an approved real experiment.
 
-The precise tail-retention definition must be frozen after a reliability audit and must not reuse the policy’s selection score as its only evaluation.
+## Policy-visible state
 
-## Secondary outcomes
+A policy may use only:
 
-- semantic distribution coverage;
-- generated-text diversity;
-- memorization or nearest-neighbor overlap;
-- downstream task performance where licensed and meaningful;
-- per-mode regret;
-- allocation trajectory;
-- compute and human-token efficiency.
+1. Current generation number.
+2. Remaining lifetime human-token budget.
+3. Frozen rescue candidates and their non-padding token counts.
+4. Monitoring statistics from the previous generation.
+5. Its own previous allocation history.
+6. Its supplied deterministic policy seed.
 
-Secondary outcomes cannot replace a failed primary outcome.
+A policy may not use final-test examples, final-test metrics, future
+generations, another policy's outputs, or primary treatment outcomes.
 
-## Planned primary contrast
+## Mode representation
 
-At each nonzero lifetime budget, compare the joint policy with the best eligible schedule-only or selection-only baseline using paired chain seeds. “Best” must be selected using screening data or a rule frozen before confirmation outcomes are viewed.
+Modes are frozen, auditable groups defined by the data owner before
+execution. Final-test data cannot define, modify, merge, split, or tune
+a mode.
 
-## Power
+## Under-coverage score
 
-The smallest scientifically meaningful effect is currently unresolved and must be reviewed before analysis. Chain-level variance from the screening stage will be used in a simulation matching the final repeated-generation analysis. The powered seed count will target 80–90% power for the frozen effect.
+For mode `m` at generation `g`:
 
-If the required seed count is unaffordable, policies, domains, or claims will be reduced. The seed count will not be reduced merely to fit the budget.
+`u[g,m] = clip((L[g-1,m] - L[reference,m]) /
+max(abs(L[reference,m]), 1e-8), 0, 1)`
+
+`L[g-1,m]` is the previous generation's monitoring-partition NLL.
+
+A partially missing mode receives score zero. If all monitoring is
+missing, the selection order falls back to a deterministic seeded
+shuffle. A nonfinite score invalidates the allocation.
+
+## Random policy
+
+The random policy spends 10 human tokens in every generation. It shuffles
+eligible candidates using the supplied policy seed and does not read any
+under-coverage score.
+
+## Schedule-only policy
+
+The schedule-only policy spends:
+
+`[0, 0, 0, 0, 0, 20, 20, 20, 20, 20]`
+
+Candidate selection is a supplied-seed shuffle. Mode under-coverage does
+not affect selection.
+
+## Selection-only policy
+
+The selection-only policy spends 10 human tokens every generation. It
+ranks candidates by descending lagged under-coverage score and breaks
+ties using ascending example ID.
+
+It cannot alter the spending schedule.
+
+## Joint policy
+
+The joint policy uses the maximum finite monitored mode score as urgency.
+
+- Urgency below 0.25: desired spending is 0.
+- Urgency from 0.25 to below 0.50: desired spending is 10.
+- Urgency at least 0.50: desired spending is 20.
+
+The desired amount is clamped to a feasible range that preserves the
+ability to consume the exact lifetime budget by the end of the horizon.
+
+Candidate ranking uses descending under-coverage score, followed by
+ascending example ID.
+
+## Baseline-selection rule
+
+The eligible baselines are schedule-only and selection-only.
+
+The baseline with lower mean NLL-regret AUC on validation-only screening
+chains is selected. If their absolute difference is at most 0.001 AUC
+units, selection-only is chosen.
+
+Primary treatment outcomes cannot be used to choose the baseline.
+
+## Meaningful-effect interpretation
+
+Define relative difference as:
+
+`(joint AUC - baseline AUC) / baseline AUC`
+
+- Beneficial: mean is at most -2% and the paired interval is below zero.
+- Harmful: mean is at least +2% and the paired interval is above zero.
+- Negligible: the entire interval lies between -2% and +2%.
+- Uncertain: every other valid result pattern.
+
+## Exclusions
+
+A chain may be excluded only for:
+
+- A corrupt or missing required artifact.
+- Verified incorrect token accounting.
+- A verified wrong frozen config or code commit.
+- Verified data leakage or manifest mismatch.
+- Infrastructure termination before a required checkpoint.
+
+Divergence, harmful performance, null performance, and negligible effects
+remain scientific outcomes unless independent evidence proves an
+implementation defect.
+
+## Replacement seeds
+
+An excluded seed is replaced with the next unused seed from the frozen
+replacement list. The failed run and exclusion reason remain recorded.
 
 ## Multiplicity
 
-One primary contrast, one primary horizon, and one primary budget will be designated for the central claim. Other budgets, policies, domains, and outcomes will be labeled secondary and corrected or interpreted as exploratory according to the frozen analysis plan.
+There is one central budget, horizon, primary outcome, and primary
+contrast. Other budgets, horizons, outcomes, and comparisons are
+secondary or exploratory.
 
-## Missing or failed runs
+They cannot replace a failed primary analysis.
 
-- Hardware failures and corrupted artifacts are excluded only under objective rules written before treatment inspection.
-- Divergent training is a scientific outcome unless an independently verifiable implementation failure caused it.
-- Failed chains remain in `FAILURE_LOG.md`.
-- Replacement seeds are generated from a predeclared ordered seed list.
+## Stopping
 
-## Stopping rules
+There is no outcome-based stopping.
 
-- Stop immediately for data leakage, invalid provenance, or incorrect token budgets.
-- Do not stop early because a treatment looks successful or unsuccessful.
-- Pilot completion is determined by the frozen seed list and artifact-validity rules.
+Execution may stop only for a predeclared validity, accounting,
+provenance, leakage, safety, or infrastructure condition.
 
-## Robustness tests required before a broad claim
+## Amendments
 
-- independent domain;
-- larger model scales;
-- independent model family for an empirical-led paper;
-- biased or incomplete monitoring reference;
-- fixed versus fresh human anchors;
-- stronger accumulation, scheduling, and selection baselines;
-- long-horizon decisive contrast.
+Every amendment must:
 
-## Freeze procedure
-
-Before the first novel treatment result is opened:
-
-1. resolve every `TBD` that affects inference;
-2. assign a version and content hash;
-3. record the code and configuration commit;
-4. obtain mentor and statistics-review signoff;
-5. write the freeze timestamp in `DECISIONS.md`;
-6. permit changes only through dated amendments that preserve the original version.
+1. Preserve the original version and hash.
+2. Include a date and owner.
+3. State the evidence motivating the change.
+4. State whether primary outcomes had been accessed.
+5. Never use a promising or disappointing result to alter the protocol.

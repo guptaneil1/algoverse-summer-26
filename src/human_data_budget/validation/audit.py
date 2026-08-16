@@ -12,9 +12,13 @@ import hashlib
 import json
 import math
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from human_data_budget.data.hashing import content_hash
+from human_data_budget.data.overlap import find_near_duplicate_pairs
+from human_data_budget.data.token_accounting import consumed_tokens
 from human_data_budget.validation.classification import (
     LIMITING_CODES,
     AuditReport,
@@ -24,7 +28,28 @@ from human_data_budget.validation.classification import (
 
 MANIFEST_NAME = "run_manifest.json"
 CHAIN_RESULT_NAME = "chain_result.json"
+BATCH_RECORDS_NAME = "batch_records.jsonl"
 TERMINAL_STATUSES = {"complete", "failed", "invalid"}
+
+# The threshold value 0.8 is taken from ``human_data_budget.data.overlap``'s own
+# default; no new value was chosen here.
+#
+# UNRESOLVED, needs the data owner (@Neil) before any primary chain is certified:
+# the repository contains two different operating points that share the number
+# 0.8 but not the metric. ``docs/data/overlap_report.md`` §3 records the
+# corpus-scale scan as **word-8-gram** Jaccard with a ±20% length band
+# (``scripts/build_wikitext103_manifests.py``: NEAR_DUP_SHINGLE_WORDS = 8), while
+# ``data/overlap.py`` — the fixture-scale logic this auditor reuses — is
+# **character-5-gram**. They disagree sharply: the reworded leak pinned in
+# ``tests/validation/test_near_duplicate_separation.py`` scores 0.9483 as
+# char-5-gram and 0.0 as word-8-gram. Whichever is the intended audit-time
+# definition, both should not ship.
+#
+# Reach of the char-5-gram detector at 0.8, measured by the tests in that file:
+# it catches near-identical restatements and misses semantic paraphrase. It also
+# misses a *verbatim* copy that has been padded with surrounding text, because
+# Jaccard is symmetric and measures no containment.
+NEAR_DUPLICATE_THRESHOLD = 0.8
 
 FORBIDDEN_PARTITION_PAIRS = (
     ("base_human_train", "final_human_test"),
@@ -35,6 +60,31 @@ FORBIDDEN_PARTITION_PAIRS = (
 )
 
 REQUIRED_PROVENANCE_FIELDS = ("stable_id", "content_hash", "source_dataset", "origin")
+
+# The five partitions PROTOCOL.md §3 requires to be disjoint. All five must be
+# present and non-empty: a truthy-but-meaningless block (an unrecognised key, or
+# the right keys mapped to empty lists) previously satisfied the provenance guard
+# and certified the run with zero reason codes.
+#
+# OPEN QUESTION for the validator owner, recorded rather than decided here: does
+# any legitimate arm ship an *empty* partition? The `no_rescue` reference arm
+# spends nothing (`configs/experiment/primary_no_rescue.json` sets
+# `per_generation_human_budget: 0`), which would make an empty `rescue_candidates`
+# plausible — and this rule would then classify every no-rescue chain `invalid`.
+# Two things say otherwise today: that config's own `_required_from_freeze` lists
+# "the five partition manifests", and `rescue_candidates` is the candidate *pool*,
+# not the selected set, so a chain that never draws from it still has one. The
+# question is also not live yet: `runner.chain.policy_from_config` cannot build a
+# `no_rescue` policy at all (`unknown policy: no_rescue`), so no such run exists
+# to misclassify. Erring strict is deliberate — a false `invalid` is visible and
+# fixable, a false `valid` is not — but confirm before the first reference run.
+REQUIRED_PARTITIONS = (
+    "base_human_train",
+    "rescue_candidates",
+    "generation_prompts",
+    "validation",
+    "final_human_test",
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -111,12 +161,155 @@ def check_artifacts(run_directory: Path, manifest: dict[str, Any]) -> list[Check
     return checks
 
 
+@dataclass(frozen=True)
+class _TextExample:
+    """The two attributes ``find_near_duplicate_pairs`` reads from an example.
+
+    A full ``human_data_budget.data.manifest.Example`` is deliberately not built
+    here: it requires ``mode``, ``source_offset``, and ``token_count``, none of
+    which the manifest provenance record carries. Supplying placeholder values
+    for them would put invented numbers into the audit path, so the auditor
+    adapts the record it actually has and reuses the frozen detection logic
+    unchanged.
+    """
+
+    example_id: str
+    text: str
+
+
+@dataclass(frozen=True)
+class _TextPartition:
+    examples: tuple[_TextExample, ...]
+
+
+def _text_partition(entries: list[dict[str, Any]]) -> tuple[_TextPartition, list[str]]:
+    """Adapt a partition's provenance entries for near-duplicate comparison.
+
+    Returns the readable examples **and** the stable IDs that carried no text.
+
+    Comparison proceeds over whatever text is present rather than being skipped
+    wholesale. An earlier all-or-nothing rule made the missing-text path a
+    cheaper bypass than the leak it guarded: blanking ``text`` on a single
+    innocuous decoy example disabled near-duplicate checking for every pair
+    touching that partition, so a genuine reworded leak elsewhere in the same
+    partition downgraded from ``invalid`` to ``valid_with_limitation``. Skipped
+    IDs are now reported by name, so a blinded entry is visible in the report
+    instead of silently suppressing the check.
+    """
+
+    examples: list[_TextExample] = []
+    skipped: list[str] = []
+    for entry in entries:
+        stable_id = str(entry.get("stable_id", ""))
+        text = entry.get("text")
+        if not isinstance(text, str) or not text.strip():
+            skipped.append(stable_id)
+            continue
+        examples.append(_TextExample(example_id=stable_id, text=text))
+    return _TextPartition(examples=tuple(examples)), skipped
+
+
+def check_near_duplicate_separation(
+    partitions: dict[str, list[dict[str, Any]]],
+    *,
+    threshold: float = NEAR_DUPLICATE_THRESHOLD,
+) -> list[CheckResult]:
+    """Reject near-duplicate text across forbidden partition pairs.
+
+    Closes blind spot 2 of ``docs/validity/week3_adversarial_audit.md`` §8: the
+    auditor previously compared exact content hashes only, so a leak that had
+    been reworded even trivially passed as valid. Detection is delegated to
+    ``human_data_budget.data.overlap.find_near_duplicate_pairs``.
+
+    A pair whose text is unavailable produces an explicit
+    ``LIMIT_NEAR_DUPLICATE_NOT_CHECKED`` limitation rather than an unqualified
+    pass, so "not checked" is never recorded as "checked and clean".
+    """
+
+    checks: list[CheckResult] = []
+    adapted = {name: _text_partition(entries) for name, entries in partitions.items()}
+    blinded = sorted(
+        f"{name}:{stable_id}" for name, (_, skipped) in adapted.items() for stable_id in skipped
+    )
+    unchecked: list[str] = []
+
+    for left, right in FORBIDDEN_PARTITION_PAIRS:
+        if left not in partitions or right not in partitions:
+            # Absent, not clean. Silently skipping reported "not checked" as
+            # "checked and clean" — the failure mode this function exists to
+            # avoid — for a manifest that simply omitted a partition.
+            unchecked.append(f"{left}|{right}")
+            continue
+        left_partition, _ = adapted[left]
+        right_partition, _ = adapted[right]
+        if not left_partition.examples or not right_partition.examples:
+            unchecked.append(f"{left}|{right}")
+            continue
+
+        pairs = find_near_duplicate_pairs(left_partition, right_partition, threshold)
+        if pairs:
+            checks.append(
+                CheckResult(
+                    name=f"separation_near_duplicate:{left}|{right}",
+                    passed=False,
+                    code="SEPARATION_NEAR_DUPLICATE",
+                    detail=(
+                        f"{len(pairs)} near-duplicate pair(s) at threshold "
+                        f"{threshold}: {sorted(pairs)[:5]}"
+                    ),
+                )
+            )
+            continue
+
+        # Finding nothing is only "clean" if everything was actually compared. If
+        # either side had an entry with no readable text, the leak could be
+        # sitting in exactly that entry, so the pair is inconclusive. Recording it
+        # as a passing check was itself the "not checked reported as checked and
+        # clean" failure this function exists to prevent.
+        pair_blinded = adapted[left][1] + adapted[right][1]
+        checks.append(
+            CheckResult(
+                name=f"separation_near_duplicate:{left}|{right}",
+                passed=not pair_blinded,
+                code=None if not pair_blinded else "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+                detail=(
+                    ""
+                    if not pair_blinded
+                    else f"no near-duplicate found, but {sorted(pair_blinded)} were not compared"
+                ),
+            )
+        )
+
+    if unchecked:
+        checks.append(
+            CheckResult(
+                name="separation_near_duplicate_scanned",
+                passed=False,
+                code="LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+                detail=f"no example text at all for partition pair(s) {sorted(unchecked)}",
+            )
+        )
+    if blinded:
+        checks.append(
+            CheckResult(
+                name="separation_near_duplicate_coverage",
+                passed=False,
+                code="LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+                detail=(
+                    f"{len(blinded)} example(s) carried no text and were not "
+                    f"compared: {blinded[:10]}"
+                ),
+            )
+        )
+    return checks
+
+
 def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
     """Reject overlap between forbidden partition pairs and missing provenance."""
     checks: list[CheckResult] = []
     partitions = manifest.get("data", {}).get("partitions")
 
-    if not partitions:
+    if not isinstance(partitions, dict) or not partitions:
         return [
             CheckResult(
                 name="separation_partitions_recorded",
@@ -125,6 +318,31 @@ def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
                 detail="manifest records no data.partitions block",
             )
         ]
+
+    # A truthy block is not evidence of provenance. Require the five named
+    # partitions to be present and populated, and reject unrecognised names,
+    # otherwise `{"junk": []}` certifies a run with no provenance at all.
+    absent = [name for name in REQUIRED_PARTITIONS if not partitions.get(name)]
+    if absent:
+        checks.append(
+            CheckResult(
+                name="separation_partitions_recorded",
+                passed=False,
+                code="SEPARATION_MISSING_PROVENANCE",
+                detail=f"partition(s) absent or empty: {sorted(absent)}",
+            )
+        )
+
+    unexpected = sorted(set(partitions) - set(REQUIRED_PARTITIONS))
+    if unexpected:
+        checks.append(
+            CheckResult(
+                name="separation_partitions_recognised",
+                passed=False,
+                code="SEPARATION_MISSING_PROVENANCE",
+                detail=f"unrecognised partition name(s): {unexpected}",
+            )
+        )
 
     for left, right in FORBIDDEN_PARTITION_PAIRS:
         left_ids = {item.get("content_hash") for item in partitions.get(left, [])}
@@ -156,6 +374,32 @@ def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
                         detail=f"missing {sorted(missing)}",
                     )
                 )
+
+    # Bind `text` to the hash that identifies it. Near-duplicate detection reads
+    # `text`, while exact overlap and artifact verification read `content_hash`;
+    # nothing previously required them to describe the same example. A run could
+    # therefore declare truthful, hash-verified provenance and substitute decoy
+    # text, and a real cross-partition leak compared clean with zero reason codes.
+    for partition_name, examples in partitions.items():
+        for index, example in enumerate(examples):
+            text = example.get("text")
+            recorded = example.get("content_hash")
+            if not isinstance(text, str) or not recorded:
+                continue
+            if content_hash(text) != recorded:
+                checks.append(
+                    CheckResult(
+                        name=f"provenance_hash_matches_text:{partition_name}[{index}]",
+                        passed=False,
+                        code="SEPARATION_PROVENANCE_INCONSISTENT",
+                        detail=(
+                            f"{example.get('stable_id', '?')} records hash {recorded[:12]}… "
+                            f"but its text hashes to {content_hash(text)[:12]}…"
+                        ),
+                    )
+                )
+
+    checks.extend(check_near_duplicate_separation(partitions))
 
     checks.append(
         CheckResult(name="provenance_scanned", passed=True, detail=f"{len(partitions)} partitions")
@@ -204,6 +448,213 @@ def check_budgets(manifest: dict[str, Any], chain_result: dict[str, Any]) -> lis
             detail="" if total_ok else f"planned {planned_total}, consumed {consumed_total}",
         )
     )
+    return checks
+
+
+def _load_batch_records(path: Path) -> list[dict[str, Any]]:
+    """Read realized batch records from JSONL, one record per line."""
+    records: list[dict[str, Any]] = []
+    with path.open(encoding="utf-8") as handle:
+        for lineno, line in enumerate(handle, 1):
+            line = line.strip()
+            if not line:
+                continue
+            record = json.loads(line)
+            if not isinstance(record, dict):
+                raise ValueError(f"line {lineno} is not a JSON object")
+            records.append(record)
+    return records
+
+
+def resolve_batch_records(
+    run_directory: Path, manifest: dict[str, Any]
+) -> tuple[Path | None, str | None]:
+    """Locate the run's single batch-record ledger.
+
+    Returns ``(path, None)`` when exactly one admissible ledger is identified, or
+    ``(None, reason)`` when the run carries several, names one outside itself, or
+    carries none. ``audit_run`` reuses this so the hash it records is the hash of
+    the file the ledger check actually read — not a second guess at the default
+    location, which would omit the deciding evidence in exactly the case the
+    manifest-declared lookup exists to handle.
+    """
+
+    declared = sorted(
+        {
+            str(reference.get("path", ""))
+            for reference in manifest.get("artifacts", [])
+            if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
+        }
+    )
+
+    # Every ledger physically inside the run counts, not just the one at the root.
+    # Counting only declared paths plus the default filename let the manifest hide
+    # a truthful ledger in a subdirectory while pointing the auditor at a decoy.
+    present = sorted(
+        path.relative_to(run_directory).as_posix()
+        for path in run_directory.rglob(BATCH_RECORDS_NAME)
+        if path.is_file()
+    )
+
+    ambiguous = sorted(set(declared) | set(present))
+    if len(ambiguous) > 1:
+        return None, (
+            f"run carries more than one batch-record ledger ({ambiguous}); "
+            "which one realized the run is ambiguous"
+        )
+
+    relative = Path(declared[0]) if declared else Path(BATCH_RECORDS_NAME)
+
+    # The evidence must live inside the run being audited. `run_directory / p`
+    # collapses to `p` when p is absolute, so a manifest could name any file on
+    # the machine — including one written specifically to match a false ledger —
+    # and the auditor would recompute from it and certify. `..` escapes the same
+    # way. Neither is a path within the run, so neither is admissible evidence.
+    if relative.is_absolute() or ".." in relative.parts:
+        return None, (
+            f"batch-record path {str(relative)!r} points outside the run "
+            "directory; ledger evidence must be contained by the run"
+        )
+
+    candidate = run_directory / relative
+    if not candidate.is_file():
+        return None, None
+    return candidate, None
+
+
+def check_token_ledger(
+    run_directory: Path, manifest: dict[str, Any], chain_result: dict[str, Any]
+) -> list[CheckResult]:
+    """Recompute the token ledger from realized batches instead of trusting it.
+
+    Closes blind spot 3 of ``docs/validity/week3_adversarial_audit.md`` §8. The
+    auditor previously compared the declared consumed totals against the frozen
+    budget, so a ledger that was wrong but internally consistent — the same wrong
+    number in the manifest and the chain result — passed every check.
+
+    Recomputation delegates to
+    ``human_data_budget.data.token_accounting.consumed_tokens``, which already
+    enforces the accounting rules tested in
+    ``tests/data/test_token_accounting.py``: padding excluded via the attention
+    mask, each presentation of a repeated example counted again, every
+    gradient-accumulation micro-batch counted, and a resumed run counted exactly
+    once per realized batch.
+
+    When no batch records exist the auditor says so with
+    ``LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE``. It never falls back silently to
+    comparison, because "the ledger agrees with itself" is precisely the
+    evidence this check exists to distinguish from "the ledger is correct".
+    """
+
+    declared_paths = sorted(
+        {
+            str(reference.get("path", ""))
+            for reference in manifest.get("artifacts", [])
+            if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
+        }
+    )
+
+    candidate, problem = resolve_batch_records(run_directory, manifest)
+    if problem is not None:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=problem,
+            )
+        ]
+
+    if candidate is None:
+        # A run that never emitted batch records and a run whose records were
+        # removed after the fact both land here, but they are not the same claim:
+        # the second declared the artifact and then failed to produce it, which
+        # is the shape of evidence deleted to escape BUDGET_LEDGER_MISMATCH.
+        # Recording the declaration state lets a reader tell them apart.
+        if declared_paths:
+            return [
+                CheckResult(
+                    name="token_ledger_recomputed",
+                    passed=False,
+                    code="ARTIFACT_MISSING",
+                    detail=(
+                        f"manifest declares batch records at {declared_paths[0]!r} but "
+                        "the file is absent; a declared ledger artifact must be present"
+                    ),
+                )
+            ]
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
+                detail=(
+                    f"no realized batch records at {BATCH_RECORDS_NAME} and none "
+                    "declared in the manifest; the declared ledger was compared "
+                    "against the frozen budget but not recomputed"
+                ),
+            )
+        ]
+
+    try:
+        records = _load_batch_records(candidate)
+    except (OSError, ValueError) as error:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=f"{candidate.name} could not be read as batch records: {error}",
+            )
+        ]
+
+    if not records:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
+                detail=f"{candidate.name} contains no batch records",
+            )
+        ]
+
+    try:
+        recomputed_total = consumed_tokens(records)
+        recomputed_human = consumed_tokens(records, origin="human")
+    except (KeyError, TypeError, ValueError) as error:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=f"{candidate.name} holds malformed batch records: {error}",
+            )
+        ]
+
+    checks: list[CheckResult] = []
+    for label, recomputed, declared in (
+        ("human", recomputed_human, chain_result.get("consumed_human_tokens")),
+        ("total", recomputed_total, chain_result.get("consumed_total_tokens")),
+    ):
+        # `declared == recomputed` alone would accept True for 1: bool subclasses
+        # int, so a chain result carrying `"consumed_human_tokens": true` would
+        # certify against a recomputed value of one.
+        agrees = type(declared) is int and declared == recomputed
+        checks.append(
+            CheckResult(
+                name=f"token_ledger_recomputed:{label}",
+                passed=agrees,
+                code=None if agrees else "BUDGET_LEDGER_MISMATCH",
+                detail=(
+                    ""
+                    if agrees
+                    else (
+                        f"chain result declares {declared} {label} tokens; "
+                        f"{len(records)} realized batch records total {recomputed}"
+                    )
+                ),
+            )
+        )
     return checks
 
 
@@ -387,16 +838,25 @@ def audit_run(
     checks.extend(check_artifacts(run_directory, manifest))
     checks.extend(check_separation(manifest))
     checks.extend(check_budgets(manifest, chain_result))
+    checks.extend(check_token_ledger(run_directory, manifest, chain_result))
+
+    # The batch records decide the ledger verdict, so the report records their
+    # hash alongside the manifest's and the chain result's. Without it the
+    # verdict is not reproducible against the evidence that produced it.
+    input_hashes = {
+        "run_manifest": sha256_file(manifest_path),
+        "chain_result": sha256_file(result_path),
+    }
+    batch_path, _ = resolve_batch_records(run_directory, manifest)
+    if batch_path is not None:
+        input_hashes["batch_records"] = sha256_file(batch_path)
     checks.extend(check_protocol(manifest, chain_result))
     checks.extend(check_evaluation(chain_result))
 
     return _build_report(
         run_id=str(chain_result.get("run_id") or manifest.get("run_id") or run_directory.name),
         checks=checks,
-        input_hashes={
-            "run_manifest": sha256_file(manifest_path),
-            "chain_result": sha256_file(result_path),
-        },
+        input_hashes=input_hashes,
         validator_commit=validator_commit,
         audited_at=audited_at,
     )

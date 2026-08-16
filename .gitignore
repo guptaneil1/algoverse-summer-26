@@ -19,9 +19,13 @@ venv/
 .vscode/
 
 # Experiment trackers and logs
+# Anchored with a leading slash: an unanchored `runs/` matches at every depth, so
+# it also swallowed `docs/runs/`, where the Week 3 reference-run index lives. The
+# committed index survived only because it was added before the rule; any new
+# file under docs/runs/ was silently ignored.
 wandb/
 logs/
-runs/
+/runs/
 external/
 
 # Large model artifacts
@@ -41,6 +45,12 @@ data/manifests/*
 !data/fixtures/
 data/fixtures/*
 !data/fixtures/toy_corpus.jsonl
+# Toy partition fixtures backing the smoke chain's data.partitions provenance
+# block. Without these the toy run cannot emit provenance and the validator
+# classifies it invalid, so they are committed like toy_corpus.jsonl above.
+!data/fixtures/partitions/
+!data/fixtures/partitions/*.jsonl
+!data/fixtures/partitions/README.md
 
 # Results: keep documentation and small generated aggregates only
 results/*

@@ -12,6 +12,44 @@ import platform
 from pathlib import Path
 from typing import Any
 
+from human_data_budget.data.manifest import load_manifest_from_jsonl
+from human_data_budget.data.separation import assert_disjoint
+
+#: Partition vocabulary required by the validator (``validation/audit.py``) and
+#: documented in ``docs/evaluation/week3_data_evaluation_appendix.md``. This is the
+#: canonical set for the run manifest.
+#:
+#: Note for @Neil: ``data/manifest.py`` uses a different vocabulary
+#: (``base_train``/``prompts``/``test`` with ``example_id``/``source``). The runner
+#: translates via ``_DATA_MODULE_PARTITIONS`` and ``_load_partition_manifests``
+#: rather than editing either module. See ``docs/interfaces/run_manifest.md``.
+MANIFEST_PARTITIONS: tuple[str, ...] = (
+    "base_human_train",
+    "rescue_candidates",
+    "generation_prompts",
+    "validation",
+    "final_human_test",
+)
+
+#: Per-example provenance required by ``validation/audit.py``. A missing field is an
+#: invalidating condition, so the runner refuses to build a manifest without them
+#: rather than discovering it after a chain has burned compute.
+PROVENANCE_FIELDS: tuple[str, ...] = (
+    "stable_id",
+    "content_hash",
+    "source_dataset",
+    "origin",
+)
+
+#: Canonical partition name -> the name ``data/manifest.py`` accepts.
+_DATA_MODULE_PARTITIONS: dict[str, str] = {
+    "base_human_train": "base_train",
+    "rescue_candidates": "rescue_candidates",
+    "generation_prompts": "prompts",
+    "validation": "validation",
+    "final_human_test": "test",
+}
+
 _ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     "planned": {"running", "failed", "invalid"},
     "running": {"complete", "failed", "invalid"},
@@ -35,6 +73,147 @@ def _default_environment() -> dict[str, str]:
     return {"python": platform.python_version(), "hardware": "cpu-fixture"}
 
 
+def _project_root() -> Path | None:
+    """Locate this repository's root by walking up from ``__file__``.
+
+    Partition manifests are declared repository-relative, so resolving them
+    against the process working directory made a run's recorded provenance depend
+    on where the command was typed: every chain-running test failed when pytest
+    was invoked from anywhere but the repository root, and the failure surfaced as
+    an uncaught error from ``new_manifest`` before the runner's try/except.
+
+    A ``pyproject.toml`` alone is not sufficient evidence — an installed copy
+    under ``<consumer>/.venv/.../human_data_budget`` sits beneath the *consumer's*
+    ``pyproject.toml``, and accepting that root would resolve partition paths
+    against an unrelated project's files. The root must also hold this package's
+    own source tree. Returns ``None`` when neither is found, leaving the caller to
+    fall back to the working directory.
+    """
+
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "pyproject.toml").is_file() and (
+            parent / "src" / "human_data_budget"
+        ).is_dir():
+            return parent
+    return None
+
+
+def _resolve_source(path: str) -> Path:
+    """Resolve a declared partition-manifest path, preferring the repository root."""
+
+    candidate = Path(path)
+    if candidate.is_absolute() or candidate.is_file():
+        return candidate
+    root = _project_root()
+    return (root / candidate) if root is not None else candidate
+
+
+class ManifestProvenanceError(ValueError):
+    """Raised when a declared provenance source is unusable.
+
+    Raised at manifest creation, before a chain launches. A run that reaches the
+    validator without provenance is spent compute that cannot be certified, and the
+    frozen rules do not permit back-filling provenance after the fact.
+    """
+
+
+def _check_records(partition: str, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return ``records`` if every one carries complete provenance, else raise."""
+
+    if not records:
+        raise ManifestProvenanceError(
+            f"partition {partition!r} declares a provenance source but resolved to zero "
+            "examples; refusing to record an empty partition"
+        )
+    for index, record in enumerate(records):
+        missing = [field for field in PROVENANCE_FIELDS if not record.get(field)]
+        if missing:
+            raise ManifestProvenanceError(
+                f"{partition}[{index}] is missing provenance {sorted(missing)}; "
+                f"every example needs {list(PROVENANCE_FIELDS)}"
+            )
+    return records
+
+
+def _load_partition_manifests(sources: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
+    """Load canonical partitions from JSONL manifests owned by ``data/``.
+
+    Translates the canonical partition name to the one ``data/manifest.py`` accepts,
+    then translates each loaded ``Example`` into the validator's field names.
+    """
+
+    partitions: dict[str, list[dict[str, Any]]] = {}
+    for partition, path in sources.items():
+        if partition not in MANIFEST_PARTITIONS:
+            raise ManifestProvenanceError(
+                f"unknown partition {partition!r}; expected one of {list(MANIFEST_PARTITIONS)}"
+            )
+        target = _resolve_source(path)
+        if not target.is_file():
+            raise ManifestProvenanceError(
+                f"partition {partition!r} declares manifest {path!r}, which does not exist"
+            )
+        loaded = load_manifest_from_jsonl(target, _DATA_MODULE_PARTITIONS[partition])
+        partitions[partition] = _check_records(
+            partition,
+            [
+                {
+                    "stable_id": example.example_id,
+                    "content_hash": example.content_hash,
+                    "source_dataset": example.source,
+                    "origin": example.origin,
+                }
+                for example in loaded.examples
+            ],
+        )
+    return partitions
+
+
+def build_partitions(data_config: dict[str, Any]) -> dict[str, list[dict[str, Any]]] | None:
+    """Resolve the manifest's ``data.partitions`` block from a config's data block.
+
+    Two sources, checked in order: inline ``partitions`` records already in canonical
+    form, or ``partition_manifests`` mapping canonical partition names to JSONL paths.
+
+    Returns ``None`` when neither is declared. That is deliberate: a run with no
+    provenance source must keep classifying ``invalid`` rather than silently passing.
+    """
+
+    inline = data_config.get("partitions")
+    sources = data_config.get("partition_manifests")
+
+    if inline and sources:
+        raise ManifestProvenanceError(
+            "data declares both 'partitions' and 'partition_manifests'; "
+            "pick one provenance source so the manifest has a single origin"
+        )
+
+    if inline:
+        unknown = [name for name in inline if name not in MANIFEST_PARTITIONS]
+        if unknown:
+            raise ManifestProvenanceError(
+                f"unknown partition(s) {sorted(unknown)}; "
+                f"expected names from {list(MANIFEST_PARTITIONS)}"
+            )
+        partitions = {
+            partition: _check_records(partition, list(records))
+            for partition, records in inline.items()
+        }
+    elif sources:
+        partitions = _load_partition_manifests(sources)
+    else:
+        return None
+
+    # Fail before launch on a forbidden overlap rather than after the chain runs.
+    assert_disjoint(
+        {
+            partition: [record["content_hash"] for record in records]
+            for partition, records in partitions.items()
+        }
+    )
+    return partitions
+
+
 def new_manifest(
     config: dict[str, Any],
     *,
@@ -44,6 +223,14 @@ def new_manifest(
 ) -> dict[str, Any]:
     """Build the initial run manifest in ``planned`` status."""
 
+    data = dict(config.get("data", _DEFAULT_DATA))
+    partitions = build_partitions(data)
+    if partitions is None:
+        data.pop("partitions", None)
+    else:
+        data["partitions"] = partitions
+    data.pop("partition_manifests", None)
+
     return {
         "schema_version": "1.0",
         "run_id": config["run_id"],
@@ -51,7 +238,7 @@ def new_manifest(
         "git_commit": git_commit,
         "working_tree_clean": working_tree_clean,
         "model": config.get("model", _DEFAULT_MODEL),
-        "data": config.get("data", _DEFAULT_DATA),
+        "data": data,
         "policy": {
             "name": policy_name,
             "config": config.get("policy_config", "toy_cpu.json"),
@@ -112,9 +299,18 @@ def attach_failure(manifest: dict[str, Any], failure: dict[str, Any]) -> dict[st
 
 
 def write_manifest_atomic(manifest: dict[str, Any], path: Path) -> None:
-    """Atomically write the manifest as JSON."""
+    """Atomically write the manifest as JSON with LF line endings.
+
+    The auditor records ``sha256(run_manifest.json)`` as the run's provenance
+    hash. ``Path.write_text`` translates ``\\n`` to ``\\r\\n`` on Windows —
+    measured: 47 CRLF and 0 bare LF in a manifest written there — so the same
+    logical run hashed to two different values depending on the operating system
+    that produced it. ``newline="\\n"`` pins the bytes, matching the
+    ``.gitattributes`` policy for content-hashed artifacts.
+    """
 
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    with tmp_path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(manifest, indent=2) + "\n")
     tmp_path.replace(path)

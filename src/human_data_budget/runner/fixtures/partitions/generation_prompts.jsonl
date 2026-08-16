@@ -1,0 +1,2 @@
+{"example_id":"toy-prompt-1","text":"A prompt fixture used to seed synthetic generation.","origin":"synthetic","mode":"common","source":"runner-fixture/toy-v1","source_offset":20,"token_count":8}
+{"example_id":"toy-prompt-2","text":"A second prompt fixture seeding synthetic generation.","origin":"synthetic","mode":"tail","source":"runner-fixture/toy-v1","source_offset":21,"token_count":8}

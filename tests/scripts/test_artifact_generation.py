@@ -259,11 +259,16 @@ def test_table_generation_is_deterministic(tmp_path: Path) -> None:
 # --------------------------------------------------------------------------
 
 
-def test_report_detects_the_degenerate_pairs() -> None:
-    """F-001 must be surfaced by the report, not only by its dedicated tests."""
+def test_report_finds_no_degenerate_pairs() -> None:
+    """The report must reflect the frozen implementation, not the reverted scaffold.
+
+    This asserted `Degenerate pairs found: 2` and the presence of `F-001`. Both
+    described `policies/joint.py` as commit `243f58b` left it — reverted to the
+    Week-1 scaffold. With the frozen implementation restored the four families
+    separate, so the report correctly finds none. See `FAILURE_LOG.md` F-005.
+    """
     report = policy_behavior_report.build_report([1, 2, 3])
-    assert "Degenerate pairs found: 2" in report
-    assert "F-001" in report
+    assert "Degenerate pairs found: 0" in report
 
 
 def test_report_carries_the_non_evidence_warning() -> None:

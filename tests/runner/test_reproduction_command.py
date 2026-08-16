@@ -15,6 +15,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.runner._stage_a_gate import requires_stage_a_freeze
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/reproduce_positive_control.sh"
 
@@ -211,6 +213,7 @@ def test_script_refuses_an_unfrozen_protocol(tmp_path: Path) -> None:
     assert "TODO(khantushig)" in result.stderr
 
 
+@requires_stage_a_freeze
 def test_script_refuses_a_protocol_pinning_a_different_commit(tmp_path: Path) -> None:
     project = _make_project(tmp_path, resolve_identifiers=True)
     protocol = project / "PROTOCOL.md"
@@ -231,6 +234,7 @@ def test_script_refuses_a_protocol_pinning_a_different_commit(tmp_path: Path) ->
 # ----------------------------------------------------------------------------------
 
 
+@requires_stage_a_freeze
 def test_script_refuses_a_missing_config(tmp_path: Path) -> None:
     project = _make_project(tmp_path, resolve_identifiers=True)
     result = _run_script(project, "--config-human-mixed", str(project / "absent.json"))
@@ -239,6 +243,7 @@ def test_script_refuses_a_missing_config(tmp_path: Path) -> None:
     assert "missing arm config" in result.stderr
 
 
+@requires_stage_a_freeze
 def test_script_refuses_an_invalid_config(tmp_path: Path) -> None:
     project = _make_project(tmp_path, resolve_identifiers=True)
     target = project / CONFIG_NAMES["human_mixed"]
@@ -253,6 +258,7 @@ def test_script_refuses_an_invalid_config(tmp_path: Path) -> None:
     assert result.returncode == EXIT_BAD_CONFIG
 
 
+@requires_stage_a_freeze
 def test_script_refuses_unresolved_runtime_identifiers(tmp_path: Path) -> None:
     """The committed configs defer revisions; the script must not run past that."""
 
@@ -263,6 +269,7 @@ def test_script_refuses_unresolved_runtime_identifiers(tmp_path: Path) -> None:
     assert "resolve_at_runtime" in result.stderr
 
 
+@requires_stage_a_freeze
 def test_script_refuses_a_missing_upstream_checkout(tmp_path: Path) -> None:
     project = _make_project(tmp_path, resolve_identifiers=True)
     result = _run_script(project, upstream=tmp_path / "nowhere")
@@ -271,6 +278,7 @@ def test_script_refuses_a_missing_upstream_checkout(tmp_path: Path) -> None:
     assert "no upstream checkout" in result.stderr
 
 
+@requires_stage_a_freeze
 def test_script_refuses_an_upstream_checkout_at_the_wrong_commit(tmp_path: Path) -> None:
     project = _make_project(tmp_path, resolve_identifiers=True)
 

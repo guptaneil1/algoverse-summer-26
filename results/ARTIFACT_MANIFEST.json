@@ -12,17 +12,17 @@
     5
   ],
   "artifacts": {
-    "results/aggregates/fixture_primary.json": "c5655aef86f9d6494025a54fa8281d874373dda57bfde75ab074d1b6b1de5ee9",
-    "results/csv/chain_level_long.csv": "6f4aa051dd7eccfaf0e67c4ddf07efa415b89a6a812602a5c2f36941c389f89b",
-    "results/csv/policy_summary.csv": "803c7b405aa5e227fdc478bf9fd1e2007a8162bf0a9710cf8ed1eebb2e65496f",
-    "results/figures/allocation_by_generation.png": "4cfe9453e2ce6cbe853f2a045e9f143cf62c420087b9cdec9ccf3742d7bb27df",
-    "results/figures/figure_provenance.json": "0f2a9fdeff7e9267a592bb78cda5052f84261215dbfb78d4d982d6d4a0d161d5",
-    "results/figures/nll_by_generation.png": "faf1549c4c57f19a66c56a78bbbf63d52a8c8d64e7a5afe5b2db27da5f1e093b",
-    "results/figures/paired_difference.png": "792ef302b2c694685cf1006fba9a3f706f84cc2f6aa474e9ccee8b9275c33e4a",
-    "results/figures/tail_retention_by_generation.png": "17569e85bf721f5b56edeed6685adfca17cce84ee505eaee13966e41129ab61c",
-    "results/policy_behavior_report.md": "914acce23b4331152aae358f7fb7ec114777acb08778cde16d8d4e9b4414d63e",
-    "results/tables/fixture_paired_contrasts.tex": "0324995fb2ccf52400f872e703dba43726ecd48e0c5728fb426e6565664f0601",
-    "results/tables/fixture_primary_results.tex": "519e4c1bac57c4ccff5dc65ccfd7781849631265caae5c49a49ce498aba5071f",
-    "results/tables/table_provenance.json": "b1221927590a5f1da6a5dfe886babea7f1d806825ab8b1a096b28392a2235516"
+    "results/aggregates/fixture_primary.json": "ba8d512378e430f4620d0b711138351a2a543092521564564d208a394ecfda9c",
+    "results/csv/chain_level_long.csv": "30f935e63180a5c9cd28febfb2596d0aaa51bf28db7b92f733b24f534694e1cd",
+    "results/csv/policy_summary.csv": "d5502f27ab8966c99f603763a45c6e2e47faeaa6679ab8cf7ad33d281420178b",
+    "results/figures/allocation_by_generation.png": "75eb1bdaa56e624c57e3176894719e2bb4633951db2538fb02542c4e2054693f",
+    "results/figures/figure_provenance.json": "13299b0c8a6b3f36ad94b05cd8772baa4a38d9a98e8cf7562696b64d23a8d4ca",
+    "results/figures/nll_by_generation.png": "4dd41831404a7274f7199ee5f14f1fedb75cc5e1246c22f074fe3aed24053fa3",
+    "results/figures/paired_difference.png": "6c2b84fae909bdcd6a365c645a63c8066348bbc56e1bf1a5f4b7b8ee788c2c1a",
+    "results/figures/tail_retention_by_generation.png": "1c554197ca3ecdc334cb3d170fdb4d884675cd5cafbd11ac29c3f579c9f33657",
+    "results/policy_behavior_report.md": "9e35f5f3b33122b1f0eace2b16da7944fc83c15df7c6e6ab59156fd47780d349",
+    "results/tables/fixture_paired_contrasts.tex": "011ba4ffc8036ab0ab477829912faa034563043791265b086053e5afd09a9810",
+    "results/tables/fixture_primary_results.tex": "72b72f9ca635862ee786c0f23245a6526e4fb2c16b3d3f33c3af2c2856de65a6",
+    "results/tables/table_provenance.json": "a6e3194050be56697692eca07ea7f3bc510543e5bdc619cbbc1c8ed706ad8563"
   }
 }

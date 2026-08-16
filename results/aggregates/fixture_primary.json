@@ -1,9 +1,12 @@
 {
   "schema_version": "1.0",
+  "fixture_only": true,
+  "scientific_evidence": false,
+  "warning": "FIXTURE - NOT SCIENTIFIC EVIDENCE",
   "policies": {
     "joint": {
       "chain_count": 5,
-      "mean_nll_auc": 28.814999999999998
+      "mean_nll_auc": 29.490000000000002
     },
     "random": {
       "chain_count": 5,
@@ -11,16 +14,13 @@
     },
     "schedule_only": {
       "chain_count": 5,
-      "mean_nll_auc": 29.208999999999996
+      "mean_nll_auc": 30.439999999999998
     },
     "selection_only": {
       "chain_count": 5,
       "mean_nll_auc": 28.814999999999998
     }
   },
-  "warning": "NLL AUC is a fixture aggregate until a frozen regret reference is implemented.",
-  "fixture_only": true,
-  "scientific_evidence": false,
   "chain_seeds": [
     1,
     2,

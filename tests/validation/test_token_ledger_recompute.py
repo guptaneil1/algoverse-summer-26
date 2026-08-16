@@ -20,7 +20,7 @@ from typing import Any
 
 import pytest
 
-from human_data_budget.validation.audit import audit_run, check_token_ledger
+from human_data_budget.validation.audit import audit_run, check_token_ledger, sha256_file
 
 # Two human rows (5 + 4 real tokens, padded to width 6) and one synthetic row
 # (3 real tokens). Padding zeros must never be counted.
@@ -226,6 +226,39 @@ def test_ledger_evidence_outside_the_run_directory_is_rejected(
     wrong = {"consumed_human_tokens": 40, "consumed_total_tokens": 40}
 
     assert _codes(check_token_ledger(run, manifest, wrong)) == {"ARTIFACT_SCHEMA_INVALID"}
+
+
+def test_a_ledger_hidden_in_a_subdirectory_is_still_counted(tmp_path: Path) -> None:
+    """Ambiguity detection must see the whole run, not just the root filename.
+
+    Counting only declared paths plus the default name let a run keep a truthful
+    ledger in a subdirectory while the auditor read a decoy at the root.
+    """
+    run = tmp_path / "run"
+    (run / "logs").mkdir(parents=True)
+    _write_batches(run, [{"attention_mask": [[1] * 100], "origins": ["human"]}])
+    _write_batches(run / "logs", [{"attention_mask": [[1] * 700], "origins": ["human"]}])
+
+    declared = {"consumed_human_tokens": 100, "consumed_total_tokens": 100}
+    assert _codes(check_token_ledger(run, {}, declared)) == {"ARTIFACT_SCHEMA_INVALID"}
+
+
+def test_the_recorded_hash_is_of_the_file_actually_read(
+    make_run: Callable[..., Path],
+) -> None:
+    """In the declared-path case the report must not hash a different file."""
+    run = make_run(batch_records=False)
+    (run / "ledgers").mkdir()
+    _write_batches(run / "ledgers", BATCHES)
+
+    manifest = json.loads((run / "run_manifest.json").read_text(encoding="utf-8"))
+    manifest.setdefault("artifacts", []).append(
+        {"path": "ledgers/batch_records.jsonl", "sha256": "unused"}
+    )
+    (run / "run_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    expected = sha256_file(run / "ledgers" / "batch_records.jsonl")
+    assert audit_run(run).input_hashes.get("batch_records") == expected
 
 
 def test_two_contradictory_ledgers_are_ambiguous_not_silently_resolved(

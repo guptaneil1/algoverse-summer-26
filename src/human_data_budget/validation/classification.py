@@ -24,6 +24,10 @@ INVALIDATING_CODES = {
         "A forbidden partition pair shares near-duplicate text above the frozen "
         "similarity threshold."
     ),
+    "SEPARATION_PROVENANCE_INCONSISTENT": (
+        "An example's recorded content hash does not match its recorded text, so "
+        "the text compared for overlap is not the text the hash identifies."
+    ),
     "SEPARATION_MISSING_ID": "A training example lacks a stable identifier.",
     "SEPARATION_MISSING_PROVENANCE": "A provenance field required by protocol is absent.",
     "BUDGET_LEDGER_MISMATCH": (

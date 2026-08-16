@@ -249,6 +249,74 @@ def test_a_blinded_entry_is_named_in_the_report() -> None:
     assert "validation:val-1" in detail
 
 
+# --- text must be the text the hash identifies ------------------------------
+
+
+def test_substituted_text_with_a_truthful_hash_is_rejected() -> None:
+    """The round-2 fix presumed `text` was trustworthy evidence. It was not.
+
+    Deleting text costs a limitation. Substituting it cost nothing: a run could
+    declare the true stable_id, content_hash, source_dataset and origin — all
+    verifiable against hashed artifacts — and swap only `text` for a decoy. Near
+    duplicate detection then compared decoys, found nothing, and certified a real
+    cross-partition leak with zero reason codes.
+    """
+    partitions = _partitions(None)
+    partitions["base_human_train"] = [_entry("bht-1", REWORDED_LEAK)]
+    partitions["final_human_test"] = [_entry("fht-1", TEST_TEXT)]
+    partitions["generation_prompts"] = [_entry("gp-1", UNRELATED)]
+
+    # Hashes still describe the real (leaking) text; only the text is swapped.
+    partitions["base_human_train"][0]["text"] = "An innocuous decoy sentence here."
+    partitions["final_human_test"][0]["text"] = "Another wholly unrelated decoy line."
+
+    codes = _codes(check_separation({"data": {"partitions": partitions}}))
+    assert "SEPARATION_PROVENANCE_INCONSISTENT" in codes
+
+
+def test_matching_text_and_hash_raise_no_consistency_complaint() -> None:
+    assert "SEPARATION_PROVENANCE_INCONSISTENT" not in _codes(
+        check_separation({"data": {"partitions": _partitions(UNRELATED)}})
+    )
+
+
+def test_an_entry_without_text_is_not_treated_as_inconsistent() -> None:
+    """Absent text is a coverage limitation, not a hash contradiction."""
+    partitions = _partitions(UNRELATED)
+    partitions["validation"][0].pop("text")
+
+    assert "SEPARATION_PROVENANCE_INCONSISTENT" not in _codes(
+        check_separation({"data": {"partitions": partitions}})
+    )
+
+
+def test_a_blinded_counterpart_does_not_yield_a_passing_pair_check() -> None:
+    """Finding nothing is only 'clean' if everything was compared.
+
+    Blinding the leak's counterpart while leaving a second entry readable kept the
+    partition non-empty, so the pair was compared over the remainder and recorded
+    as a PASSING check — 'not checked' reported as 'checked and clean', the exact
+    failure the surrounding code claims to prevent.
+    """
+    partitions = _partitions(None)
+    partitions["base_human_train"] = [_entry("bht-1", REWORDED_LEAK)]
+    partitions["final_human_test"] = [
+        _entry("fht-1", TEST_TEXT),
+        _entry("fht-2", "A perfectly ordinary held-out sentence."),
+    ]
+    partitions["final_human_test"][0].pop("text")
+    partitions["generation_prompts"] = [_entry("gp-1", UNRELATED)]
+
+    checks = check_near_duplicate_separation(partitions)
+    pair = next(
+        c
+        for c in checks
+        if c.name == "separation_near_duplicate:base_human_train|final_human_test"
+    )
+    assert not pair.passed
+    assert pair.code == "LIMIT_NEAR_DUPLICATE_NOT_CHECKED"
+
+
 # --- residual gap: Jaccard measures no containment --------------------------
 
 

@@ -16,11 +16,13 @@ from typing import Any
 import pytest
 
 from human_data_budget.data.hashing import content_hash
+from human_data_budget.runner import provenance
 from human_data_budget.runner.manifest import new_manifest
 from human_data_budget.runner.provenance import (
     RUN_MANIFEST_PARTITIONS,
     PartitionSourceError,
     build_partition_provenance,
+    project_root,
 )
 from human_data_budget.runner.schema import validate_json
 from human_data_budget.validation.audit import REQUIRED_PROVENANCE_FIELDS, check_separation
@@ -204,6 +206,47 @@ def test_provenance_does_not_depend_on_the_working_directory(
 
     assert from_elsewhere["data"]["partitions"] == from_root["data"]["partitions"]
     assert from_root["data"]["partitions"]["final_human_test"]
+
+
+def test_project_root_finds_this_repository() -> None:
+    assert project_root() == ROOT
+    assert (project_root() / "pyproject.toml").is_file()
+
+
+def test_project_root_requires_this_packages_source_tree_not_just_a_pyproject(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A consumer project's pyproject.toml must not be mistaken for this repo's.
+
+    An installed copy under `<consumer>/.venv/Lib/site-packages/human_data_budget`
+    sits beneath the consumer's pyproject.toml. Accepting that root resolved
+    partition paths against an unrelated project's files and silently placed
+    another project's examples into this run's provenance block.
+    """
+    consumer = tmp_path / "consumer_project"
+    installed = consumer / ".venv" / "Lib" / "site-packages" / "human_data_budget" / "runner"
+    installed.mkdir(parents=True)
+    (consumer / "pyproject.toml").write_text("[project]\n", encoding="utf-8")
+    fake_module = installed / "provenance.py"
+    fake_module.write_text("", encoding="utf-8")
+
+    monkeypatch.setattr(provenance, "__file__", str(fake_module))
+    with pytest.raises(PartitionSourceError, match="cannot locate the repository root"):
+        provenance.project_root()
+
+
+def test_project_root_refuses_rather_than_falling_back_to_the_working_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A silent fallback reintroduces the CWD dependence this function removes."""
+    stray = tmp_path / "no_markers" / "human_data_budget" / "runner"
+    stray.mkdir(parents=True)
+    fake_module = stray / "provenance.py"
+    fake_module.write_text("", encoding="utf-8")
+
+    monkeypatch.setattr(provenance, "__file__", str(fake_module))
+    with pytest.raises(PartitionSourceError):
+        provenance.project_root()
 
 
 def test_toy_partition_fixtures_are_mutually_disjoint() -> None:

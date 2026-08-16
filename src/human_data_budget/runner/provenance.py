@@ -71,20 +71,37 @@ class PartitionSourceError(ValueError):
 
 
 def project_root() -> Path:
-    """Locate the repository root by walking up to the directory holding pyproject.toml.
+    """Locate this repository's root by walking up from ``__file__``.
 
     Partition sources are declared repository-relative, so resolving them against
     the process working directory would make a run's provenance depend on where
     the command happened to be typed. Deriving the root from ``__file__`` matches
     how the rest of the repository locates itself (for example
-    ``scripts/validate_run.py``'s ``ROOT``), and keeps the chain runnable from any
-    directory. Falls back to the working directory when no marker is found.
+    ``scripts/validate_run.py``'s ``ROOT``).
+
+    A ``pyproject.toml`` alone is not sufficient evidence: an installed copy under
+    ``<consumer>/.venv/Lib/site-packages/human_data_budget`` sits beneath the
+    *consumer's* ``pyproject.toml``, and accepting that root resolved partition
+    paths against an unrelated project's files — silently placing another
+    project's examples into this run's provenance block. The root must also
+    contain this package's own source tree.
+
+    Raises rather than falling back to the working directory: a silent fallback
+    reintroduces exactly the CWD dependence this function exists to remove, and a
+    wrong provenance block is worse than a refused one.
     """
 
     for parent in Path(__file__).resolve().parents:
-        if (parent / "pyproject.toml").is_file():
+        if (parent / "pyproject.toml").is_file() and (
+            parent / "src" / "human_data_budget"
+        ).is_dir():
             return parent
-    return Path()
+    raise PartitionSourceError(
+        "cannot locate the repository root from "
+        f"{Path(__file__).resolve()}: no ancestor holds both pyproject.toml and "
+        "src/human_data_budget. Pass an explicit data_root to resolve "
+        "config-declared partition sources."
+    )
 
 
 def _resolve(source: str | Path, root: Path) -> Path:

@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from human_data_budget.data.hashing import content_hash
 from human_data_budget.data.overlap import find_near_duplicate_pairs
 from human_data_budget.data.token_accounting import consumed_tokens
 from human_data_budget.validation.classification import (
@@ -246,18 +247,35 @@ def check_near_duplicate_separation(
             continue
 
         pairs = find_near_duplicate_pairs(left_partition, right_partition, threshold)
+        if pairs:
+            checks.append(
+                CheckResult(
+                    name=f"separation_near_duplicate:{left}|{right}",
+                    passed=False,
+                    code="SEPARATION_NEAR_DUPLICATE",
+                    detail=(
+                        f"{len(pairs)} near-duplicate pair(s) at threshold "
+                        f"{threshold}: {sorted(pairs)[:5]}"
+                    ),
+                )
+            )
+            continue
+
+        # Finding nothing is only "clean" if everything was actually compared. If
+        # either side had an entry with no readable text, the leak could be
+        # sitting in exactly that entry, so the pair is inconclusive. Recording it
+        # as a passing check was itself the "not checked reported as checked and
+        # clean" failure this function exists to prevent.
+        pair_blinded = adapted[left][1] + adapted[right][1]
         checks.append(
             CheckResult(
                 name=f"separation_near_duplicate:{left}|{right}",
-                passed=not pairs,
-                code=None if not pairs else "SEPARATION_NEAR_DUPLICATE",
+                passed=not pair_blinded,
+                code=None if not pair_blinded else "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
                 detail=(
                     ""
-                    if not pairs
-                    else (
-                        f"{len(pairs)} near-duplicate pair(s) at threshold "
-                        f"{threshold}: {sorted(pairs)[:5]}"
-                    )
+                    if not pair_blinded
+                    else f"no near-duplicate found, but {sorted(pair_blinded)} were not compared"
                 ),
             )
         )
@@ -357,6 +375,30 @@ def check_separation(manifest: dict[str, Any]) -> list[CheckResult]:
                     )
                 )
 
+    # Bind `text` to the hash that identifies it. Near-duplicate detection reads
+    # `text`, while exact overlap and artifact verification read `content_hash`;
+    # nothing previously required them to describe the same example. A run could
+    # therefore declare truthful, hash-verified provenance and substitute decoy
+    # text, and a real cross-partition leak compared clean with zero reason codes.
+    for partition_name, examples in partitions.items():
+        for index, example in enumerate(examples):
+            text = example.get("text")
+            recorded = example.get("content_hash")
+            if not isinstance(text, str) or not recorded:
+                continue
+            if content_hash(text) != recorded:
+                checks.append(
+                    CheckResult(
+                        name=f"provenance_hash_matches_text:{partition_name}[{index}]",
+                        passed=False,
+                        code="SEPARATION_PROVENANCE_INCONSISTENT",
+                        detail=(
+                            f"{example.get('stable_id', '?')} records hash {recorded[:12]}… "
+                            f"but its text hashes to {content_hash(text)[:12]}…"
+                        ),
+                    )
+                )
+
     checks.extend(check_near_duplicate_separation(partitions))
 
     checks.append(
@@ -424,6 +466,62 @@ def _load_batch_records(path: Path) -> list[dict[str, Any]]:
     return records
 
 
+def resolve_batch_records(
+    run_directory: Path, manifest: dict[str, Any]
+) -> tuple[Path | None, str | None]:
+    """Locate the run's single batch-record ledger.
+
+    Returns ``(path, None)`` when exactly one admissible ledger is identified, or
+    ``(None, reason)`` when the run carries several, names one outside itself, or
+    carries none. ``audit_run`` reuses this so the hash it records is the hash of
+    the file the ledger check actually read — not a second guess at the default
+    location, which would omit the deciding evidence in exactly the case the
+    manifest-declared lookup exists to handle.
+    """
+
+    declared = sorted(
+        {
+            str(reference.get("path", ""))
+            for reference in manifest.get("artifacts", [])
+            if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
+        }
+    )
+
+    # Every ledger physically inside the run counts, not just the one at the root.
+    # Counting only declared paths plus the default filename let the manifest hide
+    # a truthful ledger in a subdirectory while pointing the auditor at a decoy.
+    present = sorted(
+        path.relative_to(run_directory).as_posix()
+        for path in run_directory.rglob(BATCH_RECORDS_NAME)
+        if path.is_file()
+    )
+
+    ambiguous = sorted(set(declared) | set(present))
+    if len(ambiguous) > 1:
+        return None, (
+            f"run carries more than one batch-record ledger ({ambiguous}); "
+            "which one realized the run is ambiguous"
+        )
+
+    relative = Path(declared[0]) if declared else Path(BATCH_RECORDS_NAME)
+
+    # The evidence must live inside the run being audited. `run_directory / p`
+    # collapses to `p` when p is absolute, so a manifest could name any file on
+    # the machine — including one written specifically to match a false ledger —
+    # and the auditor would recompute from it and certify. `..` escapes the same
+    # way. Neither is a path within the run, so neither is admissible evidence.
+    if relative.is_absolute() or ".." in relative.parts:
+        return None, (
+            f"batch-record path {str(relative)!r} points outside the run "
+            "directory; ledger evidence must be contained by the run"
+        )
+
+    candidate = run_directory / relative
+    if not candidate.is_file():
+        return None, None
+    return candidate, None
+
+
 def check_token_ledger(
     run_directory: Path, manifest: dict[str, Any], chain_result: dict[str, Any]
 ) -> list[CheckResult]:
@@ -455,50 +553,19 @@ def check_token_ledger(
             if str(reference.get("path", "")).endswith(BATCH_RECORDS_NAME)
         }
     )
-    default_present = (run_directory / BATCH_RECORDS_NAME).is_file()
 
-    # The manifest is the artifact under audit, so it does not get to choose which
-    # evidence the auditor is allowed to see. Previously the first declared path
-    # won outright: a run could keep truthful records at the default location and
-    # declare a hash-correct decoy elsewhere, and the decoy alone was read.
-    ambiguous = list(declared_paths)
-    if default_present and BATCH_RECORDS_NAME not in declared_paths:
-        ambiguous.append(BATCH_RECORDS_NAME)
-    if len(ambiguous) > 1:
+    candidate, problem = resolve_batch_records(run_directory, manifest)
+    if problem is not None:
         return [
             CheckResult(
                 name="token_ledger_recomputed",
                 passed=False,
                 code="ARTIFACT_SCHEMA_INVALID",
-                detail=(
-                    "run carries more than one batch-record ledger "
-                    f"({sorted(ambiguous)}); which one realized the run is ambiguous"
-                ),
+                detail=problem,
             )
         ]
 
-    relative = Path(declared_paths[0]) if declared_paths else Path(BATCH_RECORDS_NAME)
-
-    # The evidence must live inside the run being audited. `run_directory / p`
-    # collapses to `p` when p is absolute, so a manifest could name any file on
-    # the machine — including one written specifically to match a false ledger —
-    # and the auditor would recompute from it and certify. `..` escapes the same
-    # way. Neither is a path within the run, so neither is admissible evidence.
-    if relative.is_absolute() or ".." in relative.parts:
-        return [
-            CheckResult(
-                name="token_ledger_recomputed",
-                passed=False,
-                code="ARTIFACT_SCHEMA_INVALID",
-                detail=(
-                    f"batch-record path {str(relative)!r} points outside the run "
-                    "directory; ledger evidence must be contained by the run"
-                ),
-            )
-        ]
-    candidate = run_directory / relative
-
-    if not candidate.is_file():
+    if candidate is None:
         # A run that never emitted batch records and a run whose records were
         # removed after the fact both land here, but they are not the same claim:
         # the second declared the artifact and then failed to produce it, which
@@ -511,8 +578,8 @@ def check_token_ledger(
                     passed=False,
                     code="ARTIFACT_MISSING",
                     detail=(
-                        f"manifest declares batch records at {str(relative)!r} but the "
-                        "file is absent; a declared ledger artifact must be present"
+                        f"manifest declares batch records at {declared_paths[0]!r} but "
+                        "the file is absent; a declared ledger artifact must be present"
                     ),
                 )
             ]
@@ -522,9 +589,9 @@ def check_token_ledger(
                 passed=False,
                 code="LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
                 detail=(
-                    f"no realized batch records at {candidate.name} and none declared "
-                    "in the manifest; the declared ledger was compared against the "
-                    "frozen budget but not recomputed"
+                    f"no realized batch records at {BATCH_RECORDS_NAME} and none "
+                    "declared in the manifest; the declared ledger was compared "
+                    "against the frozen budget but not recomputed"
                 ),
             )
         ]
@@ -780,8 +847,8 @@ def audit_run(
         "run_manifest": sha256_file(manifest_path),
         "chain_result": sha256_file(result_path),
     }
-    batch_path = run_directory / BATCH_RECORDS_NAME
-    if batch_path.is_file():
+    batch_path, _ = resolve_batch_records(run_directory, manifest)
+    if batch_path is not None:
         input_hashes["batch_records"] = sha256_file(batch_path)
     checks.extend(check_protocol(manifest, chain_result))
     checks.extend(check_evaluation(chain_result))

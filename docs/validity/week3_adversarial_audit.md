@@ -123,6 +123,27 @@ This should be fixed before any expensive primary run, not after — a full chai
 that cannot be certified is wasted compute. The manifest schema permits the block
 already (`additionalProperties: true`), so no schema change is needed.
 
+### 7a. Resolved — recorded rather than rewritten
+
+The finding above is left as it was written on 2026-08-09. It was correct then,
+and an audit that edits its own history is not an audit.
+
+It is now fixed. `runner/manifest.py` emits `data.partitions` from a declared
+provenance source (`build_partitions`), refusing at manifest creation — before a
+chain spends compute — if a partition is empty, a name is unrecognised, or a
+required field is missing. The same command now returns:
+
+```
+valid_with_limitation
+  LIMIT_NEAR_DUPLICATE_NOT_CHECKED
+  LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE
+```
+
+`SEPARATION_MISSING_PROVENANCE` is gone. The two remaining codes are not the old
+defect returning: they are the checks added for blind spots 2 and 3 below
+correctly reporting what they could **not** verify, rather than passing silently.
+Neither downgrade is a property of the runner, and §8 states what each needs.
+
 ---
 
 ## 8. Remaining blind spots
@@ -131,13 +152,46 @@ Stated plainly, because an audit that claims full coverage is not credible.
 
 1. **Only ever run against the toy chain.** Section 7 is the sole real-artifact
    invocation. No primary chain exists, so behaviour at real scale is untested.
-2. **Near-duplicate detection is not implemented.** Overlap is exact-hash only.
-   Paraphrase or near-duplicate leakage passes. `src/human_data_budget/data/overlap.py`
-   holds the near-duplicate logic; the auditor does not yet call it.
-3. **Token accounting is checked at the total level.** The validator compares
-   recorded consumed totals against the frozen budget; it cannot recompute those
-   totals from realized batches, so a wrong ledger that is internally consistent
-   would pass.
+2. **Near-duplicate detection — implemented, with a smaller reach than the name
+   suggests.** `check_near_duplicate_separation` now calls
+   `overlap.py`'s `find_near_duplicate_pairs` at that module's own 0.8 threshold.
+   A reworded cross-partition leak is caught. Four limits remain, all pinned by
+   tests in `tests/validation/test_near_duplicate_separation.py`:
+   - **Semantic paraphrase is not caught.** Character 5-gram Jaccard is surface
+     overlap. Measured: a reworded leak scores 0.9483 and is caught; the same
+     sentence restated in different words scores 0.1667 and is not.
+   - **A padded verbatim copy is not caught.** Jaccard is symmetric and measures
+     no containment, so wrapping a stolen test example in filler defeats it. No
+     paraphrasing skill is required. Closing this needs a containment measure —
+     new detection logic, and a threshold that is the data owner's to choose.
+   - **Five of ten partition pairs are unchecked.** `PROTOCOL.md` §3 requires all
+     five partitions mutually disjoint; `FORBIDDEN_PARTITION_PAIRS` enumerates
+     five pairs. Widening it would reclassify runs, so it is an owner decision.
+   - **Two operating points ship with the same number.** `docs/data/overlap_report.md`
+     §3 records the corpus-scale scan as **word-8-gram** Jaccard at 0.8; the
+     auditor reuses `overlap.py`'s **character-5-gram** at 0.8. On the same
+     one-word edit these score 0.9308 and 0.3846. Which is the intended audit-time
+     definition needs @Neil.
+
+   It also depends on the manifest carrying example text. The runner emits the
+   four required provenance fields without text, so a real run reports
+   `LIMIT_NEAR_DUPLICATE_NOT_CHECKED` rather than a false clean pass. Whether
+   manifests should carry text, or the auditor should resolve partition sources
+   itself, is a @Neil / @Khantushig decision.
+3. **Token accounting — recomputed, but inert on any run this repository can
+   currently produce.** `check_token_ledger` recomputes human and total tokens
+   from realized batch records via `data/token_accounting.py`, so a ledger that is
+   wrong but internally consistent is rejected. Honours the frozen rules: padding
+   excluded, repeated presentations counted per presentation, gradient
+   accumulation per micro-batch, resume counted once.
+   - **Nothing emits `batch_records.jsonl`.** No runner, script, or schema
+     produces it, so every real run takes the explicit
+     `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` branch. The check is closed in code and
+     in tests; it is **closed pending a producer** end to end.
+   - **A forged ledger still passes.** The auditor can only compare artifacts the
+     run author wrote. Deleting the records downgrades to
+     `valid_with_limitation` rather than certifying, which is the strongest thing
+     it can do — it cannot compel an artifact to exist.
 4. **Resume double-counting is untested end to end.** Covered at unit level in
    `tests/runner/test_checkpoint_resume.py`, not through the validator.
 5. **Evaluator determinism on identical inputs is not asserted here.** Nothing

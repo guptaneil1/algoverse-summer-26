@@ -37,17 +37,26 @@ Verified against the working tree on 2026-08-15; line numbers are from that read
 
 | Knob | Source | Current value | Status | Freezes | Decision |
 |---|---|---|---|---|---|
-| `RandomPolicy.per_generation_budget` | `policies/random.py:12` | constructor arg | `FIXTURE` | Aarav | `configs/policy/random.json` reads `TBD_BEFORE_PRIMARY_RUNS` |
-| `ScheduleOnlyPolicy.schedule` | `policies/schedule_only.py:12` | `dict[generation, tokens]` | `FIXTURE` | Aarav | `configs/policy/schedule_only.json` reads `TBD_BEFORE_PRIMARY_RUNS` |
-| `SelectionOnlyPolicy.per_generation_budget` | `policies/selection_only.py:10` | constructor arg | `FIXTURE` | Aarav | `configs/policy/selection_only.json` reads `TBD_BEFORE_PRIMARY_RUNS` |
+| `RandomPolicy.per_generation_budget` | `policies/random.py:12` | constructor arg | `FROZEN` (`week2-fixture-v1`) | Aarav | `configs/policy/random.json`: uniform 10 tokens/generation, lifetime 100. No longer reads `TBD` — that text described the stub `243f58b` reverted it to |
+| `ScheduleOnlyPolicy.schedule` | `policies/schedule_only.py:12` | `dict[generation, tokens]` | `FROZEN` (`week2-fixture-v1`) | Aarav | `configs/policy/schedule_only.json`: back-loaded `0,0,0,0,0,20,20,20,20,20`, matching `week2_method_freeze.md`. This is what makes it distinguishable from `random` — the uniform schedule it was reverted to is why F-001 saw them as identical |
+| `SelectionOnlyPolicy.per_generation_budget` | `policies/selection_only.py:10` | constructor arg | `FROZEN` (`week2-fixture-v1`) | Aarav | `configs/policy/selection_only.json`: uniform 10 tokens/generation, lifetime 100. Spends like `random`; differs in *what* it selects, which is the selection axis |
 | Selection score function | `policies/selection_only.py` reads `state.mode_statistics` | mode statistic, falling back to `candidate.undercoverage_score` | `OPEN` | Aarav | `selection_only.json` reads `"selection_score": "TBD"` |
 | `JointPolicy.base_per_generation_budget` | `policies/joint.py:15` | constructor arg | `FIXTURE` | Aarav | — |
-| **Joint allocation rule** | `policies/joint.py:22-31` | provisional; `time_multiplier = 1.0 + urgency`, then clamped away | `OPEN` | Aarav | **U-007**. `configs/policy/joint.json` reads `TBD_BY_AARAV_BEFORE_PRIMARY_RUNS`. See **F-001** — the time term is currently inert |
+| **Joint allocation rule** | `policies/joint.py` `_desired_budget` / `_feasible_budget` | thresholded 0/10/20 spend with feasibility clamp, per `docs/method/week2_method_freeze.md` §"Joint-policy pseudocode" | `FROZEN` (`week2-fixture-v1`) | Aarav | `configs/policy/joint.json` records the rule and no longer reads `TBD`. See **F-005**: the earlier "inert time term" was the Week-1 scaffold that `243f58b` reverted to, not this rule |
 | Under-coverage score definition | `models.py` `Candidate.undercoverage_score`, default `0.0` | field exists; **no computation is defined anywhere** | `OPEN` | Aarav | **U-007** |
 
-**F-001 note.** The joint rule and the under-coverage score are the two knobs the entire C-002
-hypothesis rests on, and both are undefined. `FAILURE_LOG.md` F-001 records that the provisional
-implementation is observationally identical to `SelectionOnlyPolicy` as a consequence.
+**F-001 / F-005 note.** The joint rule and the under-coverage score are the two knobs the entire
+C-002 hypothesis rests on. **One of them is now closed and one is not.**
+
+The joint allocation rule is frozen at `week2-fixture-v1` and implemented to match
+`week2_method_freeze.md`. `FAILURE_LOG.md` F-001 recorded it as observationally identical to
+`SelectionOnlyPolicy`; F-005 supersedes that — F-001 described the Week-1 scaffold that commit
+`243f58b` reverted to, and with the frozen rule restored the four families are distinguishable.
+
+The **under-coverage score definition remains open**, and it is the load-bearing half. The field
+`Candidate.undercoverage_score` still defaults to `0.0` with no computation defined anywhere, so a
+selection policy reading it has nothing to rank by on real data. U-007 stays open on that basis
+alone.
 
 ## 3. Evaluation knobs
 

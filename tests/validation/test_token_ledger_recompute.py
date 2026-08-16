@@ -18,6 +18,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from human_data_budget.validation.audit import audit_run, check_token_ledger
 
 # Two human rows (5 + 4 real tokens, padded to width 6) and one synthetic row
@@ -171,15 +173,59 @@ def test_a_manifest_declared_ledger_path_is_honoured(tmp_path: Path) -> None:
     assert _codes(check_token_ledger(run, manifest, wrong)) == {"BUDGET_LEDGER_MISMATCH"}
 
 
-def test_a_declared_ledger_is_not_confused_with_a_missing_one(tmp_path: Path) -> None:
-    """Declaring a path that does not exist must not silently read the default."""
+def test_a_declared_but_absent_ledger_is_missing_not_merely_unrecomputable(
+    tmp_path: Path,
+) -> None:
+    """Declaring records and not shipping them is not the same as never having any.
+
+    The second is the shape of evidence removed to escape BUDGET_LEDGER_MISMATCH,
+    so it must not be indistinguishable from an honest run that never emitted a
+    ledger.
+    """
     run = tmp_path / "run"
     run.mkdir()
     manifest = {"artifacts": [{"path": "ledger/batch_records.jsonl", "sha256": "x"}]}
 
     assert _codes(check_token_ledger(run, manifest, {"consumed_human_tokens": 1})) == {
-        "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+        "ARTIFACT_MISSING"
     }
+
+
+def test_an_undeclared_absent_ledger_says_so_explicitly(tmp_path: Path) -> None:
+    run = tmp_path / "run"
+    run.mkdir()
+    checks = check_token_ledger(run, {}, {"consumed_human_tokens": 1})
+
+    assert _codes(checks) == {"LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"}
+    assert "none declared" in checks[0].detail
+
+
+@pytest.mark.parametrize(
+    "escape",
+    ["../elsewhere/batch_records.jsonl", "/tmp/evil/batch_records.jsonl"],
+)
+def test_ledger_evidence_outside_the_run_directory_is_rejected(
+    tmp_path: Path, escape: str
+) -> None:
+    """`run_directory / p` collapses to p when p is absolute.
+
+    A manifest could otherwise name any file on the machine — one written to
+    match a false ledger — and the auditor would recompute from it and certify.
+    """
+    run = tmp_path / "run"
+    run.mkdir()
+    outside = tmp_path / "elsewhere"
+    outside.mkdir()
+    _write_batches(outside, [{"attention_mask": [[1] * 40], "origins": ["human"]}])
+
+    path = escape
+    if path.startswith("/tmp"):
+        path = str((outside / "batch_records.jsonl").resolve())
+
+    manifest = {"artifacts": [{"path": path, "sha256": "x"}]}
+    wrong = {"consumed_human_tokens": 40, "consumed_total_tokens": 40}
+
+    assert _codes(check_token_ledger(run, manifest, wrong)) == {"ARTIFACT_SCHEMA_INVALID"}
 
 
 def test_two_contradictory_ledgers_are_ambiguous_not_silently_resolved(

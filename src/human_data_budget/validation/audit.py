@@ -476,17 +476,55 @@ def check_token_ledger(
                 ),
             )
         ]
-    candidate = run_directory / (declared_paths[0] if declared_paths else BATCH_RECORDS_NAME)
+
+    relative = Path(declared_paths[0]) if declared_paths else Path(BATCH_RECORDS_NAME)
+
+    # The evidence must live inside the run being audited. `run_directory / p`
+    # collapses to `p` when p is absolute, so a manifest could name any file on
+    # the machine — including one written specifically to match a false ledger —
+    # and the auditor would recompute from it and certify. `..` escapes the same
+    # way. Neither is a path within the run, so neither is admissible evidence.
+    if relative.is_absolute() or ".." in relative.parts:
+        return [
+            CheckResult(
+                name="token_ledger_recomputed",
+                passed=False,
+                code="ARTIFACT_SCHEMA_INVALID",
+                detail=(
+                    f"batch-record path {str(relative)!r} points outside the run "
+                    "directory; ledger evidence must be contained by the run"
+                ),
+            )
+        ]
+    candidate = run_directory / relative
 
     if not candidate.is_file():
+        # A run that never emitted batch records and a run whose records were
+        # removed after the fact both land here, but they are not the same claim:
+        # the second declared the artifact and then failed to produce it, which
+        # is the shape of evidence deleted to escape BUDGET_LEDGER_MISMATCH.
+        # Recording the declaration state lets a reader tell them apart.
+        if declared_paths:
+            return [
+                CheckResult(
+                    name="token_ledger_recomputed",
+                    passed=False,
+                    code="ARTIFACT_MISSING",
+                    detail=(
+                        f"manifest declares batch records at {str(relative)!r} but the "
+                        "file is absent; a declared ledger artifact must be present"
+                    ),
+                )
+            ]
         return [
             CheckResult(
                 name="token_ledger_recomputed",
                 passed=False,
                 code="LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE",
                 detail=(
-                    f"no realized batch records at {candidate.name}; the declared "
-                    "ledger was compared against the frozen budget but not recomputed"
+                    f"no realized batch records at {candidate.name} and none declared "
+                    "in the manifest; the declared ledger was compared against the "
+                    "frozen budget but not recomputed"
                 ),
             )
         ]

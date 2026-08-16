@@ -26,7 +26,7 @@ not be written, regardless of how confident anyone feels. This is the operationa
 | S2 | Outcomes depend on the data workflow; accumulation, fixed real fractions, and detector resampling stabilize some recursive procedures. | C-001 | Same, plus the scope qualifiers in `CLAIMS.md` Threat 1 and Threat 3 | **WRITABLE NOW** |
 | S3 | We treat human-origin data as a finite lifetime resource measured in optimizer-consumed tokens. | Definitional | `PROTOCOL.md` §3 token accounting; `data/token_accounting.py` | **WRITABLE NOW** |
 | S4 | We formalize allocation of that budget jointly across recursive generations and monitored human-distribution modes. | Definitional | `paper/sections/04_problem.tex`; **frozen** method definition | **BLOCKED — Aarav's frozen joint allocation rule (U-007 / `05_method.tex`)** |
-| S5 | We define budget-matched random, schedule-only, selection-only, and joint treatment families. | Definitional | `policies/`; **frozen** `configs/policy/*.json` | **BLOCKED — F-001** |
+| S5 | We define budget-matched random, schedule-only, selection-only, and joint treatment families. | Definitional | `policies/`; **frozen** `configs/policy/*.json` (`week2-fixture-v1`); `tests/policies/test_treatment_decomposition.py` | **WRITABLE** — see F-005 |
 | S6 | Complete recursive chains are the experimental units. | D-005 | `DECISIONS.md` D-005; `PROTOCOL.md` §4 | **WRITABLE NOW** |
 | S7 | We reproduce a published positive control before running novel comparisons. | Method integrity | Stage A reproduction report **or** truthful failure package | **BLOCKED — Stage A unexecuted** |
 | S8 | We evaluate on one licensed domain with a 124M–160M screening model over ten generations. | Design | Frozen `configs/data/*`; frozen model config; real manifests | **BLOCKED — U-001, U-002; `data/manifests/` empty** |
@@ -43,15 +43,23 @@ not be written, regardless of how confident anyone feels. This is the operationa
 - **6 blocked on artifacts that do not exist:** S4, S5, S7, S8, S9, S12.
 - **2 outcome-conditional:** S10, S11.
 
-**Why S5 is blocked, despite the code existing.** The sentence claims four
-budget-matched treatment families. `FAILURE_LOG.md` F-001 records that the joint policy is
-observationally identical to selection-only, and random to schedule-only, so the repository
-currently implements **two** distinguishable families, not four. Separately, all four
-`configs/policy/*.json` still read `TBD_BEFORE_PRIMARY_RUNS`, so none is frozen. Budget-equality
-tests passing is not evidence to the contrary — F-001 makes that equality trivial.
+**Why S5 is now writable.** It was blocked on two grounds, and both have been resolved.
 
-S5 becomes writable when the joint allocation rule is frozen and the policies are demonstrably
-distinct, not before.
+`FAILURE_LOG.md` F-001 recorded the joint policy as observationally identical to selection-only,
+and random to schedule-only — two distinguishable families rather than four. **F-005 supersedes
+that.** F-001 described the Week-1 scaffold: commit `243f58b` reverted `policies/joint.py` to it
+hours before F-001 was written. With Aarav's frozen implementation restored, the four families
+produce four distinct trajectories, asserted across three seeds in
+`tests/policies/test_treatment_decomposition.py`.
+
+The second ground — that all four `configs/policy/*.json` read `TBD_BEFORE_PRIMARY_RUNS` — was also
+a consequence of the same revert. They now carry `policy_version: week2-fixture-v1` and their
+spending rules, with no `TBD` remaining in any of the four.
+
+**What S5 may and may not say.** S5 is definitional, and this evidence is structural: it shows the
+fixture simulator distinguishes the four families. It is not evidence that the *contrast between
+them* is scientifically meaningful — that is C-002, which still needs primary chains. Budget-equality
+tests passing remains weak evidence on its own.
 
 This is the honest shape of the abstract: a third of it could be written this week, and the
 remainder is correctly gated.

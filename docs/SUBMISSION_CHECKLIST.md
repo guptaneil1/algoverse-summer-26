@@ -61,13 +61,22 @@ with the person named before treating it as agreed.
 | ☐ | One primary tail-retention metric | U-004 | Neil |
 | ☐ | Contribution type: empirical-led or theory-led | U-005 | Team |
 | ☐ | Smallest scientifically meaningful effect | U-006 | Aarav + mentors |
-| ☐ | **Joint allocation rule and under-coverage score frozen** (resolves F-001) | U-007 | Aarav |
+| ☐ | **Under-coverage score definition frozen** | U-007 | Aarav |
 | ☐ | Ordered seed list declared | — | Aarav |
 | ☐ | Checkpoint retention policy declared before launch (`COMPUTE.md`) | — | Khantushig |
 
-**F-001 is a submission blocker, not a nice-to-have.** While `JointPolicy` remains
-observationally identical to `SelectionOnlyPolicy`, the four-family decomposition C-002 depends on
-does not exist, and no amount of compute will produce a meaningful contrast.
+**F-001 is no longer a submission blocker — see `FAILURE_LOG.md` F-005.** F-001 recorded
+`JointPolicy` as observationally identical to `SelectionOnlyPolicy`. That was true of the code it
+read, but that code was the Week-1 scaffold: commit `243f58b` reverted `policies/joint.py` from
+Aarav's frozen 150-line implementation to the 49-line scaffold hours before F-001 was written. With
+the frozen rule restored, the four families produce four distinct trajectories at every seed
+tested, so the decomposition C-002 depends on does exist.
+
+Two qualifications, so this is not read as more than it is. The measurement is **structural, not
+scientific**: it shows the fixture simulator can tell the four families apart, and the simulator's
+degradation and rescue rates are chosen constants. And U-007 is **not** closed by it — the
+allocation rule is frozen at `week2-fixture-v1`, but the under-coverage **score definition** still
+has no computation defined anywhere, and C-002 rests on both.
 
 ## Gate D — Primary runs
 

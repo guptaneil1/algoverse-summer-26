@@ -1,3 +1,0 @@
-{"example_id": "bht-1", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 0, "text": "Ancient trade routes shaped the growth of coastal settlements.", "token_count": 9}
-{"example_id": "bht-2", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 1, "text": "Sedimentary layers record the slow accumulation of mineral deposits.", "token_count": 9}
-{"example_id": "bht-3", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 2, "text": "Glassblowing guilds preserved furnace techniques for generations.", "token_count": 7}

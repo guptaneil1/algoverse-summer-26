@@ -1,2 +1,0 @@
-{"example_id": "fht-1", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 0, "text": "Regional cuisine reflects the produce available each season.", "token_count": 8}
-{"example_id": "fht-2", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 1, "text": "Radiolarian microfossils indicate ancient ocean temperatures.", "token_count": 6}

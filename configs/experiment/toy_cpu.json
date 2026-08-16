@@ -19,6 +19,17 @@
   "per_generation_human_budget": 20,
   "total_optimizer_tokens": 300,
   "output_dir": "tmp/toy_run",
+  "data": {
+    "train_manifest": "data/fixtures/toy_corpus.jsonl",
+    "train_manifest_sha256": "fixture",
+    "partition_manifests": {
+      "base_human_train": "src/human_data_budget/runner/fixtures/partitions/base_human_train.jsonl",
+      "rescue_candidates": "src/human_data_budget/runner/fixtures/partitions/rescue_candidates.jsonl",
+      "generation_prompts": "src/human_data_budget/runner/fixtures/partitions/generation_prompts.jsonl",
+      "validation": "src/human_data_budget/runner/fixtures/partitions/validation.jsonl",
+      "final_human_test": "src/human_data_budget/runner/fixtures/partitions/final_human_test.jsonl"
+    }
+  },
   "mode_statistics": {
     "common": 0.1,
     "tail": 0.5

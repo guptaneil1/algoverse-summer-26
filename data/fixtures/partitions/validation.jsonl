@@ -1,2 +1,0 @@
-{"example_id": "val-1", "mode": "common", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 0, "text": "Municipal archives catalogue property records by district.", "token_count": 7}
-{"example_id": "val-2", "mode": "tail", "origin": "human", "source": "toy-fixture-corpus/v1", "source_offset": 1, "text": "Lichen growth rates provide a proxy for surface exposure age.", "token_count": 10}

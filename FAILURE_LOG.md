@@ -1,17 +1,32 @@
 # Failure Log
 
-> No experimental run has been attempted in this repository. The entries below are
-> implementation findings, not experimental outcomes.
+> No primary experimental chain has been attempted in this repository. The entries
+> below are implementation and protocol defects found in the pipeline itself.
 
 Failures, null results, contradictory evidence, and protocol violations must be retained. They may not be deleted because they weaken the preferred conclusion.
 
 ## Entries
 
+> **ID collision resolved on merge.** Two entries were independently created as
+> `F-001` on diverged branches: the joint-policy degeneracy (2026-08-15, on `main`)
+> and the missing `data.partitions` block (2026-08-12, on
+> `week-3/khantushig-reference-runs`). Neither may be deleted. `main`'s keeps the ID
+> because six documents cite it (`DECISIONS.md` U-007, `docs/STATUS.md`,
+> `docs/SUBMISSION_CHECKLIST.md`, `docs/evidence/claim_evidence_matrix.md`,
+> `docs/method/hyperparameters.md`); the provenance entry is renumbered **F-004**,
+> and its one citation in `docs/runs/week3_reference_run_index.md` is updated.
+> Renumbering, not deletion — the entry and its text are unchanged otherwise.
+
 | ID | Date | Stage | Run/claim | Failure | Evidence | Cause status | Resolution | Scientific consequence |
 |---|---|---|---|---|---|---|---|---|
 | F-001 | 2026-08-15 | Fixture / method contract | C-002 treatment decomposition | `JointPolicy` is observationally identical to `SelectionOnlyPolicy`, and `RandomPolicy` to `ScheduleOnlyPolicy`, under every configuration the fixture simulator permits. The time-allocation axis is inert. | `tests/policies/test_joint_degeneracy.py` (5 tests, passing); `results/figures/nll_by_generation.png` shows two visible curves where four are plotted | **Implementation** — see analysis below. Not a scientific result. | Open. Assigned to Aarav; blocked on the frozen joint allocation rule (`05_method.tex`, U-007). | The fixture cannot currently distinguish the four treatment families. Budget-matching tests pass **trivially** and must not be cited as evidence that the decomposition is valid. |
+| F-002 | 2026-08-12 | Pipeline | Partition vocabulary contract | `validation/audit.py` and `data/manifest.py` disagree on 3 of 5 partition names and 2 of 4 provenance fields | `validation/audit.py:29-37` (`base_human_train`/`generation_prompts`/`final_human_test`, `stable_id`/`source_dataset`) vs `data/manifest.py:12-19` (`base_train`/`prompts`/`test`, `example_id`/`source`) | Protocol/interface defect, both modules @Neil-owned | **Open.** Runner translates in `_DATA_MODULE_PARTITIONS`; contract recorded in `schemas/run_manifest.schema.json` and `docs/interfaces/run_manifest.md`. Not fixed at source — cross-owner edit needs @Neil | A rename on either side breaks the translation silently. No result affected yet |
+| F-003 | 2026-08-12 | Process | Week 2 integration | Week 2 is integrated on `integration/week-2-jul25-jul31` (PRs #15/#16/#17) but never promoted to `main`, the repo has zero tags, and Neil's freeze commit `cd73d39` was never merged. `docs/STATUS.md` on `main` still says the positive control is "Not reproduced" | `git ls-remote --tags origin` → 0 tags; `cd73d39` not an ancestor of the integration branch; `main` merge history contains no Week 2 PR | Protocol/process, not implementation | **Open** — integrator decision. Reported in `docs/audits/week2_merge_gap.md`; no branch merged, tagged, or rewritten | `cd73d39` holds the frozen WikiText-103 manifests, mode definition, and tail metric, so the reference chains have no frozen data to consume. `week-2-freeze-2026-07-31` names no commit, so the `AWAITING_JULY_31_FREEZE` configs have no legitimate source |
+| F-003a | 2026-08-12 | Process | This audit | An earlier version of `docs/audits/week2_merge_gap.md` claimed Week 2 was "pushed but unmerged". It checked only ancestry against `main` and reported the result as if it covered integration generally | PRs #15/#16/#17 merged three Week 2 branches into `integration/week-2-jul25-jul31` | Analysis error by the audit author | **Corrected** in place, with the superseded claim retained as a visible correction note rather than deleted | No downstream artifact depended on the wrong claim; the corrected finding (Neil's `cd73d39` outstanding) is narrower and more actionable |
+| F-004 | 2026-08-12 | Pipeline | Toy smoke chain `fixture_joint_seed1` | `run_manifest.json` emitted no `data.partitions` block, so every chain classified `invalid` with `SEPARATION_MISSING_PROVENANCE` — 14 checks passing and the run still uncertifiable | `scripts/validate_run.py runs/fixture_joint_seed1` → `invalid`, exit 2, `checks_failed: ["separation_partitions_recorded"]` | Implementation defect (`runner/manifest.py:54` copied the config `data` block, which carries no partitions) | Fixed on `claude/week-3-assignments-boq852`: `build_partitions` resolves provenance from a declared source; validator now returns `valid`, exit 0, 20 checks. Pinned by `tests/runner/test_validate_toy_chain.py` | None to any result — no primary chain had run. Had it not been found first, every primary chain would have been uncertifiable and the accelerator time unrecoverable, since provenance cannot be back-filled after a run |
 
 ### F-001 analysis
+
 
 `policies/joint.py` computes:
 

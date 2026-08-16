@@ -46,6 +46,18 @@ def test_new_manifest_validates_against_schema() -> None:
     assert manifest["status_history"] == [{"status": "planned"}]
 
 
+def test_new_manifest_omits_partitions_when_no_provenance_declared() -> None:
+    """Provenance is never synthesised: no declared source means no partitions block.
+
+    The validator then classifies the run ``invalid``, which is the correct outcome.
+    Provenance emission is covered in ``test_manifest_provenance.py``.
+    """
+
+    manifest = new_manifest(CONFIG, policy_name="random")
+
+    assert "partitions" not in manifest["data"]
+
+
 def test_new_manifest_holds_all_required_fields() -> None:
     manifest = new_manifest(CONFIG, policy_name="random")
 

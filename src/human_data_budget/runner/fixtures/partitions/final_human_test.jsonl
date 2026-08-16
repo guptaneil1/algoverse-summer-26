@@ -1,0 +1,2 @@
+{"example_id":"toy-test-1","text":"A common-mode held-out human test fixture.","origin":"human","mode":"common","source":"runner-fixture/toy-v1","source_offset":40,"token_count":7}
+{"example_id":"toy-test-2","text":"A rare-mode held-out human test fixture.","origin":"human","mode":"tail","source":"runner-fixture/toy-v1","source_offset":41,"token_count":7}

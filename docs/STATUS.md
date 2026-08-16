@@ -9,12 +9,30 @@ completed work in several areas while overstating schedule position.
 **Reason for this update:** correction of a stale file, plus one minor evidence gate — the upstream
 positive-control commit is now pinned (`docs/evidence/upstream_pin.md`).
 
+> **Week 3 did not complete.** The August 7 results freeze did not happen: the
+> repository contains zero tags, no `integration/week-3-aug01-aug07` branch, no
+> `week-3/*` personal branches, and `results/aggregates/` holds only a README.
+> Week 4 as written takes the August 7 immutable aggregate as its input, so it
+> cannot start as specified. See `docs/audits/week3_execution_required.md`.
+>
+> **This file understates the Week 2 positive control.** The row below still reads
+> *Not reproduced*, but Week 2 **was** integrated on
+> `integration/week-2-jul25-jul31` (PRs #15/#16/#17), and it holds a completed
+> two-arm reproduction with per-generation measurements and pinned upstream
+> revisions — re-verified by recomputation in
+> `docs/positive_control/week3_verification.md`. What did not happen: promotion to
+> `main`, the freeze tag, and Neil's `cd73d39` (the frozen WikiText-103 manifests,
+> mode definition, and tail metric). Correcting the row requires the integrator to
+> promote and tag, so it is flagged here rather than edited unilaterally.
+> Evidence: `docs/audits/week2_merge_gap.md`.
+
 | Area | Owner | Status | Current evidence | Blocking issue |
 |---|---|---|---|---|
 | Literature and novelty | Ronit | Substantially complete | 31 bib entries; **31 sources** in `sources.yaml`; 23-paper `closest_work.csv` with audit status; 5 written novelty threats + responses | External hostile novelty review not obtained |
 | Paper | Ronit | 4 of 9 sections drafted | Intro, related work, problem, limitations (~2,860 words) | Method and experiments text unwritten; results sections correctly pending |
 | Positive control | Khantushig | **Not reproduced** | Upstream pinned at `feb8511479a2e2dc868e1caf3f63cb99f1fcc746`; `reproduce_positive_control.sh` still exits 3 | **No GPU. Project-wide critical path.** |
 | Recursive runner | Khantushig | Contract toy runner complete | `runner/` 836 lines; 12 test files covering determinism, atomic write, checkpoint-resume/integrity, two-generation chain, adapter contracts | Real training/generation not implemented |
+| Run manifest provenance | Khantushig | Implemented, not exercised on a real chain | Toy chain certifies `valid` (exit 0, 20 checks); `tests/runner/test_manifest_provenance.py`, `test_validate_toy_chain.py` | Partition vocabulary conflict between `validation/audit.py` and `data/manifest.py` is unreconciled (`FAILURE_LOG.md` F-002) |
 | Data manifests | Neil | Fixture only; domain audit delivered | Toy manifests; `docs/evidence/domain_audit.md` recommends WikiText-103 primary, C4 `realnewslike` fallback | U-002 not decided; `data/manifests/` contains no real manifest |
 | Evaluation | Neil | Two tail candidates implemented, neither frozen | `tail.py` (`tail_retention`, `nll_gap`), `logit_nll.py`, unit tests | U-004 not decided; reliability/independence audit needs real data |
 | Policies | Aarav | Four policies implemented; **two pairs are degenerate** | `policies/` 215 lines; `tests/policies/test_joint_degeneracy.py` | **F-001: joint is observationally identical to selection-only, and random to schedule-only.** Joint allocation rule not scientifically frozen |

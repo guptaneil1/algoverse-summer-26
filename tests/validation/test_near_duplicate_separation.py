@@ -461,7 +461,7 @@ def test_only_five_of_ten_partition_pairs_are_checked_at_all() -> None:
     """
     from itertools import combinations
 
-    from human_data_budget.runner.provenance import RUN_MANIFEST_PARTITIONS
+    from human_data_budget.runner.manifest import MANIFEST_PARTITIONS as RUN_MANIFEST_PARTITIONS
     from human_data_budget.validation.audit import FORBIDDEN_PARTITION_PAIRS
 
     checked = {frozenset(pair) for pair in FORBIDDEN_PARTITION_PAIRS}

@@ -133,3 +133,17 @@ An unfavorable treatment result is not an implementation failure without indepen
 | Note | `WANDB_DISABLED` / `WANDB_MODE` were **not** set for this invocation, so this observation does not by itself confirm or refute `PC-2026-08-05-E`'s claim that env vars are insufficient |
 | Resolution | Retry with `WANDB_DISABLED=true` and `WANDB_MODE=disabled` exported. If the crash persists, apply the disabled-mode init shim described in `docs/positive_control/report.md` §6 |
 | Scientific consequence | None on results. wandb is dashboard reporting and touches no scientific computation |
+
+
+### F-007 — stale output dir, and sitecustomize shadowing (2026-08-17)
+
+| Field | Value |
+|---|---|
+| Follows | F-006 |
+| Observation A | The retry with `WANDB_DISABLED`/`WANDB_MODE`/`WANDB_SILENT` exported did NOT reproduce the wandb crash. It failed earlier at `train.py:313`: `ValueError: Output directory ... already exists and is not empty` |
+| Correction to F-006 | F-006 proposed env vars as the fix. **That test never actually ran** — the retry died before reaching `wandb.log`. Whether env-var suppression alone suffices is **UNRESOLVED**; `docs/positive_control/report.md` §6 stays open |
+| Observation B | `wandb.init(mode='disabled')` returns a `NoopRun` and `wandb.log` succeeds under all three tested env configurations (no vars / `WANDB_MODE` only / `WANDB_DISABLED` only), on wandb 0.28.2 |
+| Observation C | A shim written to `/usr/local/lib/python3.12/dist-packages/sitecustomize.py` never executed: Debian ships `/usr/lib/python3.12/sitecustomize.py`, and `/usr/lib/python3.12` precedes `dist-packages` in `sys.path`, so the distro file shadowed it |
+| Resolution | Shim placed at `/workspace/shim/sitecustomize.py`, reached via `PYTHONPATH` (which precedes all site dirs). It chain-loads the distro sitecustomize first, then calls `wandb.init(mode='disabled')` when `STAGE_A_WANDB_SHIM=1`. Deleted `runs/positive_control/` (gitignored, failed-attempt output only) |
+| Upstream source | Unmodified. The shim is environment-level only |
+| Scientific consequence | None. Both failures were infrastructure, occurring before or after the scientific computation |

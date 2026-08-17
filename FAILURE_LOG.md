@@ -147,3 +147,19 @@ An unfavorable treatment result is not an implementation failure without indepen
 | Resolution | Shim placed at `/workspace/shim/sitecustomize.py`, reached via `PYTHONPATH` (which precedes all site dirs). It chain-loads the distro sitecustomize first, then calls `wandb.init(mode='disabled')` when `STAGE_A_WANDB_SHIM=1`. Deleted `runs/positive_control/` (gitignored, failed-attempt output only) |
 | Upstream source | Unmodified. The shim is environment-level only |
 | Scientific consequence | None. Both failures were infrastructure, occurring before or after the scientific computation |
+
+
+### F-008 — `--prune-models` destroys the shared generation 0 (2026-08-17)
+
+| Field | Value |
+|---|---|
+| Stage | A, arm `human_mixed`, generation 0 |
+| Failure | exit 16: `cannot record model_dir, nothing at runs/positive_control/human_mixed/upstream/0/model/final_model` |
+| Cause status | **Implementation (this repository's harness)** — not upstream |
+| Mechanism | `run_positive_control_arm.py:373-376` guards generation 0 from pruning only when `--shared-generation-zero` is set. `reproduce_positive_control.sh:249` passes that flag only to arms other than `fully_synthetic`. So the synthetic arm prunes its own generation 0, which the mixed arm then needs |
+| Evidence | `run.log`: synthetic arm completed generations 0-10, logged `pruning generation 9 model directory`; mixed arm then failed reusing shared generation 0 |
+| Scope | `--prune-models` is incompatible with the default shared generation 0. No warning is emitted |
+| Resolution | Re-run with `--no-shared-generation-zero` so `human_mixed` computes its own generation 0 |
+| Deviation | The arms no longer share a bit-identical generation 0. Both compute it under upstream's identical iteration-0 command with seed 42, so the values are expected to agree; bit-identity is no longer guaranteed by construction |
+| Scientific consequence | Minor. Generation 0 is recomputed under the same config and seed. `report.md` for the 2026-08-07 run noted the shared baseline as one number computed once; this run has two |
+| Recommended fix | Set `keep_shared` from whether generation 0 will be shared by any arm, not from whether the current arm consumes it |

@@ -163,3 +163,17 @@ An unfavorable treatment result is not an implementation failure without indepen
 | Deviation | The arms no longer share a bit-identical generation 0. Both compute it under upstream's identical iteration-0 command with seed 42, so the values are expected to agree; bit-identity is no longer guaranteed by construction |
 | Scientific consequence | Minor. Generation 0 is recomputed under the same config and seed. `report.md` for the 2026-08-07 run noted the shared baseline as one number computed once; this run has two |
 | Recommended fix | Set `keep_shared` from whether generation 0 will be shared by any arm, not from whether the current arm consumes it |
+
+
+### F-009 — stale generation-0 record blocked the F-008 retry (2026-08-17)
+
+| Field | Value |
+|---|---|
+| Follows | F-008 |
+| Failure | exit 16: `generation 1 needs runs/positive_control/human_mixed/upstream/0/model/final_model, which is absent` |
+| Cause status | **Implementation (this repository's harness)** |
+| Mechanism | The F-008 attempt recorded `human_mixed` generation 0 as complete when it entered the shared-baseline path, then failed before any model was written. On retry the driver reported `generation 0: already complete, skipping` and advanced to generation 1, which requires the absent checkpoint |
+| Scope | A generation is marked complete before its artifacts are verified present, so a mid-generation failure leaves a record that cannot be satisfied |
+| Resolution | Deleted `runs/positive_control/human_mixed/` (gitignored, failed-attempt records only) and re-ran with `--no-shared-generation-zero`. `fully_synthetic` untouched and still complete |
+| Scientific consequence | None. No scientific computation occurred in either failed attempt of this arm |
+| Recommended fix | Write the completion record only after the generation's required artifacts are confirmed on disk |

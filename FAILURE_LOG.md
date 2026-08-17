@@ -117,3 +117,19 @@ For every failure, record:
 - effect on claims and future stages.
 
 An unfavorable treatment result is not an implementation failure without independent evidence of a defect.
+
+
+### F-006 — upstream wandb crash on rerun (2026-08-17)
+
+| Field | Value |
+|---|---|
+| Stage | A (positive control), arm `fully_synthetic`, generation 0 |
+| Failure | `scripts/reproduce_positive_control.sh` exit 16; upstream `src/train.py` exit 1 |
+| Error | `wandb.errors.errors.Error: You must call wandb.init() before wandb.log()` at `train.py:683` |
+| Cause status | **Implementation (upstream)** — `main.py:25` guards `wandb.init` with `bool(str(cfg.wandb_disabled))`, always truthy, so init never runs while `wandb.log` is called unconditionally |
+| Environment | torch 2.8.0+cu128, transformers 4.48.3, datasets 3.2.0, accelerate 1.2.1, RTX 4090 (cc 8.9, native bf16), Python 3.12.3 |
+| Evidence | `runs/positive_control/fully_synthetic/stdout_stderr.log` |
+| Important | Training and evaluation COMPLETED before the crash: train_runtime 33.7898 s, perplexity 29.5885, eval_accuracy 0.388, eval_loss 3.3874, checkpoint written |
+| Note | `WANDB_DISABLED` / `WANDB_MODE` were **not** set for this invocation, so this observation does not by itself confirm or refute `PC-2026-08-05-E`'s claim that env vars are insufficient |
+| Resolution | Retry with `WANDB_DISABLED=true` and `WANDB_MODE=disabled` exported. If the crash persists, apply the disabled-mode init shim described in `docs/positive_control/report.md` §6 |
+| Scientific consequence | None on results. wandb is dashboard reporting and touches no scientific computation |

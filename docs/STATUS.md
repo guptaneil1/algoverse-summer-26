@@ -29,28 +29,43 @@ positive-control commit is now pinned (`docs/evidence/upstream_pin.md`).
 | Area | Owner | Status | Current evidence | Blocking issue |
 |---|---|---|---|---|
 | Literature and novelty | Ronit | Substantially complete | 31 bib entries; **31 sources** in `sources.yaml`; 23-paper `closest_work.csv` with audit status; 5 written novelty threats + responses | External hostile novelty review not obtained |
-| Paper | Ronit | 4 of 9 sections drafted | Intro, related work, problem, limitations (~2,860 words) | Method and experiments text unwritten; results sections correctly pending |
+| Paper | Ronit | 5 of 10 sections drafted | Drafted: related work 1,016 / introduction 834 / appendix 731 / problem 557 / limitations 451 words. Stubs: method 61, experiments 72, abstract 58, results 45, conclusion 36 | Method and experiments are the writable gap — neither needs a run. Results and conclusion correctly pend the chains |
 | Positive control | Khantushig | **Not reproduced** | Upstream pinned at `feb8511479a2e2dc868e1caf3f63cb99f1fcc746`; `reproduce_positive_control.sh` still exits 3 | **No GPU. Project-wide critical path.** |
-| Recursive runner | Khantushig | Contract toy runner complete | `runner/` 836 lines; 12 test files covering determinism, atomic write, checkpoint-resume/integrity, two-generation chain, adapter contracts | Real training/generation not implemented |
+| Recursive runner | Khantushig | Contract toy runner complete; emits per-example provenance | `runner/` 1,735 lines; 22 test files covering determinism, atomic write, checkpoint-resume/integrity, resume equivalence, two-generation chain, adapter contracts, manifest provenance and portability | Real training/generation not implemented |
 | Run manifest provenance | Khantushig | Implemented, not exercised on a real chain | Toy chain certifies `valid` (exit 0, 20 checks); `tests/runner/test_manifest_provenance.py`, `test_validate_toy_chain.py` | Partition vocabulary conflict between `validation/audit.py` and `data/manifest.py` is unreconciled (`FAILURE_LOG.md` F-002) |
 | Data manifests | Neil | Fixture only; domain audit delivered | Toy manifests; `docs/evidence/domain_audit.md` recommends WikiText-103 primary, C4 `realnewslike` fallback | U-002 not decided; `data/manifests/` contains no real manifest |
 | Evaluation | Neil | Two tail candidates implemented, neither frozen | `tail.py` (`tail_retention`, `nll_gap`), `logit_nll.py`, unit tests | U-004 not decided; reliability/independence audit needs real data |
 | Policies | Aarav | Four policies implemented; **all four are distinguishable** | `policies/` restored to the `week2-fixture-v1` rule; `tests/policies/test_treatment_decomposition.py` (7 tests, 3 seeds) | **F-001 superseded by F-005** — the degeneracy was an artifact of commit `243f58b` reverting `joint.py` to the Week-1 scaffold, not a property of the method. The under-coverage **score definition** (U-007) is still open |
-| Statistics | Aarav | Contract analysis complete; fixture figures generated | `analysis/` 420 lines; `results/figures/` 4 figures + provenance hashes | No real primary runs; U-003 and U-006 open |
+| Statistics | Aarav | Contract analysis complete; fixture figures regenerated from the restored policies | `analysis/` 716 lines; `results/figures/` 4 figures + provenance hashes | No real primary runs; U-003 and U-006 open |
 
-## Verification status (measured 2026-08-15)
+## Verification status (measured 2026-08-16)
+
+Every row below was produced by running its command on this date. The previous
+table reported **294 passed** for the test suite; that figure was not reproducible
+at any commit or invocation, and the suite could not run to completion at all —
+`tests/analysis/test_fake_result_rendering.py` aborted collection, so `pytest -q`
+(what CI runs) executed zero tests.
 
 | Check | Command | Result |
 |---|---|---|
-| Unit + contract tests | `PYTHONPATH=src python -m pytest -q` | **294 passed** (was 104) |
-| Dependency lock | `uv lock --check` | resolves; `figures` extra included |
-| Lint | `ruff check .` | **passes** — `install_claude.py` excluded, see below |
+| Unit + contract tests | `PYTHONPATH=src python -m pytest -q` | **571 passed, 15 skipped, 7 xfailed** |
+| Dependency lock | `uv lock --check` | resolves — 31 packages |
+| Lint | `ruff check .` | passes — `install_claude.py` excluded, see below |
 | Toy smoke chain | `make smoke` | passes — `completed toy chain: fixture_joint_seed1` |
-| Repository audit | `make audit` | passes |
-| Preflight budget check | `make preflight CONFIGS=configs/experiment/toy_cpu.json` | passes |
+| Repository audit | `make audit` | passes — `repository scaffold audit passed` |
+| Preflight budget check | `make preflight CONFIGS=configs/experiment/toy_cpu.json` | passes — `1 config(s) internally consistent` |
 | All fixture artifacts | `make fixture-artifacts` | 12 artifacts hashed into `results/ARTIFACT_MANIFEST.json` |
+| Submission archive | `bash scripts/build_submission.sh` | **builds** — `dist/human-data-budget-submission.zip` |
 | Paper build | `paper-build` CI job | **unverified locally — no TeX toolchain on this machine** |
 | Clean-environment install | `bash scripts/verify_clean_install.sh` | **not yet run on a clean machine** |
+
+**The 7 xfails are one blocker, not seven.** `PROTOCOL.md` §2 carries
+`TODO(khantushig)`, resolvable only after a successful Stage A install, so
+`reproduce_positive_control.sh` exits 11 before the behaviour those tests target.
+`tests/runner/_stage_a_gate.py` marks them conditionally and strictly: resolve the
+TODO and they run for real on the next invocation, and if one passes while the
+TODO stands, CI fails. Filling the placeholder by hand would fabricate frozen
+environment values, which `CLAUDE.md` rule 1 forbids.
 
 **Three infrastructure defects found and fixed on 2026-08-15.**
 

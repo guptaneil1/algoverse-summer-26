@@ -193,3 +193,42 @@ An unfavorable treatment result is not an implementation failure without indepen
 | Options, none chosen here | (1) Budget in optimizer blocks -- make the policy's currency the quantity actually consumed. (2) Preserve example boundaries in training -- forgo concatenation, pay padding cost. (3) Accept the mismatch, measure it, and declare a bounded tolerance in `PROTOCOL.md` before any run |
 | Owner | Budget definition is Aarav's (`DECISIONS.md` U-003); the grouping behaviour is upstream's and not modifiable without deviating from the validated path |
 | Scientific consequence | None yet -- no Stage B chain has run. Fixing it after chains ran would invalidate their budget matching |
+
+
+### F-010a — mechanism confirmed from upstream source (2026-08-18)
+
+Clarifies F-010. Appended rather than editing it, per the append-only rule.
+
+**Correction to a claim made in passing.** On seeing `train_samples` move 4,669 -> 4,672
+for three added examples, it was suggested that upstream truncates each record to one
+block. **That is not what happens**, and the inference was drawn from a coincidence of
+counts rather than from the code.
+
+**What the source actually does.** `src/utils/utils.py:73` `group_texts_and_tokenize_data`:
+
+- `block_size -= 1` before use, so chunking is at 511, not 512.
+- `group_texts` concatenates every record in the batch (`chain(*examples[k])`), floors the
+  total to a multiple of `block_size`, and splits into fixed chunks.
+- Both maps run with `batched: True` and no explicit `batch_size`, so concatenation happens
+  **within each default-sized batch**, not across the whole split, and each batch's
+  remainder is dropped -- the code comments say so.
+
+**Three consequences, all supporting F-010's original framing:**
+
+1. Example boundaries do not survive into blocks. A block can span two records, so
+   per-example human-origin optimizer tokens are not recoverable after grouping.
+2. Remainder dropping means some tokens are **discarded** rather than consumed. A policy
+   can therefore pay manifest tokens for text that never reaches the optimizer at all.
+3. Because batching is by record count, the discarded fraction depends on record ordering
+   and batch composition, so it is not a fixed per-corpus constant.
+
+**What remains unmeasured.** The realised relationship between manifest `token_count` and
+optimizer-consumed tokens for a given selection. The 4,669 -> 4,672 observation does not
+establish it: the WikiText-2 records were already block-shaped by `load_data.py`, which
+runs the same grouping and decodes back to text, while the three WikiText-103 articles were
+raw. Two different input shapes moved at once.
+
+**The measurement that would settle it**, and it is cheap: assemble corpora from an
+identical synthetic base with rescue selections of known, differing manifest-token totals,
+run only the tokenization and grouping (no training), and record `train_samples` for each.
+That isolates the mapping without spending a single optimizer step.

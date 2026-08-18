@@ -1,2 +1,97 @@
 \section{Method}
-The treatment families are fresh random rescue, schedule-only allocation, selection-only allocation, and a provisional joint time-and-mode policy. Aarav must replace this placeholder with frozen equations, policy-visible state, pseudocode, hyperparameters, and a clear explanation of how the joint method differs from combining two tuned baselines. The included toy joint policy tests software contracts only and is not automatically the scientific method.
+\label{sec:method}
+
+\subsection{Setting}
+
+A model is trained recursively: each generation $g \in \{0,\dots,H-1\}$ trains on data drawn
+from the previous generation's outputs, optionally supplemented with human-origin examples.
+The quantity under allocation is a \emph{fixed lifetime budget} $B$ of human-origin
+optimizer tokens. A policy decides, at each generation, how much of the remaining budget to
+spend and which candidates to spend it on. Every policy in a budget-matched comparison
+consumes exactly the same lifetime human-origin token count and the same total
+optimizer-token count.
+
+\subsection{Policy-visible state}
+
+At generation $g$ a policy observes only the remaining human-token budget, the number of
+generations remaining, and a monitored per-mode under-coverage score computed from a lagged
+reference. It does not observe held-out test data, another policy's outputs, or any primary
+treatment outcome. A partially missing mode receives score zero; if every mode is missing,
+selection falls back to a seeded random candidate order.
+
+\subsection{Treatment families}
+
+Four budget-matched families are compared. Let $r$ denote remaining human tokens, $F$ the
+number of future generations, $s_{\text{base}}$ the base per-generation spend, and
+$s_{\max}$ the per-generation cap.
+
+\paragraph{Fresh random rescue.} Spend $\min(s_{\text{base}}, r)$ each generation; shuffle
+candidates under the supplied seed and select without exceeding budget.
+
+\paragraph{Schedule-only.} Spend $s_g$ from a frozen schedule that withholds tokens through
+the early generations and spends at the cap thereafter; select in seeded random order.
+Timing varies; mode targeting does not.
+
+\paragraph{Selection-only.} Spend $\min(s_{\text{base}}, r)$ each generation; score
+candidates by lagged mode under-coverage, sort descending, break ties by ascending example
+identifier. Mode targeting varies; the spending schedule does not.
+
+\paragraph{Joint time-and-mode.} Let $u$ be the maximum finite monitored mode score, and let
+$\tau_{\text{low}} < \tau_{\text{high}}$ be the frozen urgency thresholds. The desired spend
+is
+\[
+d(u) = \begin{cases}
+0 & u < \tau_{\text{low}}\\
+s_{\text{base}} & \tau_{\text{low}} \le u < \tau_{\text{high}}\\
+s_{\max} & u \ge \tau_{\text{high}}
+\end{cases}
+\]
+and the realised spend applies a feasibility clamp,
+\[
+b = \mathrm{clamp}\bigl(d(u),\; \max(0,\, r - s_{\max}F),\; \min(s_{\max},\, r)\bigr).
+\]
+The lower bound reserves enough budget that every remaining generation can still be served
+at the cap; the upper bound enforces the per-generation cap and the remaining budget.
+Candidates are then sorted by descending score, ties broken by ascending example identifier.
+
+\subsection{Why the joint policy is not two tuned baselines composed}
+
+This is the load-bearing design question, and it is settled by an eligibility constraint
+rather than by an empirical margin.
+
+Schedule-only may alter \emph{when} tokens are spent but may not choose \emph{which} modes
+receive them. Selection-only may choose modes but spends on a fixed schedule. Composing a
+tuned schedule-only policy with a tuned selection-only policy yields a fixed spending
+profile paired with mode-aware selection: the schedule is still chosen in advance and cannot
+respond to what monitoring reports at run time.
+
+The joint policy is the only eligible family whose spend at generation $g$ is a function of
+the monitored state at generation $g$. The urgency thresholds make spending reactive --- a
+generation whose worst monitored mode is well covered spends nothing, and one whose worst
+mode is badly covered spends the cap. Under a fixed lifetime budget this is a reallocation,
+not an increase: tokens withheld early remain available later, and the feasibility clamp
+guarantees the reserve never falls below what future generations require.
+
+Whether that reactivity helps is an empirical question this paper does not answer.
+
+\subsection{Frozen parameters}
+
+\begin{table}[h]
+\centering
+\caption{Frozen policy parameters, generated from \texttt{configs/policy/joint.json}.}
+\input{tables/method_hyperparameters}
+\end{table}
+
+These were fixed in the Week~2 method freeze using interfaces, fixtures, and synthetic
+results. No primary treatment outcome influenced any score, schedule, seed, threshold,
+exclusion rule, or interpretation.
+
+\subsection{Separation of the treatment families}
+
+An earlier internal finding recorded the joint and selection-only families as
+observationally identical, and random as identical to schedule-only. That finding was
+subsequently traced to a reverted implementation rather than to the method: with the frozen
+rule restored, all four families produce distinct trajectories under the fixture simulator,
+and random separates from schedule-only. This evidence is structural and fixture-based. It
+establishes that the decomposition is well posed; it is not evidence of any performance
+difference on real data.

@@ -1,13 +1,18 @@
 # Current Project Status
 
-**Last truthful update:** August 15, 2026
-**Previous update:** July 18, 2026 (Week 1) — this file was four weeks stale and understated
-completed work in several areas while overstating schedule position.
+**Last truthful update:** August 17, 2026
+**Previous update:** August 15, 2026 — upstream positive-control commit pinned.
 **Original deadline:** August 15, 2026 — **not met; see §Schedule reality**
-**Current week by calendar:** Week 4 (August 8–14 plan). **Current week by evidence:** Week 2.
+**Current week by calendar:** Week 4 (August 8–14 plan). **Current week by evidence:** Week 2,
+now complete for the positive-control workstream.
 
-**Reason for this update:** correction of a stale file, plus one minor evidence gate — the upstream
-positive-control commit is now pinned (`docs/evidence/upstream_pin.md`).
+**Reason for this update:** a major evidence gate. Stage A executed end to end on 2026-08-17:
+both arms, eleven generations, artifact hashes verified, results regenerated from saved metrics.
+This is the second independent execution and the one whose artifacts survive. The Stage A
+environment freeze in `PROTOCOL.md` §2 is recorded from measured host values, releasing the
+seven conditional xfails. Evidence: `docs/positive_control/observed_table.md`,
+`docs/positive_control/measurements_2026-08-17_rtx4090/`, `COMPUTE.md`, and `FAILURE_LOG.md`
+F-006 through F-009.
 
 > **Week 3 did not complete.** The August 7 results freeze did not happen: the
 > repository contains zero tags, no `integration/week-3-aug01-aug07` branch, no
@@ -30,7 +35,7 @@ positive-control commit is now pinned (`docs/evidence/upstream_pin.md`).
 |---|---|---|---|---|
 | Literature and novelty | Ronit | Substantially complete | 31 bib entries; **31 sources** in `sources.yaml`; 23-paper `closest_work.csv` with audit status; 5 written novelty threats + responses | External hostile novelty review not obtained |
 | Paper | Ronit | 5 of 10 sections drafted | Drafted: related work 1,016 / introduction 834 / appendix 731 / problem 557 / limitations 451 words. Stubs: method 61, experiments 72, abstract 58, results 45, conclusion 36 | Method and experiments are the writable gap — neither needs a run. Results and conclusion correctly pend the chains |
-| Positive control | Khantushig | **Not reproduced** | Upstream pinned at `feb8511479a2e2dc868e1caf3f63cb99f1fcc746`; `reproduce_positive_control.sh` still exits 3 | **No GPU. Project-wide critical path.** |
+| Positive control | Khantushig | **Reproduced 2026-08-17** | Both arms, 11 generations, on 1x RTX 4090. Second independent execution; agrees with the 2026-08-07 T4 run to within 0.3% on every quantity. Hashes verified, artifacts retained in `docs/positive_control/measurements_2026-08-17_rtx4090/` | None. Was the project-wide critical path; now cleared |
 | Recursive runner | Khantushig | Contract toy runner complete; emits per-example provenance | `runner/` 1,735 lines; 22 test files covering determinism, atomic write, checkpoint-resume/integrity, resume equivalence, two-generation chain, adapter contracts, manifest provenance and portability | Real training/generation not implemented |
 | Run manifest provenance | Khantushig | Implemented, not exercised on a real chain | Toy chain certifies `valid` (exit 0, 20 checks); `tests/runner/test_manifest_provenance.py`, `test_validate_toy_chain.py` | Partition vocabulary conflict between `validation/audit.py` and `data/manifest.py` is unreconciled (`FAILURE_LOG.md` F-002) |
 | Data manifests | Neil | Fixture only; domain audit delivered | Toy manifests; `docs/evidence/domain_audit.md` recommends WikiText-103 primary, C4 `realnewslike` fallback | U-002 not decided; `data/manifests/` contains no real manifest |
@@ -59,13 +64,14 @@ at any commit or invocation, and the suite could not run to completion at all �
 | Paper build | `paper-build` CI job | **unverified locally — no TeX toolchain on this machine** |
 | Clean-environment install | `bash scripts/verify_clean_install.sh` | **not yet run on a clean machine** |
 
-**The 7 xfails are one blocker, not seven.** `PROTOCOL.md` §2 carries
-`TODO(khantushig)`, resolvable only after a successful Stage A install, so
-`reproduce_positive_control.sh` exits 11 before the behaviour those tests target.
-`tests/runner/_stage_a_gate.py` marks them conditionally and strictly: resolve the
-TODO and they run for real on the next invocation, and if one passes while the
-TODO stands, CI fails. Filling the placeholder by hand would fabricate frozen
-environment values, which `CLAUDE.md` rule 1 forbids.
+**The 7 xfails are resolved (2026-08-17).** `PROTOCOL.md` §2 no longer carries
+`TODO(khantushig)`: the environment freeze was recorded from measured values on the
+executing host (torch 2.8.0+cu128, transformers 4.48.3, datasets 3.2.0, accelerate
+1.2.1, Python 3.12.3, GPT-2 revision `607a30d7...`). The conditional marker in
+`tests/runner/_stage_a_gate.py` released them automatically, as designed. The suite
+now reports **578 passed, 15 skipped, 0 xfailed**. Pins are recorded in
+`requirements-positive-control.txt` rather than `requirements-lock.txt`, which is
+uv-generated with `--hash=sha256:` for `--require-hashes` CI.
 
 **Three infrastructure defects found and fixed on 2026-08-15.**
 
@@ -90,12 +96,15 @@ or setup.cfg not found". PEP 660 editable installs landed in pip **21.3**, so th
 
 ## Scientific claim state
 
-Unchanged from July 18. No item below has advanced.
+One item has advanced since July 18: the positive control. Everything else stands.
 
 - Recursive-training motivation: literature-grounded with scope qualifiers.
 - Exact novelty: unverified (internal audit complete; external review outstanding).
-- Positive control: not reproduced in this repository.
-- Pipeline correctness: scaffolded and unit-tested on fixtures; not validated on real assets.
+- Positive control: **reproduced**, qualitatively, twice. Arm ordering and degradation
+  direction recovered. Agreement with published values rests on a 5% relative difference
+  used as an internal engineering tolerance only; this is not proof of exact replication.
+- Pipeline correctness: validated on real assets for the positive-control path. The Stage B
+  chain path remains fixture-tested only.
 - Novel pilot: not run.
 - Experimental results: none.
 - Broad or main-conference claim: unsupported.
@@ -119,9 +128,12 @@ Weeks 3 and 4 are not overdue work. They are unreachable work. No member can beg
 One dependency chain governs everything:
 
 ```
-GPU access ─→ Stage A positive control ─→ pipeline validation on real assets ─→ Stage B pilot ─→ results
-                      ↑
-        upstream commit pinned (done, 2026-08-15)
+GPU access (done) ─→ Stage A positive control (done, 2026-08-17) ─→ July 31 design
+freeze (OPEN) ─→ Stage B pilot ─→ results
+
+The binding constraint is no longer compute. All three primary configurations remain
+`AWAITING_JULY_31_FREEZE` and `run_chain.sh` correctly refuses them. That is a decision,
+not an accelerator shortage.
 ```
 
 Independently of compute, three members have Week 2 work available now:

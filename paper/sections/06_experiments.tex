@@ -1,2 +1,80 @@
 \section{Experimental Design}
-The August target is one licensed domain, one 124M--160M screening model, one primary nonzero lifetime budget, and paired independently seeded chains. Primary proposed outcomes are held-out human negative log-likelihood regret aggregated across the frozen horizon and an independently frozen tail-retention measure. Final test data is excluded from prompts, selection, thresholding, early stopping, and hyperparameter choice. Exact model, data, horizon, budget, and seed values remain to be frozen before primary outcomes.
+\label{sec:experiments}
+
+\subsection{Experimental unit and estimand}
+
+The experimental unit is one independently seeded recursive chain run to the frozen
+horizon. Generations within a chain are repeated observations of the same unit, not
+independent samples, so all uncertainty is computed across chains. The primary estimand is
+the paired chain-level difference between the joint policy and the strongest eligible
+non-joint baseline, where the baseline is fixed by the preregistered eligibility rule and
+may not be chosen using primary treatment outcomes.
+
+The primary outcome is the area under the generation-wise held-out human NLL-regret curve.
+The confirmatory outcome is a frozen tail-retention measure evaluated on a partition never
+used for selection. Chains are paired across policies by seed, over the ordered primary
+seed set $101, 202, 303, 404, 505$.
+
+\subsection{Fairness constraint}
+
+Every policy in a budget-matched comparison consumes an identical lifetime count of
+human-origin optimizer tokens and an identical total optimizer-token count. A comparison is
+invalid, and is reported as such rather than repaired, when it has mismatched paired seed
+sets, unequal lifetime human-token budgets, unequal total optimizer-token budgets,
+nonfinite policy scores, data leakage, or config and manifest hash mismatches. Poor or
+harmful measured performance is not grounds for exclusion.
+
+Token counts are taken from tokenized batches actually consumed by the optimizer, never
+from character or document estimates, and padding is treated consistently and documented.
+
+\subsection{Data separation}
+
+Each example receives a stable content hash before splitting. Five partitions are held
+disjoint: base human training data, per-generation rescue candidates, generation prompts,
+validation data, and final human test data. No final test example may influence prompting,
+selection, threshold tuning, early stopping, or hyperparameter choice.
+
+\subsection{Positive control}
+
+Before any treatment comparison, the pipeline is validated against a published result:
+Drayson et al.'s recursive-training study, at upstream commit
+\texttt{feb8511479a2e2dc868e1caf3f63cb99f1fcc746}, GPT-2 on WikiText-2 over eleven
+generations, with the paper's importance-sampling mitigation disabled so that the
+unmitigated baseline is what is measured.
+
+Both arms complete every planned generation. Per-generation perplexity and the resulting
+degradation ratios are given in Table~ef{tab:positive-control}, generated from the
+committed run artifacts. The fully synthetic arm ($lpha=0$) degrades substantially; the
+human-mixed arm ($lpha=1$) is close to flat. The synthetic arm lies above the mixed arm at
+every subsequent generation and the two never re-cross, so the expected ordering and
+degradation direction are recovered.
+
+egin{table}[h]
+\centering
+\caption{Positive-control perplexity by generation, both arms, generated from the committed
+per-arm result artifacts.}
+\label{tab:positive-control}
+\input{tables/positive_control}
+\end{table}
+
+Two independent executions were performed, on different accelerators and different
+dependency stacks. Every reported quantity agrees between them to well under one per cent,
+including the case where the two arms computed their shared baseline generation separately.
+The per-execution values and their differences are recorded in the evidence package rather
+than restated here.
+
+Agreement with the published values is assessed against a five per cent relative difference.
+This is an internal engineering tolerance, adopted because the source provides no suitable
+uncertainty for the endpoint, and it must not be read as proof of exact replication. All
+deviations from the upstream configuration are enumerated in the accompanying evidence
+record.
+
+Stage A uses WikiText-2, the upstream default. The pilot design targets a larger corpus
+from the same family; the two stages therefore use different corpus sizes, recorded as a
+deviation before execution rather than after.
+
+\subsection{Status of the primary comparison}
+
+The primary configurations remain unfrozen at the time of writing and the runner refuses to
+launch them. No primary chain has been executed. Section~\ref{sec:results} reports that
+outcome directly.

@@ -158,16 +158,83 @@ def test_missing_artifact_is_invalid(tmp_path: Path) -> None:
 
 
 def test_human_budget_violation_is_invalid(tmp_path: Path) -> None:
-    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_human_tokens=59))
+    """A shortfall indivisibility cannot explain is still invalid.
+
+    Re-pointed for F-018: this asserted 59-against-60, a one-token shortfall that read
+    as a violation only under exact equality. The property worth pinning is that a
+    *policy-level* shortfall -- the F-015 shape -- still blocks.
+    """
+    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_human_tokens=30))
     verdict = validate_run.validate_run(run_dir)
     assert verdict.state == validate_run.INVALID
-    assert any("lifetime human-token budget violated" in reason for reason in verdict.blocking)
+    assert any("human shortfall" in reason for reason in verdict.blocking)
+
+
+def test_human_overspend_is_invalid(tmp_path: Path) -> None:
+    """Exceeding the declared ceiling is never rounding."""
+    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_human_tokens=61))
+    verdict = validate_run.validate_run(run_dir)
+    assert verdict.state == validate_run.INVALID
+    assert any("human overspend" in reason for reason in verdict.blocking)
+
+
+def test_indivisibility_residual_is_valid(tmp_path: Path) -> None:
+    """The residual P-008 exists for must not block certification.
+
+    This is the F-018 regression: every real chain lands a little under its ceiling,
+    and exact equality called all of them invalid.
+    """
+    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_human_tokens=59))
+    verdict = validate_run.validate_run(run_dir)
+    assert verdict.state != validate_run.INVALID, verdict.blocking
+
+
+def test_control_arm_zero_spend_is_valid(tmp_path: Path) -> None:
+    """no_rescue spends nothing by construction; that is the reference, not a defect."""
+    run_dir = write_run(
+        tmp_path,
+        manifest(policy={"name": "no_rescue", "config": "none", "config_sha256": "d" * 64}),
+        chain_result(policy="no_rescue", consumed_human_tokens=0),
+    )
+    verdict = validate_run.validate_run(run_dir)
+    assert verdict.state != validate_run.INVALID, verdict.blocking
+
+
+def test_control_arm_that_spends_is_invalid(tmp_path: Path) -> None:
+    """A control that started spending has stopped being a control."""
+    run_dir = write_run(
+        tmp_path,
+        manifest(policy={"name": "no_rescue", "config": "none", "config_sha256": "d" * 64}),
+        chain_result(policy="no_rescue", consumed_human_tokens=12),
+    )
+    verdict = validate_run.validate_run(run_dir)
+    assert verdict.state == validate_run.INVALID
+    assert any("spends nothing by construction" in reason for reason in verdict.blocking)
 
 
 def test_total_budget_violation_is_invalid(tmp_path: Path) -> None:
-    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_total_tokens=301))
+    """A total the human budget cannot account for is still invalid.
+
+    Re-pointed for F-018: this asserted 301-against-300. Under P-009 the projection is
+    reported rather than asserted, within a band the human budget explains, so the
+    violation worth pinning is one outside that band.
+    """
+    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_total_tokens=500))
     verdict = validate_run.validate_run(run_dir)
     assert verdict.state == validate_run.INVALID
+    assert any("total optimizer tokens" in reason for reason in verdict.blocking)
+
+
+def test_total_within_the_human_budget_band_is_valid(tmp_path: Path) -> None:
+    """The measured pilot overshoot must certify.
+
+    The smoke chain consumed 16,678,912 against a projected 16,100,000 -- a 3.6% miss
+    in P-005's projection, on the arm that spends nothing. Scaled to this fixture, a
+    total modestly over the projection sits within what the human budget explains.
+    """
+    run_dir = write_run(tmp_path, manifest(), chain_result(consumed_total_tokens=340))
+    verdict = validate_run.validate_run(run_dir)
+    assert verdict.state != validate_run.INVALID, verdict.blocking
 
 
 def test_human_tokens_exceeding_total_is_invalid(tmp_path: Path) -> None:

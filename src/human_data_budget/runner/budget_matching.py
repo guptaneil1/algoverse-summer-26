@@ -48,6 +48,128 @@ from typing import Any
 #: the pilot's 2% threshold this permits 0.2%, against a measured 0.04%.
 SPREAD_MARGIN_BELOW_THRESHOLD = 0.1
 
+#: Fallback shortfall tolerance for a single chain when the rescue pool's true
+#: indivisibility bound is not available to the caller -- one percent of the declared
+#: human budget. A caller that can read the frozen manifest should pass the measured
+#: bound instead; this exists so a validator handed an arbitrary run directory still
+#: applies the right *kind* of check. See P-009.
+DEFAULT_SHORTFALL_FRACTION = 0.01
+
+
+@dataclass(frozen=True)
+class ChainBudgetReport:
+    """Verdict of the realised budget check for one chain.
+
+    Separate from ``BudgetMatchingReport`` because the questions differ. A single
+    chain cannot be asked whether arms match; it can only be asked whether it spent
+    what its own manifest declared, within the bounds P-008 and P-009 set.
+    """
+
+    ok: bool
+    failures: list[str] = field(default_factory=list)
+    observations: list[str] = field(default_factory=list)
+
+
+def check_chain_budget(
+    *,
+    declared_human: int | None,
+    declared_total: int | None,
+    consumed_human: int | None,
+    consumed_total: int | None,
+    spends_human: bool = True,
+    indivisibility_bound: int | None = None,
+) -> ChainBudgetReport:
+    """Assert one chain's realised spend against the budget its manifest declares.
+
+    Human axis, per P-008: a control arm that spends nothing by construction must be
+    exactly zero; a spending arm must reach its ceiling to within one indivisible
+    candidate. Exact equality is not required and cannot be met -- the launcher guard
+    that demanded it is FAILURE_LOG.md F-016, and this is the same defect in the
+    certification path, recorded as F-018.
+
+    Total axis, per P-009: ``total_optimizer_tokens`` is a *projection* of training
+    volume, not a budget any policy spends against, so fidelity to it is reported
+    rather than asserted. What is asserted is a band wide enough to absorb the
+    human data a chain was permitted to add, and narrow enough to catch a
+    misconfiguration: the realised total may exceed the projection by at most the
+    lifetime human budget plus rounding, and may fall short by at most rounding.
+    """
+    failures: list[str] = []
+    observations: list[str] = []
+
+    for name, value in (("consumed_human_tokens", consumed_human),
+                        ("consumed_total_tokens", consumed_total)):
+        if isinstance(value, int) and value < 0:
+            failures.append(f"{name} is negative ({value})")
+
+    if (isinstance(consumed_human, int) and isinstance(consumed_total, int)
+            and consumed_human > consumed_total):
+        failures.append(
+            f"impossible accounting: human tokens {consumed_human:,} exceed total "
+            f"tokens {consumed_total:,}"
+        )
+
+    if declared_human is not None and isinstance(consumed_human, int):
+        if not spends_human:
+            if consumed_human != 0:
+                failures.append(
+                    f"this arm spends nothing by construction, but the chain consumed "
+                    f"{consumed_human:,} human tokens"
+                )
+            else:
+                observations.append("control arm: zero human spend, as constructed")
+        elif consumed_human > declared_human:
+            failures.append(
+                f"human overspend: consumed {consumed_human:,} against a declared "
+                f"{declared_human:,} ceiling"
+            )
+        else:
+            tolerance = (
+                indivisibility_bound
+                if indivisibility_bound is not None
+                else max(1, round(DEFAULT_SHORTFALL_FRACTION * declared_human))
+            )
+            shortfall = declared_human - consumed_human
+            if shortfall > tolerance:
+                failures.append(
+                    f"human shortfall: consumed {consumed_human:,} against a declared "
+                    f"{declared_human:,}, falling {shortfall:,} short. One indivisible "
+                    f"candidate is at most {tolerance:,}, so indivisibility does not "
+                    "explain this"
+                )
+            else:
+                observations.append(
+                    f"human spend {consumed_human:,} of {declared_human:,} "
+                    f"(shortfall {shortfall:,}, tolerance {tolerance:,})"
+                )
+
+    if declared_total is not None and isinstance(consumed_total, int):
+        rounding = indivisibility_bound if indivisibility_bound is not None else 0
+        headroom = declared_human if isinstance(declared_human, int) else 0
+        upper = declared_total + headroom + rounding
+        lower = declared_total - headroom - rounding
+        if consumed_total > upper:
+            failures.append(
+                f"total optimizer tokens {consumed_total:,} exceed the projected "
+                f"{declared_total:,} by more than the human budget could account for "
+                f"(upper bound {upper:,})"
+            )
+        elif consumed_total < lower:
+            failures.append(
+                f"total optimizer tokens {consumed_total:,} fall below the projected "
+                f"{declared_total:,} by more than rounding explains "
+                f"(lower bound {lower:,})"
+            )
+        else:
+            delta = consumed_total - declared_total
+            observations.append(
+                f"total optimizer tokens {consumed_total:,} against a projected "
+                f"{declared_total:,} ({delta:+,}); reported, not asserted"
+            )
+
+    return ChainBudgetReport(ok=not failures, failures=failures,
+                             observations=observations)
+
 
 @dataclass(frozen=True)
 class BudgetMatchingReport:

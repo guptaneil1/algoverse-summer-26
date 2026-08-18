@@ -16,6 +16,7 @@ import pytest
 from human_data_budget.policies import spends_human_tokens
 from human_data_budget.runner.budget_matching import (
     SPREAD_MARGIN_BELOW_THRESHOLD,
+    check_chain_budget,
     check_realised_budget_matching,
     max_candidate_optimizer_tokens,
 )
@@ -150,6 +151,93 @@ def test_indivisibility_bound_matches_the_frozen_manifest():
     """The bound is read from the frozen pool, not hardcoded in the checker."""
     bound = max_candidate_optimizer_tokens("data/manifests/rescue_candidates.jsonl")
     assert bound == BOUND
+
+
+class TestChainBudget:
+    """Per-chain certification, shared by scripts/validate_run.py and validation.audit.
+
+    FAILURE_LOG.md F-018: both carried their own exact-equality copy of the rule
+    F-016 corrected in the launcher, so every real chain would have failed
+    certification after the grid ran.
+    """
+
+    # Measured on RunPod, no_rescue seed 101, 2026-08-18.
+    SMOKE_HUMAN = 0
+    SMOKE_TOTAL = 16_678_912
+    DECLARED_TOTAL = 16_100_000
+
+    def chain(self, **overrides):
+        arguments = {
+            "declared_human": CEILING,
+            "declared_total": self.DECLARED_TOTAL,
+            "consumed_human": self.SMOKE_HUMAN,
+            "consumed_total": self.SMOKE_TOTAL,
+            "spends_human": False,
+        }
+        arguments.update(overrides)
+        return check_chain_budget(**arguments)
+
+    def test_measured_control_chain_certifies(self):
+        """The exact chain that ran on GPU must pass. It did not, before F-018."""
+        report = self.chain()
+        assert report.ok, report.failures
+
+    def test_measured_spending_chain_certifies(self):
+        """A rescue arm at its indivisibility residual must pass too."""
+        report = self.chain(consumed_human=749_844, spends_human=True)
+        assert report.ok, report.failures
+
+    def test_control_arm_that_spends_fails(self):
+        report = self.chain(consumed_human=12)
+        assert not report.ok
+        assert any("spends nothing by construction" in f for f in report.failures)
+
+    def test_policy_level_shortfall_fails(self):
+        """F-015's shape: a shortfall indivisibility cannot explain."""
+        report = self.chain(consumed_human=517_000, spends_human=True)
+        assert not report.ok
+        assert any("human shortfall" in f for f in report.failures)
+
+    def test_overspend_fails(self):
+        report = self.chain(consumed_human=CEILING + 1, spends_human=True)
+        assert not report.ok
+        assert any("human overspend" in f for f in report.failures)
+
+    def test_total_beyond_what_the_human_budget_explains_fails(self):
+        report = self.chain(consumed_total=self.DECLARED_TOTAL + CEILING + 1)
+        assert not report.ok
+        assert any("total optimizer tokens" in f for f in report.failures)
+
+    def test_total_far_below_projection_fails(self):
+        """A chain that trained on far less than planned is not certifiable."""
+        report = self.chain(consumed_total=1_000_000)
+        assert not report.ok
+        assert any("fall below" in f for f in report.failures)
+
+    def test_human_exceeding_total_is_impossible(self):
+        report = self.chain(consumed_human=100, consumed_total=50, spends_human=True)
+        assert not report.ok
+        assert any("impossible accounting" in f for f in report.failures)
+
+    def test_negative_counts_fail(self):
+        report = self.chain(consumed_human=-1, spends_human=True)
+        assert not report.ok
+        assert any("negative" in f for f in report.failures)
+
+    def test_explicit_bound_overrides_the_fallback(self):
+        """A caller that read the frozen pool supplies the real bound."""
+        loose = self.chain(consumed_human=CEILING - 20_000, spends_human=True,
+                           indivisibility_bound=BOUND)
+        tight = self.chain(consumed_human=CEILING - 20_000, spends_human=True,
+                           indivisibility_bound=100)
+        assert loose.ok, loose.failures
+        assert not tight.ok
+
+    def test_projection_deviation_is_reported_not_asserted(self):
+        """P-009: the miss against the projection must be visible in the output."""
+        report = self.chain()
+        assert any("reported, not asserted" in o for o in report.observations)
+        assert any("+578,912" in o for o in report.observations)
 
 
 def test_bound_refuses_a_manifest_without_token_counts(tmp_path):

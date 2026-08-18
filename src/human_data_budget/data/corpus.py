@@ -14,15 +14,23 @@ trainable file is this module's job, and it needs the rescue-candidate
 **Format.** Upstream writes and reads a JSON array of objects carrying a ``text``
 key (``src/utils/utils.py`` and ``src/load_data.py``). Extra keys are preserved on
 synthetic records so a corpus round-trips without losing detector scores.
+
+**Committed manifests carry no text.** ``data/README.md`` forbids raw corpora on a
+committed path, and ``scripts/build_wikitext103_manifests.py`` writes hash-only
+records accordingly. Text is therefore rehydrated at assembly time through a
+``resolve_text`` callable and checked against the frozen ``content_hash`` before it
+can enter training. A mismatch is fatal: it means the corpus behind the manifest is
+not the corpus the manifest describes.
 """
 
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from human_data_budget.data.hashing import content_hash
 from human_data_budget.data.manifest import Example, ManifestError, PartitionManifest
 from human_data_budget.runner.upstream_driver import sha256_file
 
@@ -55,6 +63,36 @@ def _resolve(manifest: PartitionManifest, example_ids: Sequence[str]) -> list[Ex
     return [index[eid] for eid in example_ids]
 
 
+
+def _text_for(example: Example, resolve_text: Callable[[Example], str] | None) -> str:
+    """Return this example's text, verified against its frozen content hash.
+
+    Prefers text already on the record (fixtures and in-memory manifests) and falls
+    back to ``resolve_text`` for the hash-only manifests the builder commits. The
+    hash check runs either way, so a resolver reading the wrong revision, offset, or
+    preprocessing is caught here rather than silently training on the wrong bytes.
+    """
+    text = example.text
+    if not text:
+        if resolve_text is None:
+            raise CorpusAssemblyError(
+                f"example {example.example_id!r} carries no text and no resolve_text "
+                "was supplied. Committed manifests are hash-only by policy "
+                "(data/README.md), so assembly needs a resolver for the pinned source."
+            )
+        text = resolve_text(example)
+    if not text:
+        raise CorpusAssemblyError(f"resolved empty text for {example.example_id!r}")
+    observed = content_hash(text)
+    if observed != example.content_hash:
+        raise CorpusAssemblyError(
+            f"content hash mismatch for {example.example_id!r}: manifest records "
+            f"{example.content_hash}, resolved text hashes to {observed}. The corpus "
+            "behind this manifest is not the corpus the manifest describes."
+        )
+    return text
+
+
 def assemble_training_corpus(
     *,
     synthetic_corpus: Path | str | None,
@@ -64,6 +102,7 @@ def assemble_training_corpus(
     generation: int,
     selection_policy: str,
     selection_scores: Mapping[str, float] | None = None,
+    resolve_text: Callable[[Example], str] | None = None,
 ) -> dict[str, Any]:
     """Write generation ``generation``'s training corpus and its provenance sidecar.
 
@@ -88,12 +127,8 @@ def assemble_training_corpus(
     scores = dict(selection_scores or {})
 
     for example in rescued:
-        if not example.text:
-            raise CorpusAssemblyError(
-                f"example {example.example_id!r} carries no text. A manifest is a "
-                "reference to a corpus; load it with the text populated before assembly."
-            )
-        records.append({"text": example.text})
+        text = _text_for(example, resolve_text)
+        records.append({"text": text})
         provenance.append({
             "example_id": example.example_id,
             "content_hash": example.content_hash,

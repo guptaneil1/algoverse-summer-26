@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 from human_data_budget.data.corpus import CorpusAssemblyError, assemble_training_corpus
+from human_data_budget.data.hashing import content_hash
 from human_data_budget.data.manifest import Example, PartitionManifest
 
 
@@ -20,7 +21,7 @@ def _example(example_id: str, text: str, tokens: int, mode: str = "tail") -> Exa
     return Example(
         example_id=example_id, text=text, origin="human", mode=mode,
         source="wikitext-2-raw-v1", source_offset=0, token_count=tokens,
-        content_hash=f"hash-{example_id}", source_revision="rev-abc",
+        content_hash=content_hash(text), source_revision="rev-abc",
     )
 
 
@@ -88,14 +89,52 @@ def test_an_unresolvable_selection_is_an_error_not_a_silent_drop(
         )
 
 
-def test_textless_manifest_entry_is_an_error(tmp_path: Path) -> None:
+def _hash_only(example_id: str, text: str, tokens: int) -> Example:
+    """A record shaped like the committed manifests, which carry no text."""
+    example = _example(example_id, text, tokens)
+    return Example(
+        example_id=example.example_id, text="", origin=example.origin,
+        mode=example.mode, source=example.source, source_offset=example.source_offset,
+        token_count=example.token_count, content_hash=example.content_hash,
+        source_revision=example.source_revision,
+    )
+
+
+def test_hash_only_manifest_needs_a_resolver(tmp_path: Path) -> None:
+    """data/README.md forbids raw text on a committed path, so manifests are hash-only."""
     manifest = PartitionManifest.from_examples(
-        "rescue_candidates", [_example("h-empty", "", 10)])
-    with pytest.raises(CorpusAssemblyError, match="carries no text"):
+        "rescue_candidates", [_hash_only("h-1", "first human passage", 10)])
+    with pytest.raises(CorpusAssemblyError, match="no resolve_text"):
         assemble_training_corpus(
             synthetic_corpus=None, rescue_manifest=manifest,
-            selected_example_ids=["h-empty"], output_path=tmp_path / "data.json",
+            selected_example_ids=["h-1"], output_path=tmp_path / "data.json",
             generation=0, selection_policy="joint",
+        )
+
+
+def test_resolver_rehydrates_text_from_the_pinned_source(tmp_path: Path) -> None:
+    manifest = PartitionManifest.from_examples(
+        "rescue_candidates", [_hash_only("h-1", "first human passage", 10)])
+    result = assemble_training_corpus(
+        synthetic_corpus=None, rescue_manifest=manifest,
+        selected_example_ids=["h-1"], output_path=tmp_path / "data.json",
+        generation=0, selection_policy="joint",
+        resolve_text=lambda example: "first human passage",
+    )
+    records = json.loads(Path(result["corpus_path"]).read_text(encoding="utf-8"))
+    assert records[0]["text"] == "first human passage"
+
+
+def test_resolved_text_that_fails_its_hash_is_fatal(tmp_path: Path) -> None:
+    """Catches a resolver reading the wrong revision, offset, or preprocessing."""
+    manifest = PartitionManifest.from_examples(
+        "rescue_candidates", [_hash_only("h-1", "first human passage", 10)])
+    with pytest.raises(CorpusAssemblyError, match="content hash mismatch"):
+        assemble_training_corpus(
+            synthetic_corpus=None, rescue_manifest=manifest,
+            selected_example_ids=["h-1"], output_path=tmp_path / "data.json",
+            generation=0, selection_policy="joint",
+            resolve_text=lambda example: "text from the wrong revision",
         )
 
 

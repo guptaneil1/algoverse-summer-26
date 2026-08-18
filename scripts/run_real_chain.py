@@ -71,7 +71,8 @@ def main() -> int:
     # upstream with cwd set to the upstream checkout, so a relative asset path
     # resolves against *upstream's* directory rather than this repository and the
     # file appears to be missing.
-    for key in ("base_corpus", "test_corpus", "rescue_manifest", "validation_manifest"):
+    for key in ("base_corpus", "prompt_corpus", "test_corpus", "rescue_manifest",
+                "validation_manifest"):
         if config.get(key):
             config[key] = str(Path(config[key]).resolve())
 
@@ -102,8 +103,8 @@ def main() -> int:
                 "  Expected its src/train.py. Clone it and pass --upstream-dir, e.g.\n"
                 "    --upstream-dir /workspace/model_collapse"
             )
-        for key in ("base_corpus", "test_corpus", "rescue_manifest",
-                    "validation_manifest"):
+        for key in ("base_corpus", "prompt_corpus", "test_corpus",
+                    "rescue_manifest", "validation_manifest"):
             if not Path(config[key]).is_file():
                 raise SystemExit(
                     f"run_real_chain: {key} not found at {config[key]}\n"

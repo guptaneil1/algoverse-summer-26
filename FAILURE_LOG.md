@@ -324,3 +324,16 @@ suite compares the two units.
 | Resolution | `build_base_corpus.py --eval` mirrors `process_dataset(train=False)` and emits `text` alone. Verified: three test-partition examples produce 18 blocks whose only field is `text` |
 | Why generation 0 hid it | A schema mismatch cannot appear until the train file stops being the human base corpus, which happens exactly once, at the first recursive generation |
 | Scientific consequence | None. No chain completed, and the defect is in corpus preparation |
+
+
+### F-014 — generation prompts must come from the frozen prompts partition (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B screening, generation 2. Generations 0 and 1 both trained and decoded successfully first |
+| Failure | `src/generate.py` exit 1 at iteration 2, reading the assembled generation-1 corpus |
+| Immediate cause | The chain passed `--dataset_filepath` as the *current training corpus*. From generation 1 that corpus is generated output plus rescued text, which carries no `context` field, so the prompt slice upstream needs is absent |
+| The larger error | Upstream never prompts from the evolving corpus. `run_positive_control_arm.py:150` passes `data_dir / "train.json"` for **every** generation -- a fixed prompt source. The recursion lives in the model, which is retrained on synthetic data each generation, not in the prompts, which stay constant so successive generations are compared on the same completions task |
+| Why this was a correctness bug, not only a crash | `PROTOCOL.md` §3 holds five partitions disjoint, and lists generation prompts separately from training data. Prompting from `train_file` would have drawn prompts from the training set. Had `generate.py` tolerated a missing `context` instead of raising, this would have produced numbers rather than an error |
+| Resolution | `prompt_corpus` is now a required config key, built from the frozen `prompts` partition and passed unchanged for every generation. The launcher resolves and prechecks it alongside the other assets |
+| Scientific consequence | None realised -- the run crashed rather than completing. Recorded because the failure mode it would have caused is silent |

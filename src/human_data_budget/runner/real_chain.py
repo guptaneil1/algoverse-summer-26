@@ -133,7 +133,8 @@ def run_real_chain(
     _require(
         config, "run_id", "budget_id", "policy", "horizon", "chain_seed",
         "lifetime_human_budget", "total_optimizer_tokens", "upstream_dir",
-        "rescue_manifest", "base_corpus", "model", "training", "decoding", "detector",
+        "rescue_manifest", "base_corpus", "prompt_corpus", "model", "training",
+        "decoding", "detector",
     )
 
     from human_data_budget.generation.real import real_generate_step  # noqa: PLC0415
@@ -233,7 +234,15 @@ def run_real_chain(
                     "model_identifier": config["model"]["identifier"],
                     "checkpoint_path": trained.get("checkpoint_path", ""),
                     "experiment_path": str(experiment),
-                    "dataset_filepath": str(train_file),
+                    # Prompts come from the frozen prompts partition, fixed for
+                    # every generation. Upstream does the same -- its generate
+                    # command always points at the prepared train.json rather than
+                    # at the evolving corpus. Two reasons this matters: the
+                    # evolving corpus has no `context` field after generation 0,
+                    # and PROTOCOL.md section 3 holds generation prompts disjoint
+                    # from training data, which prompting from `train_file` would
+                    # violate. See FAILURE_LOG.md F-014.
+                    "dataset_filepath": config["prompt_corpus"],
                     **config["training"],
                     **config["decoding"],
                     "detector_tokenizer_name": config["detector"]["tokenizer_name"],

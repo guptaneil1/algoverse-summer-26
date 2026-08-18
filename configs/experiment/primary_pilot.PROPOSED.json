@@ -1,0 +1,137 @@
+{
+  "_freeze_status": "FROZEN",
+  "_freeze_source": "docs/decisions/pilot_freeze_2026-08-18.md - decisions P-003 through P-007, recorded in DECISIONS.md under 'Proposed decisions awaiting ratification'.",
+  "_freeze_provenance": "Frozen 2026-08-18 at the project owner's direction, after confirming origin/main carried no recorded decision for U-001 through U-006 and that DECISIONS.md assigns those items no owner. NOT a team freeze: every value traces to written evidence and a stated reversal condition, and any owner may override. Frozen for execution, provisional for authorship.",
+  "_warning": "Executable. Every value below is fixed before any primary chain runs. Changing one after a chain has run invalidates budget matching; add a new config instead.",
+  "_condition": "primary pilot: the frozen horizon, budget, total-token match, ordered seeds, outcomes, contrast, and exclusions shared by the no_rescue, random, schedule_only, selection_only, and joint arms.",
+  "run_id": "primary_pilot_2026-08-18",
+  "budget_id": "pilot-wt103-400art-750k-optimizer-tokens",
+  "stage": "pilot",
+  "_arms": "Five conditions. PROTOCOL.md section 4 names six treatment families; the sixth, an oracle upper bound, is not implemented and is deliberately absent rather than approximated. Its absence bounds what the comparison can claim.",
+  "arms": [
+    "no_rescue",
+    "random",
+    "schedule_only",
+    "selection_only",
+    "joint"
+  ],
+  "policy_configs": {
+    "random": {
+      "path": "configs/policy/random.json",
+      "sha256": "85b1a9140005b196aff47542e2ea04cf42c5eefbe4f634eee24eda9eba480528"
+    },
+    "schedule_only": {
+      "path": "configs/policy/schedule_only.json",
+      "sha256": "f46e271453dd2f15b570cb1339a880625ff46066b6ae5b9529ffa43940e2a65f"
+    },
+    "selection_only": {
+      "path": "configs/policy/selection_only.json",
+      "sha256": "e1dd42d64d599dc209c7cb1b31653923e919d88c6681e0f506852299f08b69a4"
+    },
+    "joint": {
+      "path": "configs/policy/joint.json",
+      "sha256": "0d6938b6aef3a299c5898c59ae8dbdb96645aa6f4426570b084e4f2dc4a90924"
+    },
+    "no_rescue": {
+      "path": null,
+      "sha256": null,
+      "note": "No config file. NoRescuePolicy takes no parameters by design: it ignores budget and candidates so the control arm cannot begin spending if a budget field changes."
+    }
+  },
+  "horizon": 10,
+  "seeds": [
+    101,
+    202,
+    303,
+    404,
+    505
+  ],
+  "_budget_units": "Optimizer tokens under the frozen GPT-2 tokenizer, per DECISIONS.md P-002 and FAILURE_LOG.md F-010b. NOT whitespace word counts. Derivation in docs/decisions/pilot_freeze_2026-08-18.md, U-003.",
+  "lifetime_human_budget": 750000,
+  "per_generation_human_budget": 75000,
+  "maximum_generation_human_budget": 150000,
+  "total_optimizer_tokens": 16100000,
+  "model": {
+    "identifier": "openai-community/gpt2",
+    "revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "tokenizer_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e"
+  },
+  "data": {
+    "dataset": "wikitext-103-v1",
+    "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "base_train_articles_used": 400,
+    "_subsample_note": "First 400 articles in frozen manifest order. Deterministic because the manifest is. Rationale and cost derivation: docs/decisions/pilot_freeze_2026-08-18.md, U-002.",
+    "manifests": {
+      "base_train": {
+        "path": "data/manifests/base_train.jsonl",
+        "manifest_hash": "77d2793a28cc1cd58dc723cb386277d7aa59112b4d0af100e1a5a6d4af30c8e3"
+      },
+      "rescue_candidates": {
+        "path": "data/manifests/rescue_candidates.jsonl",
+        "manifest_hash": "9dfe2c868fde517c7834d8d89b67a914ee6533289ecd3995b3b816c403e4708d"
+      },
+      "prompts": {
+        "path": "data/manifests/prompts.jsonl",
+        "manifest_hash": "e62501a937e691f61f629c0831b30ce00d77423ea3fc304340e86ab65ce32646"
+      },
+      "validation": {
+        "path": "data/manifests/validation.jsonl",
+        "manifest_hash": "ee70202bc1c01bd3a507022a286db433c046508ae6d1200c0bf026c83e9fd87e"
+      },
+      "test": {
+        "path": "data/manifests/test.jsonl",
+        "manifest_hash": "fbd5ef709a40d1bc5d2caca70f2d2a378f353ba449a16e8cd844f65350cb7aeb"
+      }
+    },
+    "corpora": {
+      "base_corpus": "data/corpora/pilot_base.json",
+      "prompt_corpus": "data/corpora/pilot_prompts.json",
+      "test_corpus": "data/corpora/pilot_test.json"
+    }
+  },
+  "tail_modes": [
+    "tail"
+  ],
+  "training": {
+    "block_size": 512,
+    "loss_on_last_n_tokens": 256,
+    "batch_size": 8,
+    "num_train_epochs": 1,
+    "save_steps": 2000,
+    "torch_dtype": "bfloat16",
+    "low_cpu_mem_usage": true
+  },
+  "decoding": {
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 50
+  },
+  "detector": {
+    "tokenizer_name": "GeorgeDrayson/modernbert-ai-detection",
+    "model_path": "GeorgeDrayson/modernbert-ai-detection",
+    "ai_confidence_threshold": 0.8674598932266235,
+    "temperature": 1.359828233718872
+  },
+  "primary_outcome": "area_under_generationwise_heldout_human_nll_regret_curve",
+  "primary_contrast": "joint minus the strongest eligible non-joint baseline, where eligibility is fixed by PREREGISTRATION.md and may not be chosen using primary treatment outcomes",
+  "practical_effect_threshold_relative": 0.02,
+  "_exclusion_rules": "Verbatim from PREREGISTRATION.md 'Exclusions'. Divergence, harmful performance, null performance and negligible effects are scientific outcomes, not exclusions.",
+  "exclusion_rules": [
+    "a corrupt or missing required artifact",
+    "verified incorrect token accounting",
+    "a verified wrong frozen config or code commit",
+    "verified data leakage or manifest mismatch",
+    "infrastructure termination before a required checkpoint"
+  ],
+  "replacement_seeds": [
+    606,
+    707,
+    808,
+    909,
+    1010
+  ],
+  "minimum_chains": 5,
+  "_minimum_chains_note": "Five paired chains per arm, the frozen primary seed set. Uncertainty is computed across chains; generations within a chain are repeated observations. This is a pilot sized to estimate variance, not a powered test - COMPUTE.md's compute gate blocks the powered experiment until pilot variance is known.",
+  "artifact_destination": "runs/primary_pilot_2026-08-18",
+  "output_dir": "runs/primary_pilot_2026-08-18"
+}

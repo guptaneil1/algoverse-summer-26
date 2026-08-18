@@ -177,3 +177,19 @@ An unfavorable treatment result is not an implementation failure without indepen
 | Resolution | Deleted `runs/positive_control/human_mixed/` (gitignored, failed-attempt records only) and re-ran with `--no-shared-generation-zero`. `fully_synthetic` untouched and still complete |
 | Scientific consequence | None. No scientific computation occurred in either failed attempt of this arm |
 | Recommended fix | Write the completion record only after the generation's required artifacts are confirmed on disk |
+
+
+### F-010 — the policy's budget currency is not the optimizer's (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B, pre-execution. Found by the real-step shakedown, not by a chain run |
+| Classification | **Design defect (this repository)** — surfaced by execution, invisible on CPU and in the toy path |
+| Observation | Upstream `train.py` reported 2,390,528 optimizer-consumed tokens for the WikiText-2 train split (4,669 blocks x 512) and 2,392,064 for a corpus assembled from the decoded generation-1 output plus three rescued human examples (4,672 blocks). The three rescued examples carry 6,082 tokens by their manifest `token_count` |
+| The mismatch | These are two different accounting bases. `token_count` is per-example under the frozen tokenizer. The optimizer's count comes from upstream `group_texts_and_tokenize_data`, which concatenates every text and re-chunks into `block_size` blocks. **Concatenation dissolves example boundaries**: after grouping, no block is cleanly attributable to one example, and a single block can span the tail of a synthetic record and the head of a human one |
+| Why the two numbers above do not simply decompose | The 1,536-token difference is 3 blocks, but it is not attributable to the three human examples alone: A5's synthetic base was the *decoded* generation-1 corpus, not the original train split, so two changes moved at once. The entry records the mismatch of bases, not a measured per-example delta |
+| Consequence | `PROTOCOL.md` §3 and the Stage B fairness constraint require every policy in a budget-matched comparison to consume "exactly the same lifetime number of human-origin optimizer tokens". The policy budgets in manifest tokens; the optimizer consumes in post-concatenation blocks. Two policies selecting different example sets with identical manifest-token totals can consume different optimizer tokens, and nothing currently detects it |
+| Blocking | The chain runner tracks `remaining_human_tokens` and decrements by `allocation.selected_human_tokens`. Which currency that is cannot be decided by implementation, so `chain.py` real-mode wiring is blocked until it is |
+| Options, none chosen here | (1) Budget in optimizer blocks -- make the policy's currency the quantity actually consumed. (2) Preserve example boundaries in training -- forgo concatenation, pay padding cost. (3) Accept the mismatch, measure it, and declare a bounded tolerance in `PROTOCOL.md` before any run |
+| Owner | Budget definition is Aarav's (`DECISIONS.md` U-003); the grouping behaviour is upstream's and not modifiable without deviating from the validated path |
+| Scientific consequence | None yet -- no Stage B chain has run. Fixing it after chains ran would invalidate their budget matching |

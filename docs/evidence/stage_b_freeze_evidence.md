@@ -81,6 +81,45 @@ Stage A from ~11 GB to ~1.5 GB, so a retention policy must be fixed before launc
 `PROTOCOL.md` must record it first because it constrains which resume-equivalence tests
 remain possible afterwards.
 
+## U-003 addendum — which currency is the budget denominated in? (2026-08-18)
+
+The real-step shakedown surfaced a question U-003 did not previously have to answer, and
+it now blocks implementation rather than only the freeze. Full record: `FAILURE_LOG.md`
+F-010.
+
+**The finding.** The policy allocates in manifest `token_count`, per example under the
+frozen tokenizer. Upstream trains on blocks produced by concatenating every text and
+re-chunking at `block_size`, which dissolves example boundaries. The two counts are not
+the same quantity, and the fairness constraint is written against the second.
+
+**Measured.** WikiText-2 train split: 2,390,528 optimizer tokens (4,669 blocks x 512).
+Assembled corpus of decoded generation-1 output plus three rescued examples: 2,392,064
+(4,672 blocks). Those three examples carry 6,082 manifest tokens. The 3-block difference
+is not attributable to them alone -- the synthetic base also changed between the two runs
+-- so this is evidence of mismatched bases, not a per-example measurement.
+
+**Why it cannot be deferred.** `chain.py` decrements `remaining_human_tokens` by
+`allocation.selected_human_tokens`. Whichever currency that field carries becomes the
+budget definition by implementation. Writing the real-mode wiring before the decision
+would freeze the answer silently, which is the failure mode `F-001`'s analysis describes.
+
+**Three options, stated without preference:**
+
+1. **Budget in optimizer blocks.** The policy's currency becomes the quantity actually
+   consumed, so the constraint holds by construction. Costs: the policy can no longer
+   price a candidate before assembly, because a candidate's block contribution depends on
+   what it is concatenated with.
+2. **Preserve example boundaries.** Train without concatenation so each example maps to a
+   whole number of padded blocks. Costs: padding waste, and a deviation from the upstream
+   path the positive control validated.
+3. **Accept and bound.** Keep manifest tokens as the currency, measure the realised
+   discrepancy per generation, and declare a tolerance in `PROTOCOL.md` before any run.
+   Costs: budget matching becomes approximate, which must then be stated wherever the
+   fairness constraint is claimed.
+
+Option 3 is the only one that leaves the positive control's validated training path
+untouched. That is an observation about scope, not a recommendation.
+
 ## U-004b — exact `nll_threshold_candidate`
 
 **Evidence needed:** baseline NLL distribution on the validation partition from a real

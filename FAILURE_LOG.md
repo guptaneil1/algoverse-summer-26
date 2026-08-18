@@ -431,3 +431,18 @@ suite compares the two units.
 | Cost of finding it here | About two minutes of four-GPU time, plus the ~57-minute smoke chain that surfaced it. That chain paid for itself twice: it caught F-017's successor and this |
 | Scientific consequence | None. No certified result existed and none was lost. The smoke chain's artifacts remain uncertifiable for this reason and are not used for any claim |
 | Lesson | Three defects in a row (F-017, F-018, F-019) were invisible to both the dry run and the test suite, and all three were caught by running one real chain and validating it. The single-chain-then-validate step is now in the runbook ahead of the grid; it is the only step that exercises the subprocess, the artifacts, and the certification path together |
+
+### F-019a — the F-019 fix was verified against the wrong object (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, between the second smoke chain and the grid |
+| Relation to F-019 | **Correction, appended not edited.** F-019 records the cause correctly and its fix was necessary; it was not sufficient, and the verification that accompanied it did not test the path that matters |
+| Observation | With F-019's fix committed, a second real chain still returned `SEPARATION_MISSING_PROVENANCE`, and its `run_manifest.json` hash was **byte-identical** to the first: `f607ca6d...`. The operator had not pulled the fix, which is how it was noticed; but the fix would not have worked either |
+| Cause | `run_pilot.chain_config` flattens the pilot config into per-chain keys — `rescue_manifest`, `base_corpus`, `model`, and so on — and carried **no `data` key at all**. `new_manifest` therefore read `config.get("data", _DEFAULT_DATA)` and got the default, so the corrected `build_partitions` was never handed the `manifests` block it had just been taught to read |
+| Why the F-019 verification missed it | It called `new_manifest(pilot_config)` with the config **as it exists on disk**, and `test_pilot_manifest_carries_partitions` did the same. Neither exercised `chain_config`, so both confirmed a property of a file rather than a property of the runner. The config on disk was never the object in question |
+| Fixed | `chain_config` passes the pilot's `data` block through. Confirmed by a dry run — free, no GPU — whose `run_manifest.json` now carries 22,637 / 4,235 / 1,359 / 60 / 60 records |
+| Verified against certification | The dry-run artifacts were patched with the chain's *measured* token counts (16,678,912 total, 0 human) and validated: `classification: valid_with_limitation`, reason codes `LIMIT_NEAR_DUPLICATE_NOT_CHECKED` and `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` only, exit 0. `SEPARATION_MISSING_PROVENANCE` is gone |
+| Pinned by | `test_the_launcher_passes_provenance_through_to_the_manifest`, which builds a manifest from `chain_config`'s output for **every arm**, not from the file |
+| Cost | Zero. Caught by a dry run and an artifact patch, both free, before a third paid chain |
+| Lesson | Verifying a fix against the object you edited proves the edit; it does not prove the behaviour. The manifest is written from a config the runner *constructs*, and no test had ever built that object. Two of the three checks written for F-019 shared the defect they were written to catch |

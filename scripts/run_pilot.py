@@ -106,6 +106,11 @@ def chain_config(pilot: dict, arm: str, seed: int) -> dict:
         "upstream_dir": pilot.get("upstream_dir", "upstream"),
         "shim_dir": pilot.get("shim_dir"),
         "cuda_device": pilot.get("cuda_device", 0),
+        # The whole data block, not just the paths the chain consumes. new_manifest
+        # resolves data.partitions from it, and without it every chain writes a
+        # manifest with no provenance and certifies invalid with
+        # SEPARATION_MISSING_PROVENANCE. FAILURE_LOG.md F-019.
+        "data": data,
         "rescue_manifest": data["manifests"]["rescue_candidates"]["path"],
         "validation_manifest": data["manifests"]["validation"]["path"],
         "base_corpus": corpora["base_corpus"],

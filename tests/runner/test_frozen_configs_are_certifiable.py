@@ -15,7 +15,9 @@ That is what this file asks, of every executable config in the repository.
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -101,6 +103,41 @@ def test_pilot_manifest_carries_partitions() -> None:
     assert len(partitions["generation_prompts"]) == 1_359
     assert len(partitions["validation"]) == 60
     assert len(partitions["final_human_test"]) == 60
+
+
+def test_the_launcher_passes_provenance_through_to_the_manifest() -> None:
+    """The config a chain actually receives, not the one on disk.
+
+    This is the gap that made the first F-019 fix ineffective. ``build_partitions``
+    was corrected and verified against ``primary_pilot.json`` directly, but
+    ``run_pilot.chain_config`` flattens the pilot config into per-chain keys and did
+    not carry ``data`` at all, so ``new_manifest`` fell back to its default and wrote
+    no provenance. Verifying the config on disk proved nothing about the config the
+    runner is handed.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "run_pilot_under_test", Path("scripts/run_pilot.py")
+    )
+    run_pilot = importlib.util.module_from_spec(spec)
+    sys.modules["run_pilot_under_test"] = run_pilot
+    spec.loader.exec_module(run_pilot)
+
+    pilot = json.loads((CONFIG_DIR / "primary_pilot.json").read_text(encoding="utf-8"))
+    for arm in pilot["arms"]:
+        config = run_pilot.chain_config(pilot, arm, pilot["seeds"][0])
+        manifest = run_pilot_manifest(config, arm)
+        partitions = manifest["data"].get("partitions")
+        assert partitions is not None, (
+            f"the config run_pilot hands the {arm} arm produces a manifest with no "
+            "provenance, so every chain of that arm certifies invalid"
+        )
+        assert set(partitions) == set(MANIFEST_PARTITIONS)
+
+
+def run_pilot_manifest(config: dict, policy_name: str) -> dict:
+    """Build the manifest a chain would write from a flattened chain config."""
+    return new_manifest(dict(config, chain_seed=config["chain_seed"]),
+                        policy_name=policy_name)
 
 
 def test_no_declared_provenance_still_returns_none() -> None:

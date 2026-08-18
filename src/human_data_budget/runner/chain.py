@@ -15,6 +15,7 @@ from human_data_budget.generation.toy import toy_generate_step
 from human_data_budget.models import Candidate, ChainResult, GenerationMetric, PolicyState
 from human_data_budget.policies import (
     JointPolicy,
+    NoRescuePolicy,
     RandomPolicy,
     ScheduleOnlyPolicy,
     SelectionOnlyPolicy,
@@ -41,6 +42,8 @@ from human_data_budget.training.toy import toy_train_step
 def policy_from_config(config: dict[str, Any]) -> Policy:
     name = config["policy"]
     per_generation = config["per_generation_human_budget"]
+    if name == "no_rescue":
+        return NoRescuePolicy()
     if name == "random":
         return RandomPolicy(per_generation)
     if name == "schedule_only":

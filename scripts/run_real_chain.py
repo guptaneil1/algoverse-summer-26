@@ -54,10 +54,37 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--upstream-dir", type=Path,
+                        help="override the config; the checkout location is a property "
+                             "of the host, not of the experiment")
+    parser.add_argument("--shim-dir", type=Path, help="override the config")
     args = parser.parse_args()
 
     config = load_config(args.config)
+    if args.upstream_dir is not None:
+        config["upstream_dir"] = str(args.upstream_dir)
+    if args.shim_dir is not None:
+        config["shim_dir"] = str(args.shim_dir)
     output_dir = args.output_dir or Path("runs") / config["run_id"]
+
+    # Fail on a missing asset with a message that names it, rather than letting
+    # subprocess raise FileNotFoundError on a bare relative path several frames
+    # deep. The Stage A harness refuses the same way and for the same reason.
+    if not args.dry_run:
+        upstream = Path(config["upstream_dir"])
+        if not (upstream / "src" / "train.py").is_file():
+            raise SystemExit(
+                f"run_real_chain: no upstream checkout at {upstream.resolve()}\n"
+                "  Expected its src/train.py. Clone it and pass --upstream-dir, e.g.\n"
+                "    --upstream-dir /workspace/model_collapse"
+            )
+        for key in ("base_corpus", "test_corpus", "rescue_manifest",
+                    "validation_manifest"):
+            if not Path(config[key]).is_file():
+                raise SystemExit(
+                    f"run_real_chain: {key} not found at {config[key]}\n"
+                    "  Build the corpora with scripts/build_base_corpus.py first."
+                )
 
     print(f"run_real_chain: {config['run_id']} "
           f"(stage={config.get('stage')}, policy={config['policy']}, "

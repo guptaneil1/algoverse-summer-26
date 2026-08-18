@@ -88,6 +88,8 @@ Forecasts must state assumptions and may not be presented as actual usage.
 | `fixture_joint_seed1` (toy) | 2026-08-12 | `week-3/khantushig-reference-runs` | none — toy path, no model | CPU only, no accelerator | 1 | 0.07 s | 0 | 18.2 MB RSS | 32 kB | Fixture; certifies `valid`. **Not scientific evidence** |
 | `positive_control_fully_synthetic_seed42` | 2026-08-06/07 | upstream `feb8511` | `607a30d7…` | 1× Tesla T4 | 11 gens | ~8.26 h | ~8.3 | not recorded | not retained | **Completed.** ppl 29.6179 → 50.9806, ratio 1.7213 |
 | `positive_control_human_mixed_seed42` | 2026-08-06/07 | upstream `feb8511` | `607a30d7…` | 1× Tesla T4 | 11 gens | ~10.76 h | ~10.8 | not recorded | not retained | **Completed.** ppl 29.6179 → 30.3730, ratio 1.0255 |
+| `positive_control_fully_synthetic_seed42` (rerun) | 2026-08-17 | upstream `feb8511`, this repo `stage-a/env-freeze` | `607a30d7…` | 1× RTX 4090 (cc 8.9, native bf16) | 11 gens | ~0.70 h (est.) | ~0.70 | not recorded | pruned during run | **Completed.** ppl 29.5885 → 50.8309, ratio 1.7179 |
+| `positive_control_human_mixed_seed42` (rerun) | 2026-08-17 | upstream `feb8511`, this repo `stage-a/env-freeze` | `607a30d7…` | 1× RTX 4090 (cc 8.9, native bf16) | 11 gens | **0.8236 h** | 0.824 | not recorded | pruned during run | **Completed.** ppl 29.5903 → 30.3320, ratio 1.0251 |
 | `week2-infrastructure` | 2026-08-03 | `week-2/khantushig-positive-control` | none — no model loaded | 4 vCPU, no GPU | 1 | 3.78 s | **0.00** | 40.4 MiB | ~90 kB | Infrastructure only. Not an experiment |
 
 **No primary chain compute has been recorded.** The row above is the toy CPU smoke
@@ -136,6 +138,50 @@ generation and roughly doubles its training set.
 **Peak memory:** not recorded — the sampler in runbook §5 was not run during the
 full arms. **Storage:** ~12–15 GB peak with pruning enabled; not retained (see
 `docs/positive_control/week3_verification.md` §6).
+
+
+## Positive control rerun, 2026-08-17 — RTX 4090
+
+Second independent execution of both arms, on different hardware and a different dependency
+stack from the 2026-08-07 T4 run. Environment frozen in `PROTOCOL.md` §2 before execution:
+torch 2.8.0+cu128, transformers 4.48.3, datasets 3.2.0, accelerate 1.2.1, Python 3.12.3.
+
+| Arm | Training | Evaluation | Generation | Arm total | Basis |
+|---|---:|---:|---:|---:|---|
+| `fully_synthetic` | **357.80 s** | **19.51 s** | ~1961 s (est.) | ~0.70 h (est.) | train/eval measured; generation extrapolated |
+| `human_mixed` | **728.68 s** | **19.65 s** | **1981.38 s** | **0.8236 h** | all three measured |
+| **Total** | **1086.48 s** | **39.16 s** | — | **~1.52 h** | |
+
+**How each column was obtained, and how far to trust it:**
+
+- **Training and evaluation are measured for both arms.** Summed from `train_runtime` and
+  `eval_runtime` in all 22 `train_results.json` / `eval_results.json` files. These are timer
+  values, not estimates, and unlike the 2026-08-07 run the artifacts still exist on disk.
+- **Generation is measured for `human_mixed`**, not a residual: 10 per-generation decode
+  timings emitted by the driver, sum 1981.38 s, mean 198.14 s, range 194.10–204.95 s.
+- **Generation for `fully_synthetic` is an extrapolation, not a measurement.** The driver
+  writes its timings to `run.log`, and that file was overwritten by the subsequent
+  invocation that ran `human_mixed`. Five of ten decode timings survive in the session
+  transcript — generations 3, 4, 5, 6, 10 — with mean 196.10 s and range 194.25–197.25 s.
+  The ~1961 s figure is 10 × that mean. It is well constrained (the surviving spread is
+  1.5%, and decode work is fixed per generation) but it is inference, not a timer.
+- **Peak memory: not recorded.** No sampler ran during either arm. Same gap as the
+  2026-08-07 run. Closing it requires another execution.
+- **Storage:** `--prune-models` was passed, so superseded checkpoints were deleted after
+  hashing. Peak storage not measured.
+
+**Aborted-run cost:** approximately 50 s of accelerator time — one generation-0 training
+run lost to the F-006 wandb crash. The F-007 and F-009 failures aborted during precheck
+before any GPU work. The `fully_synthetic` arm inside the F-008 invocation was **not**
+wasted: it completed and its results are the ones reported.
+
+**Speedup against the 2026-08-07 T4 run.** That run consumed ~19.0 T4-hours; this one
+~1.52 h on one RTX 4090, roughly **12.5×**. The T4 is Turing (cc 7.5) with no bfloat16
+tensor cores, so upstream's `torch_dtype: bfloat16` fell back to slow paths there and runs
+natively here. For Stage B planning, the pilot's 25–115 accelerator-hour forecast was built
+on the positive control's cost; if that scaling holds on Ampere-or-later hardware the pilot
+is materially cheaper than the forecast row suggests. **Do not rewrite the forecast on this
+basis** — A7 remains the binding uncertainty, and corpus size, not hardware, dominates it.
 
 ## Required accounting
 

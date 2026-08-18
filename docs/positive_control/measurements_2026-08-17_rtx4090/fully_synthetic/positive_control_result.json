@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "run_id": "positive_control_fully_synthetic_seed42",
+  "arm": "fully_synthetic",
+  "upstream_commit": "feb8511479a2e2dc868e1caf3f63cb99f1fcc746",
+  "metric_field": "perplexity",
+  "generations_ingested": 11,
+  "horizon": 11,
+  "metric_by_generation": {
+    "0": 29.58853037358933,
+    "1": 33.36780409980088,
+    "2": 36.01647624352752,
+    "3": 38.318102030825415,
+    "4": 40.38145702671119,
+    "5": 42.204939335414736,
+    "6": 44.03609429728074,
+    "7": 45.828759595224376,
+    "8": 47.62917627429044,
+    "9": 49.230165125462825,
+    "10": 50.830853029984446
+  },
+  "baseline_generation": 0,
+  "baseline_value": 29.58853037358933,
+  "final_generation": 10,
+  "final_value": 50.830853029984446,
+  "degradation_ratio": 1.7179242222640425
+}

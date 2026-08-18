@@ -61,6 +61,9 @@
     "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
     "base_train_articles_used": 400,
     "_subsample_note": "First 400 articles in frozen manifest order. Deterministic because the manifest is. Rationale and cost derivation: docs/decisions/pilot_freeze_2026-08-18.md, U-002.",
+    "train_manifest": "data/manifests/base_train.jsonl",
+    "train_manifest_sha256": "01b70ee8f5ae75b543767b2356e7a2d7ce9462957f63eb30bce9594ac6055606",
+    "_train_manifest_sha256_note": "Bytes of the manifest file as of 2026-08-18, after optimizer_token_count was added. Its manifest_hash (content identity over example_id and content_hash) is unchanged at 77d2793a28cc1cd5, so partition identity and disjointness are unaffected.",
     "manifests": {
       "base_train": {
         "path": "data/manifests/base_train.jsonl",

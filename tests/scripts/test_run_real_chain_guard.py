@@ -68,9 +68,13 @@ def test_the_committed_screening_config_passes_its_own_guard() -> None:
     )
 
 
-def test_the_three_primary_configs_are_still_refused() -> None:
-    """Nothing in this work may have quietly unfrozen a primary configuration."""
-    for name in ("primary_pilot", "primary_no_rescue", "primary_fresh_random"):
+def test_the_unfrozen_primary_configs_are_still_refused() -> None:
+    """primary_pilot was frozen deliberately (P-003..P-007); these were not.
+
+    A config must never become launchable by accident, so the two reference
+    conditions are checked explicitly rather than by globbing.
+    """
+    for name in ("primary_no_rescue", "primary_fresh_random"):
         path = ROOT / "configs" / "experiment" / f"{name}.json"
         result = subprocess.run(
             [sys.executable, str(SCRIPT), "--config", str(path), "--dry-run"],

@@ -51,6 +51,23 @@ def _load_synthetic(path: Path | None) -> list[dict[str, Any]]:
     return records
 
 
+def _optimizer_tokens(example: Example) -> int:
+    """The example's price in the unit the policy budgets in.
+
+    Refuses to fall back to ``token_count``. That field is a whitespace word count
+    (``FAILURE_LOG.md`` F-010b); substituting it here would make the ledger disagree
+    with the allocation by the BPE ratio and make a fully-spent budget look
+    under-spent.
+    """
+    if example.optimizer_token_count is None:
+        raise CorpusAssemblyError(
+            f"example {example.example_id!r} has no optimizer_token_count. Run "
+            "scripts/add_optimizer_token_counts.py. Falling back to token_count "
+            "would price this spend in words -- see FAILURE_LOG.md F-010b."
+        )
+    return int(example.optimizer_token_count)
+
+
 def _resolve(manifest: PartitionManifest, example_ids: Sequence[str]) -> list[Example]:
     index = {example.example_id: example for example in manifest.examples}
     missing = [eid for eid in example_ids if eid not in index]
@@ -109,10 +126,12 @@ def assemble_training_corpus(
     ``synthetic_corpus`` is ``None`` at generation 0, where no prior decode exists and
     the corpus is human-only.
 
-    Returns a serializable summary. ``human_token_count`` is summed from the
-    manifest's frozen ``token_count`` values, which are non-padding tokens per
-    optimizer presentation under the frozen tokenizer -- the same quantity the policy
-    budgeted against, so the ledger and the allocation cannot drift apart.
+    Returns a serializable summary. ``human_token_count`` is summed from
+    ``optimizer_token_count`` -- the same field the policy prices candidates in
+    (``DECISIONS.md`` P-002) -- so the ledger and the allocation cannot drift apart.
+    Summing ``token_count`` instead would under-report every spend by the BPE ratio,
+    measured at 1.096-1.318x per example in ``FAILURE_LOG.md`` F-010b, and the chain
+    would appear to under-spend a budget it had in fact allocated in full.
     """
     output_path = Path(output_path)
     synthetic = _load_synthetic(Path(synthetic_corpus) if synthetic_corpus else None)
@@ -165,7 +184,8 @@ def assemble_training_corpus(
         "provenance_path": str(provenance_path),
         "synthetic_record_count": len(synthetic),
         "human_record_count": len(rescued),
-        "human_token_count": sum(example.token_count for example in rescued),
+        "human_token_count": sum(_optimizer_tokens(e) for e in rescued),
+        "human_word_count": sum(e.token_count for e in rescued),
     }
 
 

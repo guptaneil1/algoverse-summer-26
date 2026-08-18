@@ -74,7 +74,10 @@ def test_refuses_a_config_that_does_not_exist(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     "config_name",
-    ["primary_no_rescue.json", "primary_fresh_random.json", "primary_pilot.json"],
+    # primary_pilot.json was frozen 2026-08-18 (DECISIONS.md P-003..P-007), so it
+    # is no longer expected to refuse. The two reference conditions remain
+    # unfrozen and must still be refused.
+    ["primary_no_rescue.json", "primary_fresh_random.json"],
 )
 def test_refuses_every_shipped_config_still_awaiting_the_freeze(config_name: str) -> None:
     """The three primary configs must remain unlaunchable until they are frozen."""
@@ -99,7 +102,8 @@ def test_refusal_is_a_controlled_message_not_a_crash() -> None:
     accidental `TypeError: unsupported operand type(s) for /: 'WindowsPath' and
     'NoneType'` raised while building the output directory.
     """
-    result = run_chain(str(ROOT / "configs" / "experiment" / "primary_pilot.json"))
+    result = run_chain(
+        str(ROOT / "configs" / "experiment" / "primary_no_rescue.json"))
 
     assert "Traceback" not in result.stderr
     assert "TypeError" not in result.stderr

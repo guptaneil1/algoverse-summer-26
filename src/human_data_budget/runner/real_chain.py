@@ -34,6 +34,7 @@ from human_data_budget.evaluation.real import mode_nll_to_retention_scores
 from human_data_budget.evaluation.tail import tail_retention
 from human_data_budget.models import ChainResult, GenerationMetric, PolicyState
 from human_data_budget.policies.base import validate_allocation
+from human_data_budget.policies.terminal import allocate_with_reconciliation
 from human_data_budget.runner.chain import policy_from_config
 from human_data_budget.runner.checkpoint import (
     checkpoint_path,
@@ -291,7 +292,12 @@ def run_real_chain(
                 candidates=candidates,
                 history=tuple(allocations),
             )
-            allocation = policy.allocate(state, seed)
+            # F-015: raise the allowance to the whole remainder at the final
+            # generation so every arm converges on the same lifetime spend. Each
+            # policy still chooses which examples with its own rule.
+            allocation, reconciled = allocate_with_reconciliation(
+                policy, state, seed, config=config
+            )
             validate_allocation(allocation, state)
             remaining -= allocation.selected_human_tokens
             allocations.append(allocation.as_dict())
@@ -311,6 +317,7 @@ def run_real_chain(
                     "metrics": [m.as_dict() for m in metrics],
                     "pending_selection": pending,
                     "pending_scores": pending_scores,
+                    "terminal_reconciliation": reconciled,
                     "previous_corpus": prev_corpus,
                 },
                 checkpoint_path(output_dir, generation),

@@ -22,6 +22,10 @@ def _example(example_id: str, text: str, tokens: int, mode: str = "tail") -> Exa
         example_id=example_id, text=text, origin="human", mode=mode,
         source="wikitext-2-raw-v1", source_offset=0, token_count=tokens,
         content_hash=content_hash(text), source_revision="rev-abc",
+        # Equal here only so the older assertions stay readable. The ledger reads
+        # this field, never token_count -- test_ledger_counts_optimizer_tokens
+        # pins that they are not interchangeable.
+        optimizer_token_count=tokens,
     )
 
 
@@ -97,6 +101,7 @@ def _hash_only(example_id: str, text: str, tokens: int) -> Example:
         mode=example.mode, source=example.source, source_offset=example.source_offset,
         token_count=example.token_count, content_hash=example.content_hash,
         source_revision=example.source_revision,
+        optimizer_token_count=example.optimizer_token_count,
     )
 
 
@@ -231,3 +236,38 @@ def test_optimizer_token_count_round_trips_and_rejects_nonpositive() -> None:
                               if k != "optimizer_token_count"}).optimizer_token_count is None
     with pytest.raises(ManifestError, match="must be positive"):
         Example.from_dict(dict(record, optimizer_token_count=0))
+
+
+def test_ledger_counts_optimizer_tokens_not_words(tmp_path: Path) -> None:
+    """F-015 root cause: the ledger summed words while the policy priced in BPE.
+
+    A fully-allocated budget then looked under-spent by the BPE ratio, which read
+    as a budget-matching violation rather than a unit bug.
+    """
+    from human_data_budget.data.corpus import CorpusAssemblyError
+
+    manifest = PartitionManifest.from_examples("rescue_candidates", [
+        Example(example_id="h-1", text="some human text", origin="human", mode="tail",
+                source="s", source_offset=0, token_count=100,
+                content_hash=content_hash("some human text"),
+                optimizer_token_count=117),
+    ])
+    result = assemble_training_corpus(
+        synthetic_corpus=None, rescue_manifest=manifest,
+        selected_example_ids=["h-1"], output_path=tmp_path / "data.json",
+        generation=1, selection_policy="joint",
+    )
+    assert result["human_token_count"] == 117, "ledger must count optimizer tokens"
+    assert result["human_word_count"] == 100, "word count reported separately"
+
+    textless = PartitionManifest.from_examples("rescue_candidates", [
+        Example(example_id="h-2", text="more text", origin="human", mode="tail",
+                source="s", source_offset=1, token_count=100,
+                content_hash=content_hash("more text")),
+    ])
+    with pytest.raises(CorpusAssemblyError, match="optimizer_token_count"):
+        assemble_training_corpus(
+            synthetic_corpus=None, rescue_manifest=textless,
+            selected_example_ids=["h-2"], output_path=tmp_path / "d2.json",
+            generation=1, selection_policy="joint",
+        )

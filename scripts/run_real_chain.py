@@ -67,6 +67,14 @@ def main() -> int:
         config["shim_dir"] = str(args.shim_dir)
     output_dir = args.output_dir or Path("runs") / config["run_id"]
 
+    # Absolute, before anything is handed to a subprocess. run_upstream_step runs
+    # upstream with cwd set to the upstream checkout, so a relative asset path
+    # resolves against *upstream's* directory rather than this repository and the
+    # file appears to be missing.
+    for key in ("base_corpus", "test_corpus", "rescue_manifest", "validation_manifest"):
+        if config.get(key):
+            config[key] = str(Path(config[key]).resolve())
+
     # Fail on a missing asset with a message that names it, rather than letting
     # subprocess raise FileNotFoundError on a bare relative path several frames
     # deep. The Stage A harness refuses the same way and for the same reason.

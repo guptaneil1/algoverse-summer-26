@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+# Build-time corpus download for scripts/build_wikitext103_manifests.py.
+# ~300 MB of parquet, two files over GitHub's 100 MB limit. The manifests it
+# produces are committed; the corpus it reads never is (data/README.md).
+.cache/
 .ruff_cache/
 .mypy_cache/
 .venv/

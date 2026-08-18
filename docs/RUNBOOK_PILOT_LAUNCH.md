@@ -181,6 +181,58 @@ proved the arithmetic. This one proves the upstream checkout, the shim, and the 
 you just built are wired correctly — F-007 and F-014 were both environment faults a
 laptop cannot see.
 
+A dry run is necessary and **not sufficient**. It prints the upstream command instead
+of executing it, so anything depending on the subprocess's working directory,
+filesystem or environment still passes. F-017 was exactly that: a passing dry run
+followed within seconds by 25 chains dying on a path that could never resolve. The
+next step is what closes that gap.
+
+---
+
+## 5a. One real chain, before the grid
+
+Roughly an hour of one GPU. It is the cheapest thing that exercises the real
+subprocess path end to end, and it is what would have caught F-017 for about a minute
+of compute.
+
+```bash
+cd /workspace/algoverse-summer-26
+export WANDB_MODE=disabled WANDB_SILENT=true STAGE_A_WANDB_SHIM=1 PYTHONPATH=/workspace/shim:src
+python scripts/run_pilot.py --config configs/experiment/primary_pilot.json \
+  --upstream-dir /workspace/model_collapse --shim-dir /workspace/shim \
+  --output-dir /workspace/pilot_smoke \
+  --only-arm no_rescue --shard-index 0 --shard-count 5 --cuda-device 0
+echo "EXIT=$?"
+```
+
+Want: exit 0, `1/5 chains complete`, a `chain_result.json`, and `consumed_human_tokens:
+0` — this is the control arm, so zero is correct.
+
+Watch that `--model_path` is populated on the second and later generations and that
+`nvidia-smi` actually moves. An empty `--model_path` means checkpoints are not
+chaining.
+
+Then certify that one chain before committing to 24 more:
+
+```bash
+python scripts/validate_run.py /workspace/pilot_smoke/no_rescue/seed101/
+echo "EXIT=$?"
+```
+
+Exit 0 or 2. If it exits 1, stop — the grid would produce 25 chains that certify the
+same way, which is F-018.
+
+**Measured 2026-08-18:** 3,393 s (56.6 min) for this chain, and
+`consumed_total_tokens` 16,678,912. Seven chains land on the busiest shard, so the
+grid is roughly **7 × your measured chain time** — about 6.6 h at that rate, and
+`no_rescue` is the cheapest arm. Check that against your pod's hourly rate before
+launching. The handover's 2.8 h / ~$8 and P-004's ~$9.80 were estimates made before
+any chain existed, and the measurement is well above both.
+
+```bash
+rm -rf /workspace/pilot_smoke
+```
+
 ---
 
 ## 6. Launch

@@ -232,3 +232,55 @@ raw. Two different input shapes moved at once.
 identical synthetic base with rescue selections of known, differing manifest-token totals,
 run only the tokenization and grouping (no training), and record `train_samples` for each.
 That isolates the mapping without spending a single optimizer step.
+
+
+### F-010b — root cause: the manifest counts words, not tokens (2026-08-18)
+
+Supersedes the speculative parts of F-010 and F-010a. Those described a mismatch of
+accounting bases and suspected concatenation and remainder-dropping as the cause. Measured,
+the dominant term is simpler and fixable.
+
+**Root cause.** `scripts/build_wikitext103_manifests.py:285`:
+
+    token_count = len(text.split())
+
+That is a whitespace word count. No tokenizer is imported anywhere in the builder.
+
+**Measured, CPU only, no optimizer steps.** GPT-2 BPE tokens versus manifest `token_count`
+over 25 rescue candidates: mean **1.1727**, min **1.0963**, max **1.3184**. Per-example
+examples: `train-77f0ac40398e1a78` 3,772 words / 4,400 BPE (1.1665);
+`train-8891cb789c796497` 799 / 1,027 (1.2854); `train-db04714210274cb8` 2,315 / 2,542
+(1.0981).
+
+**Independent corpus-level cross-check.** Assembling a fixed 200-record synthetic base plus
+rescue selections of 0, 3, 6, 12 and 24 examples, then running upstream's
+`group_texts_and_tokenize_data` and comparing block counts, gives realised
+optimizer-per-manifest-token ratios of 1.1786, 1.1504, 1.1484 and 1.1708. Those agree with
+the per-example BPE ratio, which establishes that **the unit error dominates and
+remainder-dropping is a second-order effect**, correcting F-010a's emphasis.
+
+**Four consequences.**
+
+1. **Budget matching does not hold.** Two policies selecting different example sets with
+   identical `token_count` totals can differ by up to roughly 20% in tokens the optimizer
+   actually consumes, because the word-to-BPE ratio varies per example over 1.096-1.318.
+2. **`PROTOCOL.md` §3 is violated as written**: "Counts must come from tokenized batches
+   actually consumed by the optimizer, not estimated character or document counts." A word
+   count is an estimate.
+3. **`models.Candidate`'s docstring is false.** It states `human_token_count` means
+   "non-padding tokens consumed per optimizer presentation under the frozen
+   tokenizer/preprocessing definition". It is words under no tokenizer.
+4. **Mode assignment inherits the unit.** `_assign_mode` thresholds at
+   `tail_cutoff = 1106.0` and `common_cutoff = 2661` word counts, so "tail" currently means
+   short by word count. That may still be a defensible mode definition, but it is not the
+   one the field name implies, and the frozen cutoffs would move under a recount.
+
+**The fix, and why it is not applied here.** The builder should tokenize with the frozen
+GPT-2 tokenizer and record BPE counts. That changes `token_count` on every example, which
+changes the tail and common cutoffs, which changes mode assignment, which changes the
+partition summary hashes. It is a re-freeze of Neil's Week 2 deliverable, not a patch, and
+`data/` is his. Doing it downstream would leave two disagreeing definitions in the tree.
+
+**Scientific consequence.** None yet: no Stage B chain has run. Discovering it after chains
+ran would have invalidated their budget matching silently, since nothing in the current test
+suite compares the two units.

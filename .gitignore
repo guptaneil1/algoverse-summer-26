@@ -42,6 +42,13 @@ data/*
 !data/manifests/
 data/manifests/*
 !data/manifests/README.md
+# The frozen partition manifests are the scientific artifact, not build output:
+# PROTOCOL.md section 3 requires stable IDs and content hashes to be immutable
+# inputs to analysis, and a reproduction cannot verify partitions it cannot read.
+# They are text-free by construction (data/README.md), so committing them
+# publishes hashes and token counts, never corpus bytes. ~6.5 MB total.
+!data/manifests/*.jsonl
+!data/manifests/MANIFEST_HASHES.json
 !data/fixtures/
 data/fixtures/*
 !data/fixtures/toy_corpus.jsonl

@@ -337,3 +337,20 @@ suite compares the two units.
 | Why this was a correctness bug, not only a crash | `PROTOCOL.md` §3 holds five partitions disjoint, and lists generation prompts separately from training data. Prompting from `train_file` would have drawn prompts from the training set. Had `generate.py` tolerated a missing `context` instead of raising, this would have produced numbers rather than an error |
 | Resolution | `prompt_corpus` is now a required config key, built from the frozen `prompts` partition and passed unchanged for every generation. The launcher resolves and prechecks it alongside the other assets |
 | Scientific consequence | None realised -- the run crashed rather than completing. Recorded because the failure mode it would have caused is silent |
+
+
+### F-015 — realised human spend differs 24% across arms; budget matching does not hold (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **pre-execution**. Found by a dry run of the frozen config, before any GPU time |
+| Classification | **Method design defect** -- not implementation. The policies behave as specified; the specification does not equalise spend |
+| Observation | Against a 750,000-token lifetime budget, realised lifetime human-origin spend was: `no_rescue` 0 (by design), `schedule_only` ~517,000, `selection_only` 574,731, `random` ~580,000, `joint` 641,002. The ordering and magnitudes are identical at every one of the five frozen seeds |
+| Magnitude | Joint consumes **23.7-24.3% more** human-origin optimizer tokens than schedule_only, at every seed |
+| Why | Policies stop when the next indivisible candidate does not fit the remaining per-generation allowance, and they differ in how many generations they can spend in at all. `schedule_only`'s frozen back-loaded schedule gives it five spending generations; `joint` spends adaptively across all ten. Neither reaches the 750,000 ceiling, and they fall short by different amounts |
+| Consequence | `PROTOCOL.md` §4 requires every policy in a budget-matched comparison to consume "exactly the same lifetime number of human-origin optimizer tokens". It does not hold. A joint-versus-schedule_only contrast is confounded by data quantity: if joint wins, the cause cannot be separated from its extra ~124,000 tokens. `CLAIMS.md` C-002's contract is unmet as configured |
+| Not a discretisation artifact | Candidates average 4,082 tokens, so rounding could explain a spread of a few thousand. 124,000 is thirty times that, and the gap is stable across seeds rather than varying with them |
+| Options, none chosen here | (1) Require every policy to spend its full lifetime budget by the final generation, with a terminal top-up, making the constraint hold by construction. (2) Re-specify the constraint as an equal *ceiling* rather than equal realised spend, and report realised spend as a reported covariate. (3) Equalise post hoc by truncating every arm to the minimum realised spend, which discards data and changes what each policy did. (4) Accept and state the confound, which forfeits C-002 |
+| Owner | Budget definition and the joint allocation rule are Aarav's (`DECISIONS.md` U-003, U-007) |
+| Cost of finding it here | Zero. A dry run of the frozen grid on CPU. Discovering it after the pilot would have cost the run and produced a comparison that could not support its primary claim |
+| Scientific consequence | None yet. No chain has run. The pilot should not launch for a C-002 contrast until this is resolved, though it could still legitimately launch as a **variance-estimation** exercise if that limitation is stated in advance |

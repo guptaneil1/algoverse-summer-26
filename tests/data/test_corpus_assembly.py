@@ -178,3 +178,56 @@ def test_malformed_synthetic_corpus_is_rejected(tmp_path: Path, rescue_manifest)
             selected_example_ids=[], output_path=tmp_path / "data.json",
             generation=1, selection_policy="joint",
         )
+
+
+def _budgetable(example_id: str, words: int, tokens: int | None) -> Example:
+    e = _example(example_id, f"text for {example_id}", words)
+    return Example(
+        example_id=e.example_id, text=e.text, origin=e.origin, mode=e.mode,
+        source=e.source, source_offset=e.source_offset, token_count=e.token_count,
+        content_hash=e.content_hash, source_revision=e.source_revision,
+        optimizer_token_count=tokens,
+    )
+
+
+def test_candidates_are_priced_in_optimizer_tokens_not_words() -> None:
+    """F-010b: token_count is a word count and must never become the budget."""
+    from human_data_budget.data.corpus import candidates_from_manifest
+    manifest = PartitionManifest.from_examples("rescue_candidates", [
+        _budgetable("h-1", words=100, tokens=117),
+        _budgetable("h-2", words=200, tokens=241),
+    ])
+    candidates = candidates_from_manifest(manifest)
+    assert [c.human_token_count for c in candidates] == [117, 241]
+
+
+def test_a_candidate_without_an_optimizer_count_is_refused() -> None:
+    """Silently falling back to words is the defect, so absence must be fatal."""
+    from human_data_budget.data.corpus import candidates_from_manifest
+    manifest = PartitionManifest.from_examples(
+        "rescue_candidates", [_budgetable("h-1", words=100, tokens=None)])
+    with pytest.raises(CorpusAssemblyError, match="optimizer_token_count"):
+        candidates_from_manifest(manifest)
+
+
+def test_undercoverage_scores_are_attached_by_id() -> None:
+    from human_data_budget.data.corpus import candidates_from_manifest
+    manifest = PartitionManifest.from_examples("rescue_candidates", [
+        _budgetable("h-1", 100, 117), _budgetable("h-2", 200, 241)])
+    candidates = candidates_from_manifest(manifest, undercoverage_scores={"h-2": 0.8})
+    by_id = {c.example_id: c.undercoverage_score for c in candidates}
+    assert by_id == {"h-1": 0.0, "h-2": 0.8}
+
+
+def test_optimizer_token_count_round_trips_and_rejects_nonpositive() -> None:
+    from human_data_budget.data.manifest import ManifestError
+    record = {
+        "example_id": "h-1", "content_hash": "0" * 64, "origin": "human", "mode": "tail",
+        "source": "s", "source_offset": 0, "token_count": 100,
+        "optimizer_token_count": 117,
+    }
+    assert Example.from_dict(record).optimizer_token_count == 117
+    assert Example.from_dict({k: v for k, v in record.items()
+                              if k != "optimizer_token_count"}).optimizer_token_count is None
+    with pytest.raises(ManifestError, match="must be positive"):
+        Example.from_dict(dict(record, optimizer_token_count=0))

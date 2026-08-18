@@ -11,6 +11,9 @@ __pycache__/
 .mypy_cache/
 .venv/
 venv/
+# Any suffixed variant too: .venv-clean, .venv-tok, .venv-modern and friends
+# are throwaway build/verification environments, never repository content.
+.venv*/
 
 # Local configuration and credentials
 .env
@@ -53,6 +56,7 @@ data/manifests/*
 # publishes hashes and token counts, never corpus bytes. ~6.5 MB total.
 !data/manifests/*.jsonl
 !data/manifests/MANIFEST_HASHES.json
+!data/manifests/OPTIMIZER_TOKEN_COUNTS.json
 !data/fixtures/
 data/fixtures/*
 !data/fixtures/toy_corpus.jsonl

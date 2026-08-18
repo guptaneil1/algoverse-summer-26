@@ -167,3 +167,44 @@ def assemble_training_corpus(
         "human_record_count": len(rescued),
         "human_token_count": sum(example.token_count for example in rescued),
     }
+
+
+def candidates_from_manifest(
+    manifest: PartitionManifest,
+    *,
+    undercoverage_scores: Mapping[str, float] | None = None,
+) -> list[Any]:
+    """Build policy candidates from a rescue manifest, budgeted in optimizer tokens.
+
+    **This is where the budget's unit is enforced.** ``models.Candidate`` documents
+    ``human_token_count`` as "non-padding tokens consumed per optimizer presentation
+    under the frozen tokenizer", and ``PROTOCOL.md`` §3 forbids estimated counts. The
+    manifest's ``token_count`` is a whitespace word count -- the unit the frozen
+    ``article_length_quantile`` mode definition is built on, and correct for that --
+    so it is **not** what a candidate is priced in. ``optimizer_token_count`` is.
+
+    An example missing ``optimizer_token_count`` raises rather than silently falling
+    back to the word count, which would reintroduce ``FAILURE_LOG.md`` F-010b: two
+    policies selecting different examples with equal word totals can differ by up to
+    ~20% in tokens the optimizer consumes, and budget matching would fail unnoticed.
+    """
+    from human_data_budget.models import Candidate  # noqa: PLC0415 - avoids a cycle
+
+    scores = dict(undercoverage_scores or {})
+    missing = [e.example_id for e in manifest.examples if e.optimizer_token_count is None]
+    if missing:
+        raise CorpusAssemblyError(
+            f"{len(missing)} example(s) in the {manifest.partition!r} manifest have no "
+            f"optimizer_token_count, e.g. {sorted(missing)[:3]}. Run "
+            "scripts/add_optimizer_token_counts.py. Budgeting on token_count instead "
+            "would price candidates in words -- see FAILURE_LOG.md F-010b."
+        )
+    return [
+        Candidate(
+            example_id=e.example_id,
+            human_token_count=int(e.optimizer_token_count),
+            mode=e.mode,
+            undercoverage_score=float(scores.get(e.example_id, 0.0)),
+        )
+        for e in manifest.examples
+    ]

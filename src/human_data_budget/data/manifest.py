@@ -48,6 +48,13 @@ class Example:
     token_count: int
     content_hash: str
     source_revision: str | None = None
+    # Non-padding tokens under the frozen model tokenizer. Distinct from
+    # ``token_count``, which is the whitespace word count the frozen
+    # ``article_length_quantile`` mode definition is built on
+    # (``docs/data/mode_definition_audit.md``). One field cannot serve both: mode
+    # assignment is frozen on whitespace, while ``PROTOCOL.md`` §3 requires budget
+    # accounting in tokens the optimizer actually consumes. See FAILURE_LOG F-010b.
+    optimizer_token_count: int | None = None
     generation: int | None = None
     selection_policy: str | None = None
     selection_score: float | None = None
@@ -89,6 +96,11 @@ class Example:
         presentations = int(record.get("optimizer_presentations", 0))
         if presentations < 0:
             raise ManifestError("optimizer_presentations must not be negative")
+        optimizer_tokens = record.get("optimizer_token_count")
+        if optimizer_tokens is not None:
+            optimizer_tokens = int(optimizer_tokens)
+            if optimizer_tokens <= 0:
+                raise ManifestError("optimizer_token_count must be positive")
         selection_score = record.get("selection_score")
         return cls(
             example_id=record["example_id"],
@@ -100,6 +112,7 @@ class Example:
             token_count=int(record["token_count"]),
             content_hash=resolved_hash,
             source_revision=record.get("source_revision"),
+            optimizer_token_count=optimizer_tokens,
             generation=(
                 None if record.get("generation") is None else int(record["generation"])
             ),
@@ -214,6 +227,7 @@ class PartitionManifest:
             # partition manifests keep stable hashes and stable serialized shape.
             for field_name in (
                 "source_revision",
+                "optimizer_token_count",
                 "generation",
                 "selection_policy",
                 "selection_score",

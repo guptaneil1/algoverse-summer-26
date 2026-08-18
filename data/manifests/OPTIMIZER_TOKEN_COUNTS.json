@@ -1,19 +1,14 @@
 {
   "partitions": {
-    "rescue_candidates": {
-      "ratio": 1.1630817650341716,
-      "tokens": 17289136,
-      "words": 14864936
+    "base_train": {
+      "ratio": 1.1611276112632205,
+      "tokens": 93667340,
+      "words": 80669290
     },
-    "test": {
-      "ratio": 1.170344636024062,
-      "tokens": 282300,
-      "words": 241211
-    },
-    "validation": {
-      "ratio": 1.155461320516537,
-      "tokens": 247137,
-      "words": 213886
+    "prompts": {
+      "ratio": 1.1612573390185463,
+      "tokens": 5587716,
+      "words": 4811781
     }
   },
   "tokenizer": "openai-community/gpt2"

@@ -19,7 +19,9 @@
   "upstream_dir": "upstream",
   "rescue_manifest": "data/manifests/rescue_candidates.jsonl",
   "validation_manifest": "data/manifests/validation.jsonl",
+  "_prompt_corpus": "The frozen prompts partition. Fixed for every generation, and disjoint from training data per PROTOCOL.md section 3. Upstream prompts from a fixed corpus too.",
   "base_corpus": "data/corpora/screening_base.json",
+  "prompt_corpus": "data/corpora/screening_prompts.json",
   "test_corpus": "data/corpora/screening_test.json",
 
   "_tail_modes": "From the frozen article_length_quantile definition (docs/data/mode_definition_audit.md). Mode assignment is in whitespace words and is unchanged by P-002.",

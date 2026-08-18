@@ -61,6 +61,7 @@ def _config(tmp_path: Path, **overrides):
         "rescue_manifest": str(_write_manifest(tmp_path / "rescue.jsonl")),
         "validation_manifest": str(tmp_path / "validation.jsonl"),
         "base_corpus": str(base), "test_corpus": str(base),
+        "prompt_corpus": str(base),
         "tail_modes": ["tail"],
         "model": {"identifier": "openai-community/gpt2"},
         "training": {"block_size": 512, "loss_on_last_n_tokens": 256, "batch_size": 8,

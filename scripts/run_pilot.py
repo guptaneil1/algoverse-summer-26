@@ -84,7 +84,27 @@ def main() -> int:
     parser.add_argument("--shim-dir", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--only-arm", help="run one arm; for debugging, not for a pilot")
+    parser.add_argument(
+        "--shard-index", type=int, default=0,
+        help="0-based index of this shard. Chains are dealt round-robin across "
+             "shards, so every shard gets a mix of arms and finishes at a similar "
+             "time even though arms differ in cost.")
+    parser.add_argument(
+        "--shard-count", type=int, default=1,
+        help="total shards. Chains are independent -- unlike the positive control's "
+             "two arms, no chain consumes another's output -- so N shards on N GPUs "
+             "cost the same as one shard on one GPU and finish in 1/N the time.")
+    parser.add_argument("--cuda-device", type=int, default=None,
+                        help="GPU for this shard. Upstream is single-device; this "
+                             "selects which one, mirroring cuda_device in the "
+                             "positive-control config.")
     args = parser.parse_args()
+
+    if not 0 <= args.shard_index < args.shard_count:
+        raise SystemExit(
+            f"run_pilot: --shard-index {args.shard_index} outside "
+            f"[0, {args.shard_count})"
+        )
 
     pilot = json.loads(args.config.read_text(encoding="utf-8"))
     if pilot.get("_freeze_status") == UNFROZEN and pilot.get("stage") not in {
@@ -102,61 +122,72 @@ def main() -> int:
         pilot["upstream_dir"] = str(args.upstream_dir)
     if args.shim_dir:
         pilot["shim_dir"] = str(args.shim_dir)
+    if args.cuda_device is not None:
+        pilot["cuda_device"] = args.cuda_device
 
     root = args.output_dir or Path(pilot["output_dir"])
     arms = [args.only_arm] if args.only_arm else list(pilot["arms"])
     seeds = list(pilot["seeds"])
-    total = len(arms) * len(seeds)
+
+    grid = [(arm, seed) for arm in arms for seed in seeds]
+    total = len(grid)
+    mine = [(i, a, s) for i, (a, s) in enumerate(grid, 1)
+            if (i - 1) % args.shard_count == args.shard_index]
 
     print(f"run_pilot: {pilot['run_id']}")
     print(f"  arms:  {arms}")
     print(f"  seeds: {seeds}")
-    print(f"  chains: {total}, horizon {pilot['horizon']}, "
-          f"lifetime budget {pilot['lifetime_human_budget']:,} optimizer tokens")
+    print(f"  chains: {total} total, {len(mine)} in this shard "
+          f"({args.shard_index + 1}/{args.shard_count}), "
+          f"cuda_device {pilot.get('cuda_device', 0)}")
+    print(f"  horizon {pilot['horizon']}, lifetime budget "
+          f"{pilot['lifetime_human_budget']:,} optimizer tokens")
     print(f"  output: {root}\n", flush=True)
 
     summary: list[dict] = []
     started = time.perf_counter()
 
-    for index, arm in enumerate(arms):
-        for seed in seeds:
-            position = index * len(seeds) + seeds.index(seed) + 1
-            out = root / arm / f"seed{seed}"
-            done = out / "chain_result.json"
-            label = f"[{position}/{total}] {arm} seed {seed}"
+    for position, arm, seed in mine:
+        out = root / arm / f"seed{seed}"
+        done = out / "chain_result.json"
+        label = f"[{position}/{total}] {arm} seed {seed}"
 
-            if done.is_file():
-                payload = json.loads(done.read_text(encoding="utf-8"))
-                print(f"{label}: already complete, skipping", flush=True)
-                summary.append({"arm": arm, "seed": seed, "status": "complete",
-                                **{k: payload.get(k) for k in
-                                   ("consumed_human_tokens", "consumed_total_tokens")}})
-                continue
+        if done.is_file():
+            payload = json.loads(done.read_text(encoding="utf-8"))
+            print(f"{label}: already complete, skipping", flush=True)
+            summary.append({"arm": arm, "seed": seed, "status": "complete",
+                            **{k: payload.get(k) for k in
+                               ("consumed_human_tokens", "consumed_total_tokens")}})
+            continue
 
-            resume = (out / "checkpoints").is_dir()
-            print(f"{label}: {'resuming' if resume else 'starting'}", flush=True)
-            try:
-                _, result = run_real_chain(
-                    chain_config(pilot, arm, seed),
-                    output_dir=out, resume=resume, dry_run=args.dry_run,
-                )
-                summary.append({
-                    "arm": arm, "seed": seed, "status": "complete",
-                    "consumed_human_tokens": result.consumed_human_tokens,
-                    "consumed_total_tokens": result.consumed_total_tokens,
-                    "metrics": [m.as_dict() for m in result.metrics],
-                })
-                print(f"{label}: complete, "
-                      f"{result.consumed_human_tokens:,} human tokens", flush=True)
-            except Exception as error:  # noqa: BLE001 - one chain must not end the pilot
-                summary.append({"arm": arm, "seed": seed, "status": "failed",
-                                "error": f"{type(error).__name__}: {error}"})
-                print(f"{label}: FAILED {type(error).__name__}: {error}", flush=True)
-                traceback.print_exc()
+        resume = (out / "checkpoints").is_dir()
+        print(f"{label}: {'resuming' if resume else 'starting'}", flush=True)
+        try:
+            _, result = run_real_chain(
+                chain_config(pilot, arm, seed),
+                output_dir=out, resume=resume, dry_run=args.dry_run,
+            )
+            summary.append({
+                "arm": arm, "seed": seed, "status": "complete",
+                "consumed_human_tokens": result.consumed_human_tokens,
+                "consumed_total_tokens": result.consumed_total_tokens,
+                "metrics": [m.as_dict() for m in result.metrics],
+            })
+            print(f"{label}: complete, "
+                  f"{result.consumed_human_tokens:,} human tokens", flush=True)
+        except Exception as error:  # noqa: BLE001 - one chain must not end the pilot
+            summary.append({"arm": arm, "seed": seed, "status": "failed",
+                            "error": f"{type(error).__name__}: {error}"})
+            print(f"{label}: FAILED {type(error).__name__}: {error}", flush=True)
+            traceback.print_exc()
 
     elapsed = time.perf_counter() - started
     root.mkdir(parents=True, exist_ok=True)
-    (root / "pilot_summary.json").write_text(
+    # One summary per shard: concurrent shards writing one path would race, and the
+    # last writer would silently discard the others' chains.
+    name = ("pilot_summary.json" if args.shard_count == 1
+            else f"pilot_summary_shard{args.shard_index}of{args.shard_count}.json")
+    (root / name).write_text(
         json.dumps({"run_id": pilot["run_id"], "wall_seconds": elapsed,
                     "chains": summary}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -176,7 +207,7 @@ def main() -> int:
 
     for chain in failed:
         print(f"  failed: {chain['arm']} seed {chain['seed']}: {chain['error']}")
-    print(f"\nsummary: {root / 'pilot_summary.json'}")
+    print(f"\nsummary: {root / name}")
     return 1 if failed else 0
 
 

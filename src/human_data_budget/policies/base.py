@@ -10,6 +10,13 @@ from human_data_budget.models import Allocation, Candidate, PolicyState
 class Policy(ABC):
     name: str
 
+    #: Whether this policy can consume human-origin tokens at all. False only for a
+    #: control arm that spends nothing *by construction*, never for one that merely
+    #: happened to find nothing affordable. Realised budget matching is asserted over
+    #: the spending arms only; including a structural zero would make the constraint
+    #: unsatisfiable. See ``human_data_budget.runner.budget_matching``.
+    spends_human_tokens: bool = True
+
     @abstractmethod
     def allocate(self, state: PolicyState, seed: int) -> Allocation:
         """Return an allocation without exceeding ``remaining_human_tokens``."""

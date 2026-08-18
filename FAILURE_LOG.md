@@ -354,3 +354,31 @@ suite compares the two units.
 | Owner | Budget definition and the joint allocation rule are Aarav's (`DECISIONS.md` U-003, U-007) |
 | Cost of finding it here | Zero. A dry run of the frozen grid on CPU. Discovering it after the pilot would have cost the run and produced a comparison that could not support its primary claim |
 | Scientific consequence | None yet. No chain has run. The pilot should not launch for a C-002 contrast until this is resolved, though it could still legitimately launch as a **variance-estimation** exercise if that limitation is stated in advance |
+
+### F-015a — F-015 closed; the residual is an indivisibility floor (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, still **pre-execution**. No chain has run |
+| Relation to F-015 | **Closure.** F-015 is not edited. This entry records what changed, which of its four options was taken, and what the constraint now asserts |
+| What was fixed | Two defects, both in commit `2626483`. (1) `data/corpus.py` summed `token_count` for its human ledger while policies priced candidates in `optimizer_token_count`, so a fully-allocated budget read as under-spent by the BPE ratio — F-010b resurfacing in the ledger after being fixed in the pricing. (2) Terminal reconciliation fired one generation too late: an allocation at generation *g* is assembled into generation *g+1*'s corpus, so the final generation's allocation was never consumed, and `schedule_only`'s back-loaded schedule placed a full 150,000 allowance exactly there |
+| Option taken | F-015's **option 2** — re-specify the constraint as an equal *ceiling* reached up to indivisibility, rather than equal realised spend. Recorded as `DECISIONS.md` P-008 |
+| Measured after the fix | Dry run of the frozen grid, 25/25 chains, 2026-08-18: `no_rescue` 0 at every seed; `random` 749,757–749,970; `schedule_only` 749,709–749,995; `selection_only` 749,866 at every seed; `joint` 749,844 at every seed. Spread across the four spending arms **0.0381%** against a 750,000 ceiling |
+| Why this is a floor, not a defect | Candidates are indivisible. The largest in the frozen rescue pool costs **26,902** optimizer tokens (4,235 candidates, mean 4,082.4, measured from `data/manifests/rescue_candidates.jsonl`). An arm stops when the next candidate does not fit, so a shortfall of up to one candidate is arithmetic rather than policy. The largest observed shortfall is **291** |
+| Not claimed | That realised spend is equal. It is not, and cannot be over indivisible examples. What is asserted is that every spending arm reaches its ceiling to within one candidate, and that the residual spread stays an order of magnitude below the practical effect threshold |
+| Scientific consequence | The 24% confound recorded in F-015 does not hold at the frozen configuration. `CLAIMS.md` C-002's contract is met as configured. This closes the confound, not the pilot's inference limits: the run remains a variance-estimation exercise under five frozen seeds |
+
+### F-016 — the budget-matching guard could never pass, and nothing tested it (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **pre-execution**. Found by the dry run that F-015 established as the pre-launch gate |
+| Observation | `scripts/run_pilot.py` asserted budget matching as `len({consumed_human_tokens}) > 1` — exact set equality over every completed chain. Run against the frozen grid it printed `BUDGET MATCHING VIOLATED` on a 0.0381% spread: the very state commit `2626483` had recorded as F-015's closure |
+| Classification | **Implementation defect in the guard**, not in the policies. The measured spend was correct and within its intended bound; the assertion over it was unsatisfiable |
+| Two independent reasons it was unsatisfiable | (1) `no_rescue` consumes 0 by construction, so 0 was always in the set beside ~749,000 — no configuration containing the control arm could ever pass. (2) Indivisible candidates make exact equality unreachable across seeds even among the spending arms |
+| Why the suite missed it | Nothing exercised the guard's **pass** condition. The string `BUDGET MATCHING` occurred in `scripts/run_pilot.py` and nowhere else in the repository. 706 tests passed against a launcher that would have flagged every physically possible run |
+| Second defect, same guard | A violation only printed. The exit code keyed off failed chains, so an unequal comparison exited **0** and appeared below the results rather than stopping the run |
+| Third defect, sharded path | Each shard evaluated only the ~6 chains it ran, so no process ever assessed the whole grid. The launch command in `docs/HANDOVER_2026-08-18.md` shards four ways, so this was the path the pilot was about to take |
+| Fixed | `src/human_data_budget/runner/budget_matching.py` asserts the three conditions P-008 specifies; violations exit non-zero; `--check-only` reassembles every shard summary into a whole-grid verdict. `tests/runner/test_budget_matching.py` (13 tests) pins both directions, including that F-015's historical numbers still fail the replacement check |
+| Cost of finding it here | Zero. It would not have been free later: the run would have completed, exited 0, and printed a fairness violation under 25 chains of otherwise valid results, with no way to tell from the exit code that anything was wrong |
+| Scientific consequence | None. No chain has run. Had it gone unfound, the pilot's own fairness check would have been uninformative in both directions — unable to pass when the constraint held, and unable to stop the run when it did not |

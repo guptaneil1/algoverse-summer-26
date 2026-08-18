@@ -12,10 +12,17 @@ interrupted one resumes from its last checkpoint. So a session that dies at chai
 17 of 25 costs the 17th chain, not the run.
 
 **Budget matching is asserted, not assumed.** Every arm draws on the same
-``lifetime_human_budget``, and the summary reports what each actually consumed. If
-two arms differ, that is a defect and the report says so rather than averaging over
-it -- `PROTOCOL.md` section 4 makes identical lifetime human-origin spend the
-fairness constraint, and an unequal comparison is invalid rather than interesting.
+``lifetime_human_budget``, and the summary reports what each actually consumed.
+`PROTOCOL.md` section 4 makes identical lifetime human-origin spend the fairness
+constraint, and an unequal comparison is invalid rather than interesting, so a
+violation exits non-zero rather than printing a warning under the results.
+
+The assertion itself lives in ``human_data_budget.runner.budget_matching``, which
+holds each spending arm to within one indivisible candidate of the ceiling instead
+of to exact equality. Exact equality was the earlier guard here and no
+configuration could satisfy it: the control arm's structural zero always differed
+from the spending arms, so it fired on a grid whose realised spread was 0.04%. See
+FAILURE_LOG.md F-015 and F-016, and decision P-008.
 
 Usage:
   python scripts/run_pilot.py --config configs/experiment/<pilot>.json \\
@@ -31,9 +38,55 @@ import time
 import traceback
 from pathlib import Path
 
+from human_data_budget.policies import spends_human_tokens
+from human_data_budget.runner.budget_matching import (
+    check_realised_budget_matching,
+    max_candidate_optimizer_tokens,
+)
 from human_data_budget.runner.real_chain import run_real_chain
 
 UNFROZEN = "AWAITING_JULY_31_FREEZE"
+
+
+def budget_report(pilot: dict, chains: list[dict]):
+    """Assert realised budget matching over ``chains`` using the pilot's own values.
+
+    The indivisibility bound comes from the frozen rescue-candidate manifest rather
+    than a constant, so it tracks the manifest the run actually drew from.
+    """
+    manifest = pilot["data"]["manifests"]["rescue_candidates"]["path"]
+    return check_realised_budget_matching(
+        chains,
+        lifetime_human_budget=pilot["lifetime_human_budget"],
+        indivisibility_bound=max_candidate_optimizer_tokens(manifest),
+        practical_effect_threshold_relative=pilot["practical_effect_threshold_relative"],
+        is_spending_arm=spends_human_tokens,
+    )
+
+
+def load_grid_chains(root: Path) -> list[dict]:
+    """Collect completed chains from every shard summary under ``root``.
+
+    Shards write one summary each so concurrent writers cannot clobber one another.
+    Reassembling them is what makes a whole-grid verdict possible after a sharded
+    run, which no single shard process is in a position to reach.
+    """
+    chains: list[dict] = []
+    seen: set[tuple[str, int]] = set()
+    for path in sorted(root.glob("pilot_summary*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        for chain in payload.get("chains", []):
+            if chain.get("status") != "complete":
+                continue
+            key = (chain["arm"], chain["seed"])
+            # A resumed shard can re-emit a chain another summary already carries.
+            # Counting it twice would not change min or max, but it would misreport
+            # how much of the grid the verdict actually covers.
+            if key in seen:
+                continue
+            seen.add(key)
+            chains.append(chain)
+    return chains
 
 
 def chain_config(pilot: dict, arm: str, seed: int) -> dict:
@@ -83,6 +136,12 @@ def main() -> int:
     parser.add_argument("--upstream-dir", type=Path)
     parser.add_argument("--shim-dir", type=Path)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--check-only", action="store_true",
+        help="run no chains; assert realised budget matching over every shard "
+             "summary already written under --output-dir, and exit non-zero if it "
+             "does not hold. This is the whole-grid verdict a sharded run needs.",
+    )
     parser.add_argument("--only-arm", help="run one arm; for debugging, not for a pilot")
     parser.add_argument(
         "--shard-index", type=int, default=0,
@@ -117,6 +176,22 @@ def main() -> int:
             "  set from a results freeze. A pilot launched against unfrozen values\n"
             "  produces chains nobody can certify."
         )
+
+    if args.check_only:
+        root = args.output_dir or Path(pilot["output_dir"])
+        chains = load_grid_chains(root)
+        expected = len(pilot["arms"]) * len(pilot["seeds"])
+        print(f"run_pilot --check-only: {pilot['run_id']}")
+        print(f"  {len(chains)} of {expected} chains found under {root}\n")
+        report = budget_report(pilot, chains)
+        print(report.render())
+        if len(chains) < expected:
+            # Reported, not failed. An operator checking a run in progress should see
+            # a real verdict on what exists; treating partial coverage as a violation
+            # would make the check useless until the last chain lands.
+            print(f"\n   INCOMPLETE: {expected - len(chains)} chain(s) missing. This "
+                  "verdict covers only the chains above.")
+        return 0 if report.ok else 1
 
     if args.upstream_dir:
         pilot["upstream_dir"] = str(args.upstream_dir)
@@ -197,18 +272,27 @@ def main() -> int:
     failed = [c for c in summary if c["status"] != "complete"]
     print(f"\n{len(complete)}/{total} chains complete in {elapsed/3600:.2f} h")
 
-    spends = {c["consumed_human_tokens"] for c in complete
-              if c.get("consumed_human_tokens") is not None}
-    if len(spends) > 1:
-        print("\n!! BUDGET MATCHING VIOLATED: arms consumed different lifetime")
-        print(f"   human-origin totals: {sorted(spends)}")
-        print("   PROTOCOL.md section 4 makes equal spend the fairness constraint;")
-        print("   this comparison is invalid until the cause is found.")
+    report = budget_report(pilot, complete)
+    print()
+    print(report.render())
+    if args.shard_count > 1:
+        print("   NOTE: this shard saw "
+              f"{len(complete)} of {total} chains. The authoritative check is over "
+              "the whole grid:")
+        print(f"   python scripts/run_pilot.py --config {args.config} "
+              f"--output-dir {root} --check-only")
 
     for chain in failed:
         print(f"  failed: {chain['arm']} seed {chain['seed']}: {chain['error']}")
     print(f"\nsummary: {root / name}")
-    return 1 if failed else 0
+    if failed:
+        return 1
+    # A sharded process sees a subset, so its verdict is advisory: failing the shard
+    # on a partial grid would abort three healthy shards over a spread that the full
+    # grid may not have. --check-only is what gates the comparison.
+    if not report.ok and args.shard_count == 1:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

@@ -26,6 +26,18 @@ This file records project choices. A decision is not evidence that the correspon
 | U-005 | Final contribution type? | Strength of theorem versus empirical evidence | Before paper drafting |
 | U-006 | Smallest scientifically meaningful effect? | Domain scale, prior variability, and mentor/statistics review | Before power analysis |
 
+**Evidence status, 2026-08-17.** The Stage A execution supplied the evidence named in the
+rows above for U-001 (positive-control behavior, compute forecast) and U-003
+(positive-control token accounting, screening feasibility). It is collected in
+`docs/evidence/stage_b_freeze_evidence.md`, which decides nothing — U-001 and U-003 remain
+open and remain Aarav's. U-004b is one ~50-second training run from having its evidence.
+U-005 and U-006 are unchanged and need human judgment.
+
+That document also puts arithmetic on assumption A7: at the measured cost, a pilot at
+WikiText-2 token scale is roughly 23 accelerator-hours, and a full WikiText-103 pilot is
+roughly 900. The subsample choice therefore dominates every other cost decision and couples
+U-002 to U-003.
+
 ## How to add a decision
 
 Record the date, alternatives considered, evidence available, chosen option, owner, and what future evidence would reverse the decision. Never silently change a frozen protocol.

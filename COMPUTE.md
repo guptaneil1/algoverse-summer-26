@@ -183,6 +183,34 @@ on the positive control's cost; if that scaling holds on Ampere-or-later hardwar
 is materially cheaper than the forecast row suggests. **Do not rewrite the forecast on this
 basis** — A7 remains the binding uncertainty, and corpus size, not hardware, dominates it.
 
+### Token accounting, 2026-08-17 run
+
+Derived from the committed `train_results.json` files as `train_samples` x `block_size`
+(512), i.e. tokenized blocks actually consumed by the optimizer, as `PROTOCOL.md` §3
+requires. Not a character or document estimate.
+
+| Arm | Per generation | Lifetime optimizer-consumed |
+|---|---:|---:|
+| `fully_synthetic` | 2,390,528 (all 11) | **26,295,808** |
+| `human_mixed` | 2,390,528 at gen 0; 4,781,056 at gens 1-10 | **50,201,088** |
+
+The mixed arm doubles from generation 1 because `human_data_alpha=1.0` appends the full
+human train split to every generation's data.
+
+**The pre-run estimate holds.** `configs/experiment/positive_control_fully_synthetic.json`
+carried `total_optimizer_tokens: 26400000` and `lifetime_human_budget: 2400000`, both marked
+`planned_estimate`. Measured: 26,295,808 and 2,390,528 respectively -- each within 0.4% of
+plan. The estimate's stated basis (~2.4M GPT-2 tokens in the WikiText-2 train split after
+block grouping, one epoch per generation) is confirmed, and assumption A1 is discharged for
+WikiText-2.
+
+**Training regime, observed.** All 11 generations of both arms invoke
+`--model_name_or_path openai-community/gpt2`. Every generation fine-tunes the pretrained
+base on that generation's data; the previous generation's checkpoint is consumed only by
+`generate.py` to produce the synthetic corpus. The recursion propagates through data, not
+through weights. This is evidence for `DECISIONS.md` U-001 and is recorded in
+`docs/evidence/stage_b_freeze_evidence.md`.
+
 ## Required accounting
 
 For each paper experiment, report:

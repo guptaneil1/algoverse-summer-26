@@ -75,6 +75,22 @@ def main() -> int:
         if config.get(key):
             config[key] = str(Path(config[key]).resolve())
 
+    # Upstream refuses to train into a non-empty output directory, and it does so
+    # only after loading the model and printing its full config -- so a stale
+    # directory from an earlier attempt surfaces as a wall of TrainingArguments
+    # followed by one line that matters. Stage A hit this twice, as FAILURE_LOG
+    # F-007 and F-009. Refuse here instead, with the command that fixes it.
+    if not args.dry_run and not args.resume and output_dir.exists():
+        occupied = [p for p in output_dir.iterdir() if p.name != "stdout_stderr.log"]
+        if occupied:
+            raise SystemExit(
+                f"run_real_chain: {output_dir} already holds output from an earlier "
+                "run.\n"
+                "  Upstream will not train into a non-empty directory.\n"
+                f"  Either resume it:   --resume\n"
+                f"  or clear it:        rm -rf {output_dir}"
+            )
+
     # Fail on a missing asset with a message that names it, rather than letting
     # subprocess raise FileNotFoundError on a bare relative path several frames
     # deep. The Stage A harness refuses the same way and for the same reason.

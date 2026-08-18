@@ -141,6 +141,18 @@ def run_real_chain(
     from human_data_budget.generation.real import real_generate_step  # noqa: PLC0415
     from human_data_budget.training.real import real_train_step  # noqa: PLC0415
 
+    # Corpus paths reach upstream as subprocess arguments, and upstream runs with
+    # cwd=upstream_dir (see runner/upstream_driver.run_upstream_step). A config's
+    # repo-relative "data/corpora/pilot_base.json" therefore resolves against the
+    # upstream checkout, where it does not exist. Absolutise here, against the
+    # process working directory, before any of the three reaches a command line.
+    # FAILURE_LOG.md F-017. The dry-run path cannot catch this: it prints the
+    # command instead of executing it, so a wrong path still reads as correct.
+    config = dict(config)
+    for key in ("base_corpus", "prompt_corpus", "test_corpus"):
+        if config.get(key):
+            config[key] = str(Path(config[key]).resolve())
+
     output_dir = Path(output_dir)
     experiment = output_dir / "upstream"
     tail_modes = tail_modes_from(config)

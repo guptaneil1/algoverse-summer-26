@@ -284,3 +284,16 @@ partition summary hashes. It is a re-freeze of Neil's Week 2 deliverable, not a 
 **Scientific consequence.** None yet: no Stage B chain has run. Discovering it after chains
 ran would have invalidated their budget matching silently, since nothing in the current test
 suite compares the two units.
+
+### F-011 — tail_retention's orientation contradicts the metric freeze (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B, pre-execution. Found while wiring the real evaluator |
+| Classification | **Specification conflict (this repository)** — two frozen documents disagree about what the primary metric consumes |
+| The conflict | `evaluation/tail.py` computes `clip(current / reference, 0, 1)` and documents "1.0 means the model preserves all tail coverage". That holds only if the scores rise as the model improves. The toy path satisfies it: `chain.py` passes `1.0 - undercoverage`. But `docs/evaluation/tail_retention_freeze.md` §3 specifies `reference_mode_scores` as each mode's **mean held-out NLL**, which rises as the model degrades |
+| Consequence if taken literally | A degraded model produces `current_nll / reference_nll > 1`, which clips to **1.0** — reporting perfect tail retention for the worst case, and monotonically *rewarding* degradation up to the clip. The primary outcome would be inverted and bounded in the wrong direction |
+| Demonstrated | `tests/evaluation/test_real_evaluation.py::test_a_degraded_model_scores_below_one_after_transform` asserts the raw-NLL path returns exactly 1.0 for a model whose tail NLL doubled, and 0.5 once the orientation is corrected |
+| Not silently resolved | `evaluation/real.py` emits raw per-mode NLL, which is unambiguous, and exposes `mode_nll_to_retention_scores` (the reciprocal) as a separate explicit call. Nothing converts implicitly |
+| Owner | Evaluation definition is Neil's. Either `tail.py`'s inputs are coverage-like and the freeze document's wording is wrong, or the freeze is right and `tail.py` needs an inversion. One of the two is incorrect as written |
+| Scientific consequence | None yet — no chain has evaluated through this path. Discovering it after a pilot ran would have inverted the confirmatory outcome, and no existing test would have caught it: the toy path only ever supplies coverage-like scores, so `tail.py` is exercised exclusively in the orientation that works |

@@ -297,3 +297,30 @@ suite compares the two units.
 | Not silently resolved | `evaluation/real.py` emits raw per-mode NLL, which is unambiguous, and exposes `mode_nll_to_retention_scores` (the reciprocal) as a separate explicit call. Nothing converts implicitly |
 | Owner | Evaluation definition is Neil's. Either `tail.py`'s inputs are coverage-like and the freeze document's wording is wrong, or the freeze is right and `tail.py` needs an inversion. One of the two is incorrect as written |
 | Scientific consequence | None yet — no chain has evaluated through this path. Discovering it after a pilot ran would have inverted the confirmatory outcome, and no existing test would have caught it: the toy path only ever supplies coverage-like scores, so `tail.py` is exercised exclusively in the orientation that works |
+
+
+### F-012 — the chain corpus contract is not raw text (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B screening, generation 0. Found by the first real chain execution |
+| Classification | **Implementation (this repository)** -- a defect in `scripts/build_base_corpus.py` as first written |
+| Failure | Generation 0 trained successfully, then `src/generate.py` exited 1 with `KeyError: 'context'` |
+| Cause | The corpus builder wrote bare `{"text": ...}` records. Upstream prompts from a `context` field and classifies a `cls_text` field, both produced by `load_data.py::process_dataset(train=True)`: block-group and tokenize, decode back to `text`, slice the leading `input_token_length` tokens into `context`, and the trailing remainder into `cls_text` |
+| Why it survived every earlier check | Training reads only `text`, so generation 0 completed and the fault surfaced one step later. The dry-run path never invokes upstream at all, and the Stage A shakedown used `load_data.py`'s own output, which already carried the fields |
+| Resolution | The builder now imports upstream's `group_texts_and_tokenize_data`, `decode`, `get_context` and `get_text_to_classify` and mirrors `process_dataset` step for step, rather than reimplementing the format. Verified: five test-partition examples produce 39 blocks carrying `text`, `context` and `cls_text`, with `context` the first 256 tokens |
+| Deliberately omitted | The detector pass. `cls_score` is read only under `data_selection=importance_sampling`, which this project overrides to `no-selection` (deviation 1), so omitting it saves a GPU pass over the corpus. Available behind `--classify` |
+| Scientific consequence | None. No chain completed, and the defect was in corpus preparation rather than in any computed quantity |
+
+
+### F-013 — evaluation corpora must not carry the training columns (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B screening, generation 1. Continues F-012 |
+| Failure | `DatasetGenerationCastError`: "1 new columns ({'context'}) and 3 missing columns ({'cls_confidence', 'cls_score', 'diversity'})", raised while reading `screening_test.json` |
+| Cause | Upstream loads `--train_file` and `--test_file` in one `load_dataset` call, which requires a consistent schema. Generation 0 passed because both corpora carried `text`/`context`/`cls_text`. From generation 1 the train file is a *generated* corpus carrying `cls_score`/`cls_confidence`/`diversity` and no `context`, so the test file's `context` became an unexpected extra column |
+| What upstream does | `load_data.py` calls `process_dataset(train=False)` for the validation and test splits, which skips `get_context` and `get_text_to_classify` entirely. Its `test.json` carries **only** `text`. Columns missing from the test file are tolerated; columns present only in the test file are not |
+| Resolution | `build_base_corpus.py --eval` mirrors `process_dataset(train=False)` and emits `text` alone. Verified: three test-partition examples produce 18 blocks whose only field is `text` |
+| Why generation 0 hid it | A schema mismatch cannot appear until the train file stops being the human base corpus, which happens exactly once, at the first recursive generation |
+| Scientific consequence | None. No chain completed, and the defect is in corpus preparation |

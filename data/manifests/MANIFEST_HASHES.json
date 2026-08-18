@@ -1,0 +1,73 @@
+{
+  "common_cutoff_tokens": 2661,
+  "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+  "exact_duplicates_cross_split": [
+    {
+      "cross_split": true,
+      "dropped_row": 239010,
+      "dropped_split": "train",
+      "kept_row": 4303,
+      "kept_split": "test"
+    }
+  ],
+  "exact_duplicates_dropped": 241,
+  "near_duplicate_pairs": [],
+  "partitions": {
+    "base_train": {
+      "example_count": 22637,
+      "manifest_file_sha256": "3d30c87abb185d7be316f0f96f86dab2d6119fc3fecb226905f878279b88379f",
+      "manifest_hash": "77d2793a28cc1cd58dc723cb386277d7aa59112b4d0af100e1a5a6d4af30c8e3",
+      "mode_counts": {
+        "common": 11321,
+        "mid": 9067,
+        "tail": 2249
+      },
+      "total_tokens": 80669290
+    },
+    "prompts": {
+      "example_count": 1359,
+      "manifest_file_sha256": "3440684559c2e98bce00d75713be1778053062ee4698b935e3ff1b7de7af75b5",
+      "manifest_hash": "e62501a937e691f61f629c0831b30ce00d77423ea3fc304340e86ab65ce32646",
+      "mode_counts": {
+        "common": 686,
+        "mid": 529,
+        "tail": 144
+      },
+      "total_tokens": 4811781
+    },
+    "rescue_candidates": {
+      "example_count": 4235,
+      "manifest_file_sha256": "964fe8f7af8226b0c83a44de090ea646f8b4608563553f43aaf4d34ac57e38b6",
+      "manifest_hash": "9dfe2c868fde517c7834d8d89b67a914ee6533289ecd3995b3b816c403e4708d",
+      "mode_counts": {
+        "common": 2105,
+        "mid": 1697,
+        "tail": 433
+      },
+      "total_tokens": 14864936
+    },
+    "test": {
+      "example_count": 60,
+      "manifest_file_sha256": "1d48dd2679fcb249f9874d600969d52a3f3670e25f2e399a72f342f029112287",
+      "manifest_hash": "fbd5ef709a40d1bc5d2caca70f2d2a378f353ba449a16e8cd844f65350cb7aeb",
+      "mode_counts": {
+        "common": 31,
+        "mid": 19,
+        "tail": 10
+      },
+      "total_tokens": 241211
+    },
+    "validation": {
+      "example_count": 60,
+      "manifest_file_sha256": "174117c506c4bc3fef778f31d8e853bf6ae7a658ff946f0fafd0eb859227a224",
+      "manifest_hash": "ee70202bc1c01bd3a507022a286db433c046508ae6d1200c0bf026c83e9fd87e",
+      "mode_counts": {
+        "common": 31,
+        "mid": 26,
+        "tail": 3
+      },
+      "total_tokens": 213886
+    }
+  },
+  "tail_cutoff_tokens": 1106.0
+}

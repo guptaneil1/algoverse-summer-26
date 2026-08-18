@@ -1,0 +1,57 @@
+{
+  "_what_this_is": "A pipeline-validation run, NOT a primary result and NOT a pilot. Its only purpose is to execute the real recursive chain end to end on a GPU so the wiring fails here rather than during a run that matters. Every scientific value below was chosen to be small and cheap, not to be correct. No number produced by this config may enter README.md, CLAIMS.md, an abstract, or a presentation (PROTOCOL.md section 5).",
+  "_why_it_needs_no_freeze": "stage is 'screening'. The three primary configurations remain AWAITING_JULY_31_FREEZE and are untouched by this file. scripts/run_real_chain.py allows screening and fixture stages through without a freeze and refuses every other stage that is still awaiting one.",
+  "_not_a_seed_from_the_primary_set": "chain_seed 9001 is deliberately outside the frozen primary seed set (101, 202, 303, 404, 505) so a screening artifact can never be mistaken for a primary chain or silently pooled with one.",
+
+  "schema_version": "1.0",
+  "run_id": "screening_pipeline_validation_seed9001",
+  "stage": "screening",
+  "budget_id": "screening-not-budget-matched",
+  "policy": "random",
+  "horizon": 3,
+  "chain_seed": 9001,
+
+  "_budget_units": "Both budgets are in optimizer tokens under the frozen GPT-2 tokenizer, per DECISIONS.md P-002 and FAILURE_LOG.md F-010b. They are NOT word counts. The rescue partition holds 17,289,136 optimizer tokens across 4,235 candidates, averaging roughly 4,082 each, so the figures below buy a handful of examples per generation.",
+  "lifetime_human_budget": 30000,
+  "per_generation_human_budget": 10000,
+  "total_optimizer_tokens": 20000000,
+
+  "upstream_dir": "upstream",
+  "rescue_manifest": "data/manifests/rescue_candidates.jsonl",
+  "validation_manifest": "data/manifests/validation.jsonl",
+  "base_corpus": "data/corpora/screening_base.json",
+  "test_corpus": "data/corpora/screening_test.json",
+
+  "_tail_modes": "From the frozen article_length_quantile definition (docs/data/mode_definition_audit.md). Mode assignment is in whitespace words and is unchanged by P-002.",
+  "tail_modes": ["tail"],
+
+  "model": {
+    "identifier": "openai-community/gpt2",
+    "revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e"
+  },
+
+  "_training_and_decoding": "Copied from the Stage A positive-control arm configs so the screening run exercises the same upstream invocation that reproduced published values on 2026-08-17.",
+  "training": {
+    "block_size": 512,
+    "loss_on_last_n_tokens": 256,
+    "batch_size": 8,
+    "num_train_epochs": 1,
+    "save_steps": 2000,
+    "torch_dtype": "bfloat16",
+    "low_cpu_mem_usage": true
+  },
+  "decoding": {
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 50
+  },
+  "detector": {
+    "tokenizer_name": "GeorgeDrayson/modernbert-ai-detection",
+    "model_path": "GeorgeDrayson/modernbert-ai-detection",
+    "ai_confidence_threshold": 0.8674598932266235,
+    "temperature": 1.359828233718872
+  },
+
+  "cuda_device": 0,
+  "shim_dir": "/workspace/shim"
+}

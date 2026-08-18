@@ -1,0 +1,15 @@
+{
+  "partitions": {
+    "base_train": {
+      "ratio": 1.1611276112632205,
+      "tokens": 93667340,
+      "words": 80669290
+    },
+    "prompts": {
+      "ratio": 1.1612573390185463,
+      "tokens": 5587716,
+      "words": 4811781
+    }
+  },
+  "tokenizer": "openai-community/gpt2"
+}

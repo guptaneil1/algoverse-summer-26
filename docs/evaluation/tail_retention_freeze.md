@@ -41,8 +41,34 @@ rather than a placeholder, on the reliability/independence grounds in §2.
 **Frozen reference-snapshot contract**, so this decision is actually actionable once a baseline
 exists: `reference_mode_scores: Mapping[str, float]` maps each tail mode name (`tail.py`'s
 `tail_modes` parameter, drawn from the frozen `article_length_quantile` definition —
-`docs/data/mode_definition_audit.md`) to that mode's mean held-out NLL on the generation-0
-baseline checkpoint, measured over the `validation` partition. It must be captured immediately
+`docs/data/mode_definition_audit.md`) to a **monotone-decreasing transform of** that mode's
+mean held-out NLL on the generation-0 baseline checkpoint, measured over the `validation`
+partition.
+
+> **Orientation correction, 2026-08-18 (`FAILURE_LOG.md` F-011).** This clause previously
+> read "to that mode's mean held-out NLL", i.e. the raw figure. That is inconsistent with
+> the metric it feeds and would invert the primary outcome. `tail.py` computes
+> `clip(current / reference, 0, 1)`; NLL *rises* as a model degrades, so a degraded model
+> yields a ratio above 1 that clips to **1.0** — reporting perfect retention for the worst
+> case, and rewarding degradation up to the clip.
+>
+> Four artifacts fix the orientation as higher-is-better and one did not: the implementation
+> in `evaluation/tail.py`; its docstring ("1.0 means the model preserves all tail coverage");
+> `tests/evaluation/test_metrics.py`, which asserts `tail_retention({"rare": 0.5},
+> {"rare": 1.0}, {"rare"}) == 0.5`, so a lower current score must give lower retention; and
+> the toy path in `runner/chain.py`, which passes `1.0 - undercoverage`. The wording here was
+> the outlier, so the wording is what changes.
+>
+> **What is not changed:** the frozen decision itself. `tail_retention` remains primary,
+> `nll_gap` secondary, the snapshot is still captured from the generation-0 baseline over the
+> `validation` partition, and the timing clause below still applies. Only the orientation of
+> the quantity is corrected.
+>
+> **Reference implementation:** `evaluation.real.mode_nll_to_retention_scores`, the
+> reciprocal `1 / max(nll, 1e-6)`. Any monotone-decreasing transform satisfies the contract;
+> the reciprocal is the one in the tree and is applied explicitly by the caller, never
+> implicitly. `evaluation.real.score_examples` continues to emit raw per-mode NLL so the
+> underlying measurement stays available unconverted. It must be captured immediately
 after the generation-0 evaluation and before generation 1 begins, and persisted before it can be
 overwritten by later-generation state. Wiring that capture and persistence into the runner
 (where the file lives, what triggers the write) is a runner-ownership implementation task, not

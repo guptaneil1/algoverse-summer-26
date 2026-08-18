@@ -372,6 +372,32 @@ Consequences, stated plainly:
 - This is an infrastructure limitation of the executing host, not a protocol violation. It
   is recorded in `FAILURE_LOG.md` as `PC-2026-08-07-H`.
 
+### 6.2 Deviations specific to the 2026-08-17 rerun (RTX 4090)
+
+Deviations 1–11 above describe the **2026-08-07 T4 execution**. This subsection records the
+second execution, which differs on five of them. Nothing above is edited; both runs stand.
+
+**Carried over unchanged:** 1 (`data_selection=no-selection`), 2 (horizon 11), 3
+(`wandb_disabled=true` in the arm config), 6 (one generation at a time), 9
+(`--self_bleu_n_sample 50`).
+
+| # | Deviation | Reason | Effect on the comparison |
+|---|---|---|---|
+| 12 | **Resolves #4.** `transformers` pinned to `4.48.3` explicitly, not installed from git main | The environment freeze in `PROTOCOL.md` §2 now names exact versions | **Improvement.** The reproducibility hazard #4 flags is closed for this run: torch 2.8.0+cu128, transformers 4.48.3, datasets 3.2.0, accelerate 1.2.1, Python 3.12.3 |
+| 13 | **Resolves #5.** GPT-2 model/tokenizer revision resolved and recorded as `607a30d783dfa663caf39e06633721c8d4cfcd7e` | Verified on the run host before launch; identical to the value already pinned in both arm configs | **Improvement.** Confirms the upstream model has not moved since the first run |
+| 14 | **Contradicts #7.** `--no-shared-generation-zero`: each arm computed its own generation 0 | Forced by F-008 — `--prune-models` deletes generation 0's checkpoint during the `fully_synthetic` arm, so the shared baseline was unavailable | Minor. Both arms ran upstream's identical iteration-0 command with seed 42. Observed: 29.58853 vs 29.59030, a 0.006% spread. This is an unplanned determinism check and it passed; the arms no longer share a bit-identical baseline by construction |
+| 15 | **Contradicts #8.** `--prune-models` **was** passed | Host storage management | Material for verification of superseded checkpoints only. Hashes were written before deletion and `verify_recorded_hashes` passed on this execution |
+| 16 | **Contradicts #10.** wandb suppressed by the `sitecustomize` shim, not by environment variables | Env vars alone did **not** work here: with none set the run crashed at `train.py:683` (F-006); `wandb.init(mode='disabled')` via shim succeeded. See F-007 for the `sys.path` shadowing that made the first shim placement inert | None on any frozen quantity. **Note:** this does not resolve `report.md` §6, because the env-var-only configuration was never cleanly tested — the one attempt failed earlier on a stale output directory (F-007). wandb version here: 0.28.2 |
+| 17 | **Contradicts #11.** Artifacts retained through the run; hash verification executed and passed | Persistent volume on a non-ephemeral host, rather than a reclaimed Kaggle container | **Improvement.** Acceptance criterion 6 is satisfied by execution rather than by argument: the driver regenerated `observed_table.md` from saved metrics and verified every recorded hash |
+| 18 | Hardware: 1× RTX 4090, compute capability 8.9, native bfloat16 | Available host | None on any computed quantity. The T4 (cc 7.5) has no bf16 tensor cores and emulated the dtype; this run executes it natively. Cost fell from ~19.0 accelerator-hours to ~1.52 h |
+
+**Harness defects surfaced by this run**, all recorded in `FAILURE_LOG.md` and none affecting
+computed results: F-006 (upstream wandb guard), F-007 (`sitecustomize` shadowing and a stale
+output directory), F-008 (`--prune-models` destroys the shared generation 0 — these two flags
+are mutually incompatible and nothing warns), F-009 (a generation is marked complete before
+its artifacts are confirmed present).
+
+
 ## 7. Known limitation: no tail-retention measure in Stage A
 
 `schemas/chain_result.schema.json` and `schemas/evaluation.schema.json` both require a

@@ -16,6 +16,16 @@ This file records project choices. A decision is not evidence that the correspon
 | D-010 | 2026-08-07 | Hold Stage A's decision at `valid_with_limitation` although the frozen decision table's `valid` row is satisfied | `FAILURE_LOG.md` `PC-2026-08-03-B`, written 2026-08-03 before the numbers were known, set that ceiling for a run completed before the published values existed. This run is that case. Lifting the ceiling after seeing that the numbers agree is the move the protocol exists to prevent. | Active, and **reversible only by explicit written team decision** citing `expected_vs_observed.md` §5. Not to be changed by relabelling. |
 | D-011 | 2026-08-07 | Do not retro-edit run records to mark lost artifacts as `pruned` | 42 artifacts were hashed at run time and then lost when the ephemeral host was reclaimed (`PC-2026-08-07-H`). `--prune-models` was never passed, so `pruned: false` was true when the driver wrote it. Marking them pruned would make the adapter's ingest succeed at the cost of a false record. | Active. Loss inventoried separately in `measurements/artifact_retention.json`. |
 
+## Proposed decisions awaiting ratification
+
+Made because the evidence left one defensible reading, not because the owner agreed. Each
+records what would reverse it. **Ratify or override; do not leave pending silently.**
+
+| ID | Date | Proposed by | Decision | Evidence | Reverses if |
+|---|---|---|---|---|---|
+| P-002 | 2026-08-18 | Assistant (Ronit's session) | The budget is denominated in `optimizer_token_count` (frozen GPT-2 tokenizer), added as a second field. `token_count` stays the whitespace word count and keeps driving the frozen `article_length_quantile` mode definition. `candidates_from_manifest` refuses an example lacking the new field rather than falling back. | `PROTOCOL.md` §3 forbids estimated counts and `models.Candidate` documents optimizer tokens, so the budget cannot be words. `docs/data/mode_definition_audit.md:30` names the "whitespace-split rule" as part of the frozen mode definition, so the mode unit should not move. Measured divergence 1.096-1.318x per example (`FAILURE_LOG.md` F-010b). Partition hashes verified unchanged, since `_manifest_hash` covers only `[example_id, content_hash]`. | Neil determines the mode definition should also move to BPE, in which case the cutoffs re-freeze and `token_count` is recomputed. That is a scientific re-freeze, deliberately not done here. |
+| P-001 | 2026-08-18 | Assistant (Ronit's session) | `tail_retention`'s reference and current mode scores are a **monotone-decreasing transform of** mean held-out NLL, not raw NLL. `docs/evaluation/tail_retention_freeze.md` §3 amended; reference implementation `evaluation.real.mode_nll_to_retention_scores`. | Four artifacts fix higher-is-better against one that did not: `evaluation/tail.py`'s `clip(current/reference, 0, 1)`; its docstring; `tests/evaluation/test_metrics.py` asserting `({"rare":0.5},{"rare":1.0}) -> 0.5`; and `runner/chain.py` passing `1.0 - undercoverage`. Raw NLL would clip a degraded model to 1.0 — see `FAILURE_LOG.md` F-011. | Neil determines `tail.py` should invert instead, making raw NLL the correct input. The frozen decision (ratio-based primary, gen-0 snapshot, validation partition) is untouched either way. |
+
 ## Unresolved decisions
 
 | ID | Question | Evidence needed | Decision deadline |
@@ -25,6 +35,18 @@ This file records project choices. A decision is not evidence that the correspon
 | U-004b | Exact `nll_threshold_candidate` value? | Baseline NLL distribution on the validation partition from a real generation-0 model | Before primary outcomes are opened. Narrowed 2026-08-08 from U-004: the metric *choice* (`tail_retention`, ratio-based, primary) is now frozen — `docs/evaluation/tail_retention_freeze.md`. Only the numeric threshold, which needs a real baseline model that does not exist yet, remains open. |
 | U-005 | Final contribution type? | Strength of theorem versus empirical evidence | Before paper drafting |
 | U-006 | Smallest scientifically meaningful effect? | Domain scale, prior variability, and mentor/statistics review | Before power analysis |
+
+**Evidence status, 2026-08-17.** The Stage A execution supplied the evidence named in the
+rows above for U-001 (positive-control behavior, compute forecast) and U-003
+(positive-control token accounting, screening feasibility). It is collected in
+`docs/evidence/stage_b_freeze_evidence.md`, which decides nothing — U-001 and U-003 remain
+open and remain Aarav's. U-004b is one ~50-second training run from having its evidence.
+U-005 and U-006 are unchanged and need human judgment.
+
+That document also puts arithmetic on assumption A7: at the measured cost, a pilot at
+WikiText-2 token scale is roughly 23 accelerator-hours, and a full WikiText-103 pilot is
+roughly 900. The subsample choice therefore dominates every other cost decision and couples
+U-002 to U-003.
 
 ## How to add a decision
 

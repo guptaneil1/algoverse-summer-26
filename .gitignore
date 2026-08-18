@@ -3,10 +3,17 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+# Build-time corpus download for scripts/build_wikitext103_manifests.py.
+# ~300 MB of parquet, two files over GitHub's 100 MB limit. The manifests it
+# produces are committed; the corpus it reads never is (data/README.md).
+.cache/
 .ruff_cache/
 .mypy_cache/
 .venv/
 venv/
+# Any suffixed variant too: .venv-clean, .venv-tok, .venv-modern and friends
+# are throwaway build/verification environments, never repository content.
+.venv*/
 
 # Local configuration and credentials
 .env
@@ -42,6 +49,14 @@ data/*
 !data/manifests/
 data/manifests/*
 !data/manifests/README.md
+# The frozen partition manifests are the scientific artifact, not build output:
+# PROTOCOL.md section 3 requires stable IDs and content hashes to be immutable
+# inputs to analysis, and a reproduction cannot verify partitions it cannot read.
+# They are text-free by construction (data/README.md), so committing them
+# publishes hashes and token counts, never corpus bytes. ~6.5 MB total.
+!data/manifests/*.jsonl
+!data/manifests/MANIFEST_HASHES.json
+!data/manifests/OPTIMIZER_TOKEN_COUNTS.json
 !data/fixtures/
 data/fixtures/*
 !data/fixtures/toy_corpus.jsonl

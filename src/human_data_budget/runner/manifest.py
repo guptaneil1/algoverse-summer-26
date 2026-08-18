@@ -135,6 +135,46 @@ def _check_records(partition: str, records: list[dict[str, Any]]) -> list[dict[s
     return records
 
 
+#: Reverse of ``_DATA_MODULE_PARTITIONS``: the name a config's ``data.manifests``
+#: block uses, mapped to the canonical name the validator expects.
+_MANIFEST_PARTITION_BY_DATA_MODULE: dict[str, str] = {
+    module_name: canonical for canonical, module_name in _DATA_MODULE_PARTITIONS.items()
+}
+
+
+def _partition_manifests_from_declared(
+    declared: dict[str, Any],
+) -> dict[str, str] | None:
+    """Derive partition sources from a config's ``data.manifests`` block.
+
+    An experiment config names its five frozen partitions under ``manifests``, keyed by
+    the ``data/`` module's vocabulary and carrying a path and a manifest hash. That is
+    the same provenance ``partition_manifests`` declares, in a different shape and
+    vocabulary, so a config already naming its partitions should not have to name them
+    twice.
+
+    FAILURE_LOG.md F-019: without this the pilot config declared its partitions and the
+    manifest builder did not recognise them, so every chain emitted no
+    ``data.partitions`` and classified ``invalid`` with ``SEPARATION_MISSING_PROVENANCE``
+    -- F-004 recurring on the real-chain path.
+
+    Unrecognised keys are ignored rather than refused: ``manifests`` is a config-facing
+    block that may legitimately name things this mapping does not cover. Returning
+    ``None`` when nothing is recognised preserves ``build_partitions``'s contract that a
+    run with no provenance source keeps classifying ``invalid``.
+    """
+
+    sources: dict[str, str] = {}
+    for name, entry in declared.items():
+        canonical = _MANIFEST_PARTITION_BY_DATA_MODULE.get(name)
+        if canonical is None:
+            continue
+        path = entry.get("path") if isinstance(entry, dict) else entry
+        if path:
+            sources[canonical] = path
+    return sources or None
+
+
 def _load_partition_manifests(sources: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
     """Load canonical partitions from JSONL manifests owned by ``data/``.
 
@@ -181,6 +221,13 @@ def build_partitions(data_config: dict[str, Any]) -> dict[str, list[dict[str, An
 
     inline = data_config.get("partitions")
     sources = data_config.get("partition_manifests")
+
+    # Lowest precedence: an explicit partition_manifests block still wins, so this
+    # cannot change the meaning of a config that already declares one.
+    if not inline and not sources:
+        declared = data_config.get("manifests")
+        if isinstance(declared, dict):
+            sources = _partition_manifests_from_declared(declared)
 
     if inline and sources:
         raise ManifestProvenanceError(

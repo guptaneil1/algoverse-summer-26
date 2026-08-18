@@ -311,3 +311,16 @@ suite compares the two units.
 | Resolution | The builder now imports upstream's `group_texts_and_tokenize_data`, `decode`, `get_context` and `get_text_to_classify` and mirrors `process_dataset` step for step, rather than reimplementing the format. Verified: five test-partition examples produce 39 blocks carrying `text`, `context` and `cls_text`, with `context` the first 256 tokens |
 | Deliberately omitted | The detector pass. `cls_score` is read only under `data_selection=importance_sampling`, which this project overrides to `no-selection` (deviation 1), so omitting it saves a GPU pass over the corpus. Available behind `--classify` |
 | Scientific consequence | None. No chain completed, and the defect was in corpus preparation rather than in any computed quantity |
+
+
+### F-013 — evaluation corpora must not carry the training columns (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B screening, generation 1. Continues F-012 |
+| Failure | `DatasetGenerationCastError`: "1 new columns ({'context'}) and 3 missing columns ({'cls_confidence', 'cls_score', 'diversity'})", raised while reading `screening_test.json` |
+| Cause | Upstream loads `--train_file` and `--test_file` in one `load_dataset` call, which requires a consistent schema. Generation 0 passed because both corpora carried `text`/`context`/`cls_text`. From generation 1 the train file is a *generated* corpus carrying `cls_score`/`cls_confidence`/`diversity` and no `context`, so the test file's `context` became an unexpected extra column |
+| What upstream does | `load_data.py` calls `process_dataset(train=False)` for the validation and test splits, which skips `get_context` and `get_text_to_classify` entirely. Its `test.json` carries **only** `text`. Columns missing from the test file are tolerated; columns present only in the test file are not |
+| Resolution | `build_base_corpus.py --eval` mirrors `process_dataset(train=False)` and emits `text` alone. Verified: three test-partition examples produce 18 blocks whose only field is `text` |
+| Why generation 0 hid it | A schema mismatch cannot appear until the train file stops being the human base corpus, which happens exactly once, at the first recursive generation |
+| Scientific consequence | None. No chain completed, and the defect is in corpus preparation |

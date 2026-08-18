@@ -70,6 +70,15 @@ def main() -> None:
     parser.add_argument("--block-size", type=int, default=512)
     parser.add_argument("--loss-on-last-n-tokens", type=int, default=256)
     parser.add_argument("--tokenizer", default="openai-community/gpt2")
+    parser.add_argument(
+        "--eval",
+        action="store_true",
+        help="build an evaluation corpus carrying only 'text', mirroring "
+        "load_data.py::process_dataset(train=False). Required for test and "
+        "validation: upstream loads train_file and test_file together and rejects "
+        "columns present in one and absent from the other, and generated corpora "
+        "carry cls_score/cls_confidence/diversity rather than context/cls_text.",
+    )
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
 
@@ -117,31 +126,38 @@ def main() -> None:
     dataset = dataset.map(
         lambda e: decode(e, tokenizer, "text", "input_ids"), desc="decode text"
     )
-    dataset = dataset.map(
-        lambda e: get_context(
-            e,
-            input_token_length,
-            input_ids_key="context_input_ids",
-            attention_mask_key="context_attention_mask",
-        ),
-        desc="context",
-    )
-    dataset = dataset.map(
-        lambda e: get_text_to_classify(e, input_token_length), desc="cls slice"
-    )
-    dataset = dataset.map(
-        lambda e: decode(e, tokenizer, "context", "context_input_ids"),
-        desc="decode context",
-    )
-    dataset = dataset.map(
-        lambda e: decode(e, tokenizer, "cls_text", "cls_input_ids"),
-        desc="decode cls_text",
-    )
 
-    records = [
-        {"text": row["text"], "context": row["context"], "cls_text": row["cls_text"]}
-        for row in dataset
-    ]
+    if args.eval:
+        # process_dataset(train=False): text only. An evaluation corpus must not
+        # carry context or cls_text, because from generation 1 onward the train
+        # file is a generated corpus that has neither, and upstream rejects a
+        # column present in one file and absent from the other.
+        records = [{"text": row["text"]} for row in dataset]
+    else:
+        dataset = dataset.map(
+            lambda e: get_context(
+                e,
+                input_token_length,
+                input_ids_key="context_input_ids",
+                attention_mask_key="context_attention_mask",
+            ),
+            desc="context",
+        )
+        dataset = dataset.map(
+            lambda e: get_text_to_classify(e, input_token_length), desc="cls slice"
+        )
+        dataset = dataset.map(
+            lambda e: decode(e, tokenizer, "context", "context_input_ids"),
+            desc="decode context",
+        )
+        dataset = dataset.map(
+            lambda e: decode(e, tokenizer, "cls_text", "cls_input_ids"),
+            desc="decode cls_text",
+        )
+        records = [
+            {"text": row["text"], "context": row["context"], "cls_text": row["cls_text"]}
+            for row in dataset
+        ]
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(records, indent=4), encoding="utf-8")
@@ -162,7 +178,11 @@ def main() -> None:
                 "word_count": words,
                 "optimizer_token_count": tokens,
                 "every_content_hash_verified": True,
-                "preprocessing": "upstream load_data.py process_dataset(train=True)",
+                "fields": sorted(records[0]) if records else [],
+                "preprocessing": (
+                    "upstream load_data.py process_dataset("
+                    f"train={not args.eval})"
+                ),
             },
             indent=2,
             sort_keys=True,

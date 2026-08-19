@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 import traceback
@@ -217,8 +218,21 @@ def main() -> int:
         pilot["upstream_dir"] = str(args.upstream_dir)
     if args.shim_dir:
         pilot["shim_dir"] = str(args.shim_dir)
-    if args.cuda_device is not None:
-        pilot["cuda_device"] = args.cuda_device
+    # Pin this whole process, not just its subprocesses. `run_upstream_step` sets
+    # CUDA_VISIBLE_DEVICES for the children it spawns, but the evaluation step runs
+    # *here*: real_chain._evaluate calls evaluation.real.score_examples, which resolves
+    # to "cuda" -- physical device 0 unless the environment says otherwise. So every
+    # shard evaluated on GPU 0 whatever --cuda-device said, four CUDA contexts and two
+    # workloads landed on one card, and the detector OOMed during generation.
+    # FAILURE_LOG.md F-025.
+    if "CUDA_VISIBLE_DEVICES" in os.environ:
+        # A caller already pinned us. The single visible device is index 0 to us and to
+        # anything we spawn; passing the physical index through would name a device the
+        # children cannot see.
+        pilot["cuda_device"] = 0
+    elif args.cuda_device is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(args.cuda_device)
+        pilot["cuda_device"] = 0
     pilot["preprocessing_workers"] = args.preprocessing_workers
 
     root = args.output_dir or Path(pilot["output_dir"])

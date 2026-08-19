@@ -547,3 +547,17 @@ suite compares the two units.
 | Cost | Zero, and one avoided false stop. The chain that exposed it had already passed |
 | Scientific consequence | None directly. The risk it carried was procedural and severe: the documented contract for the project's own certification tool said the opposite of what the tool does |
 | Lesson | Fourth instance of the shape F-016, F-018 and F-020 share --- documented intent diverging from implementation with nothing asserting the two agree. Here the divergence was inside a single file, between its docstring and a constant forty lines below it |
+
+### F-025 — `--cuda-device` pinned the subprocesses but not the process that evaluates (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Stage | v2 grid, roughly one hour in. 12 of 25 chains failed, one shard exited, 2 completed |
+| Observation | `torch.OutOfMemoryError: CUDA out of memory` raised inside the ModernBERT detector during the generation step. The message names **all four shard processes holding memory on GPU 0** -- `Process 15855 has 1.35 GiB`, and the same for 15856, 15857, 15858 -- despite two of them being launched with `--cuda-device 1` |
+| Cause | `runner/upstream_driver.step_environment` sets `CUDA_VISIBLE_DEVICES` for the **subprocesses** it spawns, and that part worked. But the evaluation step does not run in a subprocess: `real_chain._evaluate` calls `evaluation.real.score_examples` **in the launcher process**, and that resolves `device` to `"cuda"`, which means physical device 0 whenever the environment does not say otherwise. The launcher never set `CUDA_VISIBLE_DEVICES` for itself. So every shard evaluated on GPU 0 regardless of its assignment: four CUDA contexts plus two real workloads on one 23.5 GiB card, and the detector's allocation was the one that did not fit |
+| Contributing decision | Two shards per GPU was adopted on the basis that a chain peaked at ~8 GiB against 24 GiB. That arithmetic was right for the *subprocess* and blind to the parent's evaluation footprint, which the same reasoning had already been told about -- `score_examples` loads a model in-process, and that is visible in the source |
+| Consequence | 12 chains failed, one shard exited, roughly an hour of two-GPU time spent. **Nothing scientific was lost**: completed chains are skipped on relaunch and interrupted ones resume from their last checkpoint |
+| Fixed | `scripts/run_pilot.py` now pins its own process. If `CUDA_VISIBLE_DEVICES` is already set by the caller it respects it and addresses the single visible device as index 0; otherwise it sets the variable from `--cuda-device` and passes 0 downstream. Parent and children then land on the same physical GPU |
+| Immediate workaround, no pull needed | Prefix each shard with `CUDA_VISIBLE_DEVICES=$i` and pass `--cuda-device 0` |
+| Why nothing caught it | No test runs two shards concurrently on real hardware, and none could -- CI has no GPU. The dry run does not evaluate. This is a class the project cannot test locally and can only meet on a pod |
+| Lesson | The device-pinning contract was implemented at the subprocess boundary and reasoned about as though it covered the whole chain. Evaluation is the one step that runs in-process, and it is the step that loads a second model. A resource plan built from the subprocess's peak was measuring the wrong process |

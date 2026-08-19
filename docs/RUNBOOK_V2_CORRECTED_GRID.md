@@ -14,8 +14,8 @@ running command.
 
 | Step | Stop if |
 |---|---|
-| 12 | Not `793 passed`, not `budget: 400`, or fewer than 2 GPUs |
-| 17 | `ALL 400: False` ← **this one saves you $20** |
+| 12 | Not `795 passed`, not `budget: match_synthetic`, or fewer than 2 GPUs |
+| 17 | Corpus sizes not all equal ← **this one already saved $20 once (F-023)** |
 | 18 | You see `BUDGET_TOTAL_MISMATCH`, or `EXIT=2` |
 
 ---
@@ -83,8 +83,8 @@ nvidia-smi -L
 nproc
 ```
 
-Must show: `793 passed` (or more), `budget: 400`, two lines starting `GPU 0` and `GPU 1`,
-and a CPU count. **Note the CPU count** — you need it in Step 16.
+Must show: `795 passed` (or more), `budget: match_synthetic`, two lines starting `GPU 0`
+and `GPU 1`, and a CPU count. **Note the CPU count** — you need it in Step 16.
 
 ---
 
@@ -159,12 +159,19 @@ import json, glob
 sizes = [len(json.load(open(f))) for f in sorted(glob.glob(
     "/workspace/v2_smoke/selection_only/seed101/upstream/*/data.json"))]
 print("sizes:", sizes)
-print("ALL 400:", all(s == 400 for s in sizes[1:]))
+later = sizes[2:]
+print("ALL EQUAL:", len(set(later)) == 1 if later else False)
+print("value:", later[0] if later else None)
 PY
 ```
 
-- **`ALL 400: True`** → continue.
-- **`ALL 400: False`** → **STOP.** Send me the `sizes:` line. The grid would waste $20.
+- **`ALL EQUAL: True`** → continue. The value should be in the low thousands — the decode
+  size — not a few hundred.
+- **`ALL EQUAL: False`** → **STOP.** Send me the `sizes:` line.
+
+The sizes must be identical *to each other*; the specific number is whatever the decode
+produces. A fixed target of 400 was tried first and was wrong by a factor of eight
+(F-023), which is why the config now says `match_synthetic` instead of naming a number.
 
 **Step 18. Stop-point three.**
 

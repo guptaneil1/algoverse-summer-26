@@ -6,11 +6,16 @@
 The pilot grid completed: five policies crossed with the \PilotSeeds{} preregistered
 seeds, \PilotChains{} independently seeded chains, each run to the frozen horizon of
 \PilotHorizon{} generations, in \PilotWallHours{} hours of wall time on four
-accelerators. Every chain completed, none failed, and every one passes the artifact
-validator at \texttt{valid\_with\_limitation}. The two recorded limitations are that the
+accelerators. Every chain completed and none failed.
+
+Certification is mixed, and the split is informative. Fifteen chains classify
+\texttt{valid\_with\_limitation}; ten classify \texttt{invalid} on budget grounds --- the
+five joint chains on both budget axes, and the five selection-only chains on total
+optimizer tokens alone. The limitations recorded on the remaining fifteen are that the
 realised token ledger was compared against the frozen budget rather than recomputed from
-batch records, and that near-duplicate coverage was not rescanned at validation time.
-Neither is a blocking condition.
+batch records, and that near-duplicate coverage was not rescanned at validation time;
+neither is blocking. The budget failures are, and the subsections below treat them as
+such.
 
 \subsection{The primary comparison is not established}
 
@@ -24,8 +29,8 @@ policies consumed between \PilotMatchedLow{} and \PilotMatchedHigh{} optimizer t
 against a \PilotCeiling{} ceiling, a spread of \PilotMatchedSpreadPct\% and within one
 indivisible candidate. The joint policy consumed \PilotJointSpend{} at every seed --- a
 shortfall of \PilotJointShortfall{} tokens, or \PilotJointShortfallPct\%, where the
-largest single candidate in the frozen pool costs a small fraction of that. Indivisibility
-does not explain a gap of this size.
+largest single candidate in the frozen pool costs a small fraction of that.
+Indivisibility does not explain a gap of this size.
 
 The cause is an implementation defect in terminal budget reconciliation, found after the
 run and recorded in the project's failure log. The reconciliation raised the joint
@@ -57,8 +62,8 @@ violates the fairness constraint.}
 
 The pilot's stated purpose was to estimate between-chain variance so that a powered study
 can be sized; the project's compute gate blocks that study until the estimate exists. This
-quantity is measured \emph{within} arms and is therefore unaffected by the cross-arm spend
-gap.
+quantity is measured \emph{within} arms and is therefore unaffected by the cross-arm
+budget gaps.
 
 Between-chain variation is substantially smaller than the design assumed. Coefficients of
 variation on the primary outcome range from \PilotCVLow\% to \PilotCVHigh\% across the
@@ -78,27 +83,42 @@ underspent, so whether a correctly spending joint policy exhibits comparable var
 not established here. The four other arms spent as designed and their variance estimates
 carry no such qualification.
 
-\subsection{Secondary comparisons}
+\subsection{Secondary comparisons, and a second constraint}
 
-Excluding the joint policy, the remaining chains satisfy the fairness constraint at a
-\PilotMatchedSpreadPct\% spread. Contrasts among them are budget-matched and
-interpretable. Paired by seed, with intervals from a paired $t$ distribution on four
-degrees of freedom:
+The fairness constraint has two axes: matched lifetime human-origin tokens \emph{and}
+matched total optimizer tokens. Only the first was asserted before or during the run.
+Excluding the joint policy, the remaining chains satisfy that first axis at a
+\PilotMatchedSpreadPct\% spread --- but realised \emph{totals} span \PilotTotalSpreadPct\% across arms,
+above the practical threshold. Applying both axes pairwise leaves exactly one matched
+contrast.
 
 \begin{itemize}
-\item Selection-only improves on fresh random by \PilotSelRandPct\% of the random arm's
-      outcome, $95\%$ CI $[\PilotSelRandLow, \PilotSelRandHigh]$ in outcome units,
-      excluding zero by a wide margin.
-\item Schedule-only does \emph{not} differ detectably from fresh random:
+\item \textbf{Schedule-only against fresh random} is matched on both axes (human
+      \PilotSchedRandHumanPct\%, total \PilotSchedRandTotalPct\%). It does \emph{not} differ
+      detectably:
       \PilotSchedRandPct\%, $95\%$ CI $[\PilotSchedRandLow, \PilotSchedRandHigh]$, an
-      interval containing zero and lying entirely inside the practical equivalence region.
-\item Spending the budget at all improves on spending none by \PilotRandNonePct\%,
-      $95\%$ CI $[\PilotRandNoneLow, \PilotRandNoneHigh]$.
+      interval containing zero and lying inside the practical equivalence region.
+      \textbf{At this budget and horizon, when the budget is spent does not detectably
+      change the outcome.} This is the one comparison the run supports, and it is a null.
+
+\item \textbf{Selection-only against fresh random} shows a \PilotSelRandPct\% advantage,
+      $95\%$ CI $[\PilotSelRandLow, \PilotSelRandHigh]$, but arrives with
+      \PilotSelRandTotalPct\% more
+      total training tokens in the same direction as the effect. At roughly five times the
+      confound it is suggestive; it is not budget-matched, and we do not report it as a
+      result. Separating selection from training volume requires a run in which totals are
+      matched by construction.
+
+\item \textbf{Spending against not spending} improves the outcome by
+      \PilotRandNonePct\%, $95\%$ CI $[\PilotRandNoneLow, \PilotRandNoneHigh]$, measured
+      against a control that by construction spends no human tokens and is therefore not
+      budget-matched to anything.
 \end{itemize}
 
-Read together, these indicate that at this budget and horizon the choice of \emph{which}
-examples to spend on moves the outcome substantially while the choice of \emph{when} to
-spend does not.
+That the total-token axis went unasserted is a finding about the apparatus rather than
+about allocation, and we report it as one: a guard that checks one of two named conditions
+reports success for the one it checks. It is recorded in the project's failure log, and
+the check now asserts both axes.
 
 \paragraph{These are secondary and cannot substitute for the primary analysis.} The
 preregistration states that there is one central budget, horizon, primary outcome and
@@ -119,8 +139,10 @@ is unknown.
 \includegraphics[width=\linewidth]{../results/figures/pilot_nll_by_generation}
 \caption{Held-out human NLL against generation for each allocation policy, mean over the
 frozen seed set with a min--max band. Every policy that spends its budget ends below the
-no-rescue control. The joint trajectory is shown for completeness and is not comparable:
-it consumed \PilotJointShortfallPct\% fewer human tokens than the other spending arms.}
+no-rescue control. Two trajectories are shown for completeness and are not
+budget-matched: joint consumed \PilotJointShortfallPct\% fewer human tokens than the other
+spending arms, and selection-only consumed \PilotSelRandTotalPct\% more total
+optimizer tokens.}
 \label{fig:pilot-nll}
 \end{figure}
 

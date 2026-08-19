@@ -153,6 +153,81 @@ def test_indivisibility_bound_matches_the_frozen_manifest():
     assert bound == BOUND
 
 
+class TestTotalTokenAxis:
+    """PROTOCOL.md section 4 names two axes; only one was ever asserted.
+
+    FAILURE_LOG.md F-021. The executed pilot passed the human-token check and its totals
+    differed by 2.26% -- above the practical effect threshold -- so three documents
+    recorded the comparison as budget-matched when it was matched on one axis of two.
+    """
+
+    # Realised totals from the executed grid, 2026-08-19.
+    MEASURED = {
+        "no_rescue": 16_678_912,
+        "schedule_only": 16_773_427,
+        "random": 16_777_421,
+        "joint": 17_025_024,
+        "selection_only": 17_063_936,
+    }
+
+    def grid(self, arms):
+        return [
+            {
+                "arm": arm,
+                "seed": 101,
+                # Human spend at the matched value so only the total axis can fail.
+                "consumed_human_tokens": 0 if arm == "no_rescue" else 749_866,
+                "consumed_total_tokens": self.MEASURED[arm],
+            }
+            for arm in arms
+        ]
+
+    def test_measured_grid_fails_on_totals(self):
+        """The regression: human matched, totals not, and the guard must say so."""
+        report = check(self.grid(self.MEASURED))
+        assert not report.ok
+        assert any("total optimizer tokens span" in f for f in report.failures)
+
+    def test_excluding_joint_still_fails_on_totals(self):
+        """Dropping the human-axis offender does not rescue the comparison.
+
+        This is the claim F-021 corrects: the twenty non-joint chains were described as
+        budget-matched, and on the total axis they are not.
+        """
+        report = check(self.grid(["no_rescue", "random", "schedule_only", "selection_only"]))
+        assert not report.ok
+        assert any("total optimizer tokens span" in f for f in report.failures)
+
+    def test_the_one_clean_pair_holds(self):
+        """random vs schedule_only is matched on both axes and must pass."""
+        report = check(self.grid(["random", "schedule_only"]))
+        assert report.ok, report.render()
+
+    def test_totals_are_reported_even_when_they_pass(self):
+        """The observation must be visible, so a reader can see the axis was checked."""
+        report = check(self.grid(["random", "schedule_only"]))
+        assert any("total optimizer tokens" in o for o in report.observations)
+
+    def test_missing_totals_are_flagged_not_silently_skipped(self):
+        """A grid that reports no totals must say the second axis went unchecked."""
+        chains = [
+            {"arm": "random", "seed": 101, "consumed_human_tokens": 749_866},
+            {"arm": "schedule_only", "seed": 101, "consumed_human_tokens": 749_866},
+        ]
+        report = check(chains)
+        assert any("unchecked" in o for o in report.observations)
+
+    def test_control_arm_totals_are_included(self):
+        """The control trains on comparable volume, so its total is comparable.
+
+        Excluding it would hide exactly the divergence that matters: the control is the
+        reference every arm is read against.
+        """
+        report = check(self.grid(["no_rescue", "selection_only"]))
+        assert not report.ok
+        assert any("total optimizer tokens span" in f for f in report.failures)
+
+
 class TestChainBudget:
     """Per-chain certification, shared by scripts/validate_run.py and validation.audit.
 

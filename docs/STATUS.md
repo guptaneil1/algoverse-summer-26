@@ -18,8 +18,10 @@ F-006 through F-009.
 
 > **Pilot executed and analysed, 2026-08-19.** The 25-chain primary pilot ran to
 > completion on 4× RTX 4090. The longest shard ran **6.75 h**; the grid was observed
-> complete at 05:24 after roughly an hour of idle billing. All 25 chains completed, none
-> failed, every one certifies `valid_with_limitation`. Full record:
+> complete at 05:24 after roughly an hour of idle billing. All 25 chains completed and none
+> failed, but certification is **10 `invalid`, 15 `valid_with_limitation`** -- an
+> earlier version of this block said all were limited, which misread the run's
+> aggregate exit code as a per-chain classification (F-021). Full record:
 > `docs/runs/primary_pilot_2026-08-18_results.md`.
 >
 > **The primary contrast is NOT ESTABLISHED — invalid, not null.** `--check-only`
@@ -31,6 +33,14 @@ F-006 through F-009.
 > left its floor at 1 token, so its urgency rule, not the reconciliation, decided the
 > spend. **No claim about the joint-versus-baseline comparison follows from this run.**
 >
+> **A second constraint was never checked.** `PROTOCOL.md` §4 requires matched total
+> optimizer tokens as well as matched human tokens, and only the human axis was ever
+> asserted. Realised totals span **2.26%** across arms, above the 2% threshold. Applying
+> both axes, the only matched contrast in the whole run is `schedule_only` vs `random`
+> -- which is the null. The `selection_only` advantage carries 1.7% more total training
+> tokens and is **suggestive but confounded**, not a budget-matched result. F-021; the
+> guard now asserts both axes.
+>
 > **What the run does establish is the between-chain variance the compute gate was
 > waiting on**, and it is unaffected by the spend gap because it is measured *within*
 > arms. Coefficients of variation are 0.41%–1.08% against a 2% practical threshold;
@@ -40,9 +50,9 @@ F-006 through F-009.
 > study. `COMPUTE.md`'s gate can be released on this evidence, with the caveat that
 > `joint`'s own variance was measured on chains that underspent.
 >
-> Also measured: one chain completes in **3,393 s**; a chain certifies
-> `valid_with_limitation`, the limitations being `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`
-> and `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE`.
+> Also measured: one chain completes in **3,393 s**. The two non-blocking limitations
+> on the fifteen certified chains are `LIMIT_NEAR_DUPLICATE_NOT_CHECKED` and
+> `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE`.
 >
 > **Re-running the grid is blocked on funding, not on code.** 6.75 h at the measured
 > per-shard wall time, roughly $20 at the observed rate; the session ended with about $6.
@@ -57,16 +67,16 @@ F-006 through F-009.
 > step in `docs/RUNBOOK_PILOT_LAUNCH.md` §5a ahead of any grid. The F-002 partition
 > vocabulary conflict recorded in the table below is what F-019 turned out to be.
 >
-> Two decisions were made under that pressure and are **proposed, not ratified**:
-> P-008 re-specifies realised budget matching as a ceiling reached up to indivisibility;
-> P-009 makes `total_optimizer_tokens` a reported projection rather than an asserted
-> budget. P-009 rests on a projection the first measurement already contradicts —
-> **16,678,912** actual against 16,100,000 projected, on the arm that spends nothing —
-> and should be re-derived now that a measurement exists.
+> **P-001 through P-010 are now accepted by the project owner** (2026-08-19), not
+> ratified by the team — no independent review took place and three sit in other
+> members' CODEOWNERS areas. All six U-items are closed: U-006 settled at 2% after a
+> check against measured anchors, U-004b closed as unreachable. See `DECISIONS.md` for
+> what "accepted" does and does not mean here.
 >
-> Cost reality: measured per-chain time puts the grid near **7 hours**, against the 2.8 h
-> the prior handover carried and the ~$9.80 P-004 derived for *more* arms. Both
-> estimates predate any chain; P-004's derivation needs revisiting.
+> Cost reality, superseding both prior estimates (P-010): the grid ran in **6.75 h** for
+> roughly **$20**, against the 2.8 h the prior handover carried and the ~$9.80 P-004
+> derived for *more* arms. Powered-design sizing:
+> `docs/decisions/powered_design_sizing_2026-08-19.md`.
 
 > **Week 3 did not complete.** The August 7 results freeze did not happen: the
 > repository contains zero tags, no `integration/week-3-aug01-aug07` branch, no
@@ -88,7 +98,7 @@ F-006 through F-009.
 | Area | Owner | Status | Current evidence | Blocking issue |
 |---|---|---|---|---|
 | Literature and novelty | Ronit | Substantially complete | 31 bib entries; **31 sources** in `sources.yaml`; 23-paper `closest_work.csv` with audit status; 5 written novelty threats + responses | External hostile novelty review not obtained |
-| Paper | Ronit | 5 of 10 sections drafted | Drafted: related work 1,016 / introduction 834 / appendix 731 / problem 557 / limitations 451 words. Stubs: method 61, experiments 72, abstract 58, results 45, conclusion 36 | Method and experiments are the writable gap — neither needs a run. Results and conclusion correctly pend the chains |
+| Paper | Ronit | **7 of 10 sections drafted (2026-08-19)** | Method, experiments and results are written against the executed run. Result numbers are generated into `paper/tables/pilot_macros.tex` and cited as macros; a bare decimal in a section is a test failure. Remaining stubs: abstract 58, conclusion 36 | Abstract and conclusion only. Both are now writable — the results they summarise exist |
 | Positive control | Khantushig | **Reproduced 2026-08-17** | Both arms, 11 generations, on 1x RTX 4090. Second independent execution; agrees with the 2026-08-07 T4 run to within 0.3% on every quantity. Hashes verified, artifacts retained in `docs/positive_control/measurements_2026-08-17_rtx4090/` | None. Was the project-wide critical path; now cleared |
 | Recursive runner | Khantushig | **Real chain executes end to end (2026-08-18)** | Toy contract runner as before, plus `runner/real_chain.py`, `training/real.py`, `generation/real.py`, `evaluation/real.py`, `data/corpus.py`. A screening run completed 3 generations of real GPT-2 training, decoding, allocation and per-mode evaluation on one RTX 4090 — `docs/screening/pipeline_validation_2026-08-18.md` | None for the apparatus. The pilot itself is blocked on the July 31 design freeze, not on code |
 | Run manifest provenance | Khantushig | **Exercised on a real chain 2026-08-18; certifies `valid_with_limitation`** | A completed GPU chain's manifest carries all five partitions at their frozen sizes (22,637 / 4,235 / 1,359 / 60 / 60) and validates with only `LIMIT_` codes. Pinned by `tests/runner/test_frozen_configs_are_certifiable.py`, which builds the manifest from `run_pilot.chain_config`'s output for every arm rather than from the config on disk | The F-002 vocabulary conflict is **bridged, not resolved**: `build_partitions` now maps `data.manifests` through `_DATA_MODULE_PARTITIONS`. F-019 is what that conflict cost. A rename on either side still breaks it silently |

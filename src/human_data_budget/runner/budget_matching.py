@@ -306,6 +306,45 @@ def check_realised_budget_matching(
                 "effect being measured"
             )
 
+    # Second axis. PROTOCOL.md section 4 names two: identical lifetime human-origin
+    # tokens AND identical total optimizer tokens. Only the first was asserted until
+    # FAILURE_LOG.md F-021, so the guard passed a grid whose totals differed by 2.26%
+    # -- above the practical effect threshold -- and three documents repeated that the
+    # comparison was budget-matched. A guard that checks half a constraint reports
+    # success for the half it checks.
+    #
+    # Every arm is included here, the control among them: it consumes no *human*
+    # tokens by construction but it trains on the same volume as the others, so its
+    # total is comparable and a divergence in it is as much a confound as any other.
+    with_totals = [
+        chain for chain in considered
+        if isinstance(chain.get("consumed_total_tokens"), int)
+        and chain["consumed_total_tokens"] > 0
+    ]
+    total_spread: float | None = None
+    if len(with_totals) > 1:
+        totals = [chain["consumed_total_tokens"] for chain in with_totals]
+        low_total, high_total = min(totals), max(totals)
+        total_spread = (high_total - low_total) / high_total
+        permitted_total = practical_effect_threshold_relative * SPREAD_MARGIN_BELOW_THRESHOLD
+        observations.append(
+            f"total optimizer tokens: {low_total:,} to {high_total:,} "
+            f"({total_spread * 100:.4f}% spread, {permitted_total * 100:.4f}% permitted)"
+        )
+        if total_spread > permitted_total:
+            failures.append(
+                f"realised total optimizer tokens span {total_spread * 100:.4f}% across "
+                f"arms, above the {permitted_total * 100:.4f}% permitted. PROTOCOL.md "
+                "section 4 requires matched total optimizer tokens as well as matched "
+                "human tokens; an arm that trained on more tokens is not comparable "
+                "whatever its human spend"
+            )
+    elif considered:
+        observations.append(
+            "total optimizer tokens not reported; the second axis of PROTOCOL.md "
+            "section 4 is unchecked"
+        )
+
     non_spending = [chain for chain in considered if not is_spending_arm(chain["arm"])]
     if non_spending:
         observations.append(

@@ -7,7 +7,9 @@
 05:24, so roughly an hour of pod time was idle after the run finished.
 **Code:** `499ebbc` (the F-020 fix below post-dates the run and was not in it)
 **Chains:** 25 of 25 complete, 0 failed
-**Certification:** every chain `valid_with_limitation` (`validate_run.py` exit 2)
+**Certification:** **10 `invalid`, 15 `valid_with_limitation`.** An earlier version of
+this file said every chain was `valid_with_limitation`; that read the run's aggregate
+exit code as a per-chain classification. See F-021.
 
 ## Status of the primary contrast: NOT ESTABLISHED
 
@@ -71,32 +73,53 @@ Final-generation `tail_retention`, mean across five seeds:
 | `selection_only` | 0.9015 | 0.0021 |
 | `joint` | 0.8916 | 0.0015 |
 
-## Secondary analysis: the twenty budget-matched chains
+## Secondary analysis — CORRECTED 2026-08-19, see F-021
 
-`joint` is the only arm that failed budget matching. Excluding it, the remaining 20
-chains satisfy the constraint:
+> **The section below was wrong and is retained with its correction attached.** It
+> claimed the twenty non-`joint` chains were budget-matched. They are matched on the
+> **human** axis and **not** on the **total optimizer-token** axis, which
+> `PROTOCOL.md` §4 requires equally. Realised totals span **2.26%** across arms,
+> above the 2% practical threshold. Pairwise, the only contrast matched on both axes
+> is **`random` vs `schedule_only`** (human −0.00%, total +0.02%) — the null.
+>
+> Every contrast involving `selection_only` carries a **1.7%** total-token gap in the
+> same direction as its measured advantage. Its 8.37% edge is roughly five times the
+> confound and same-signed, so it is **suggestive but confounded**, not a
+> budget-matched result.
+>
+> Realised totals: `no_rescue` 16,678,912 · `schedule_only` 16,773,427 · `random`
+> 16,777,421 · `joint` 17,025,024 · `selection_only` 17,063,936.
+
+`joint` is the only arm that failed the human axis. Excluding it, the remaining 20
+chains satisfy that axis only:
 
 ```
 spending arms: 749,709 to 749,995 against a 750,000 ceiling
 0.0381% spread, 0.2000% permitted -> budget matching: HOLDS
 ```
 
-So contrasts among `random`, `schedule_only`, `selection_only` and the `no_rescue`
-control are budget-matched and interpretable. Paired by seed, 5 seeds, 95% CI from a
-paired *t* with 4 degrees of freedom. Lower AUC regret means less degradation. The 2%
-practical threshold is 0.05049 in these units.
+Contrasts among them are paired by seed, 5 seeds, 95% CI from a paired *t* with 4
+degrees of freedom. Lower AUC regret means less degradation. The 2% practical
+threshold is 0.05049 in these units. **The `matched?` column applies both axes** and
+is the correction F-021 forces: only one row is matched on both.
 
-| contrast | difference | 95% CI | relative | distinguishable from zero |
-|---|---|---|---|---|
-| `selection_only` − `random` | −0.21133 | [−0.23472, −0.18794] | −8.37% | yes |
-| `schedule_only` − `random` | +0.02127 | [−0.01563, +0.05818] | +0.84% | **no** |
-| `random` − `no_rescue` | −0.11284 | [−0.12925, −0.09643] | −4.28% | yes |
-| `selection_only` − `schedule_only` | −0.23261 | [−0.26330, −0.20191] | −9.14% | yes |
+| contrast | difference | 95% CI | relative | ≠ zero | total-token gap | matched? |
+|---|---|---|---|---|---|---|
+| `schedule_only` − `random` | +0.02127 | [−0.01563, +0.05818] | +0.84% | **no** | +0.02% | **YES** |
+| `random` − `no_rescue` | −0.11284 | [−0.12925, −0.09643] | −4.28% | yes | +0.59% | control |
+| `selection_only` − `random` | −0.21133 | [−0.23472, −0.18794] | −8.37% | yes | **+1.68%** | no |
+| `selection_only` − `schedule_only` | −0.23261 | [−0.26330, −0.20191] | −9.14% | yes | **+1.70%** | no |
 
-Read together: at this budget and horizon, *which* examples are selected moves the
-outcome substantially, and *when* the budget is spent does not — the timing contrast's
-interval contains zero and lies entirely inside the practical equivalence region.
-Spending the budget at all beats spending none.
+**What this run supports.** One contrast is matched on both axes: `schedule_only`
+against `random`. Its interval contains zero and lies inside the practical equivalence
+region, so at this budget and horizon **the timing of the spend does not detectably
+change the outcome**. That is the one clean finding here, and it is a null.
+
+**What it does not support.** The `selection_only` advantage is real in the data but
+arrives with 1.7% more total training tokens, in the same direction. The effect is
+roughly five times the confound, so it is suggestive; it is not a budget-matched
+result and must not be reported as one. Separating selection from training volume
+requires a run in which totals are matched by construction.
 
 ### These are secondary results and cannot carry the paper
 

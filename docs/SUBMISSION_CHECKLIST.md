@@ -104,10 +104,10 @@ has no computation defined anywhere, and C-002 rests on both.
 | ☑ | No fixture artifact is cited as evidence. `05_method.tex` refers to fixture-based evidence only to bound what it establishes. |
 | ☑ | Template 9 of `paper/outcome_contingent_language.md` ("No primary result at all") used verbatim in `07_results.tex`. `docs/outcome_templates.md`'s nearest entry covers validation *failure*, which is not this case: nothing failed validation, nothing ran. |
 | ☑ | There is no primary result. The abstract says so in its closing sentence, not a footnote. |
-| ☐ | Every abstract sentence licensed by its row in `docs/evidence/claim_evidence_matrix.md` |
+| ☑ | Every abstract sentence licensed. Audited 2026-08-19: S13–S21 added for the post-execution sentences, S7–S10 re-scored, S11 correctly absent, S12 replaced by S21 so no sentence depends on the outstanding novelty review |
 | ◐ | Scanned clean across 01, 05, 06, 07, 09. **`08_limitations.tex` uses "optimal" twice**, both inside disclaimers ("does not establish an economically optimal…", "does not claim… the proposed policy is optimal"). Negated usage, not a claim — but an owner should confirm that reading rather than have it ticked silently. |
-| ☐ | C-004 novelty claim carries all three modifiers: *recursive*, *fixed lifetime human-token budget*, *matched non-joint baselines* |
-| ☐ | Claim ledger statuses updated to match what the evidence supports |
+| ☑ | C-004 carries all three modifiers; *matched non-joint baselines* was missing and was added 2026-08-19 | C-004 novelty claim carries all three modifiers: *recursive*, *fixed lifetime human-token budget*, *matched non-joint baselines* |
+| ☑ | C-002 records the attempt that did not test it; C-004 internally audited with the stop rule applied |
 | ☑ | `08_limitations.tex`: "one licensed text domain and a small screening-scale language model"; "only the frozen domain, model, horizon, decoding rule, and budget regime". |
 | ☑ | No `RESULT_PENDING` marker remains in `paper/sections/`. |
 
@@ -129,7 +129,7 @@ has no computation defined anywhere, and C-002 rests on both.
 |---|---|---|
 | ☐ | Paper builds cleanly from a clean checkout | `paper-build` CI job |
 | ☐ | Submission archive builds | `make submission` |
-| ☐ | No secrets or large assets committed | `git ls-files \| xargs du -sh \| sort -h \| tail` |
+| ☑ | No secrets: scanned 2026-08-19, the only hits are documentation prose about *not* committing credentials. Largest tracked asset is `base_train.jsonl` at 5.8 MB |
 | ☐ | Every headline value traces to a frozen artifact | claim-to-evidence audit |
 | ☐ | Presentation prepared from `docs/presentation_outline.md` |
 | ☐ | Final tag created | `submission-final-YYYY-MM-DD` |

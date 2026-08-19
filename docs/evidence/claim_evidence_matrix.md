@@ -35,7 +35,40 @@ not be written, regardless of how confident anyone feels. This is the operationa
 | S11 | *Statement of the monitoring-omission stress test outcome.* | C-003 | Predeclared monitoring-bias intervention results | **CONDITIONAL — use `docs/outcome_templates.md`** |
 | S12 | The contribution is a matched chain-level test of allocation, not a claim that collapse is prevented. | C-004 | `CLAIMS.md` contribution paragraph + external novelty review | **BLOCKED — external review not obtained** (the scoping half is writable; the novelty half is not) |
 
-## Sentence count check
+## Audit against the written abstract, 2026-08-19
+
+The abstract is now written, and every sentence in it was checked against this matrix.
+The rows below cover the sentences added after the pilot executed; S1-S12 are re-scored
+above them because the artifacts several were blocked on now exist.
+
+| ID | Sentence (abbreviated) | Licensing artifact | Status |
+|---|---|---|---|
+| S13 | We execute the pilot: 25 chains over 5 seeds and 10 generations. | `results/runs/primary_pilot_2026-08-18/`, 25 tracked `chain_result.json`; `ARTIFACT_HASHES.json` | **WRITABLE — verified** |
+| S14 | The fairness constraint requires equal human tokens *and* equal total optimizer tokens. | `PROTOCOL.md` §4, quoted directly | **WRITABLE — definitional** |
+| S15 | This run satisfies neither: one policy under-spent by 10.1%, totals span 2.26%. | `FAILURE_LOG.md` F-020, F-021; `run_pilot --check-only` output; both figures generated into `pilot_macros.tex` from chain artifacts | **WRITABLE — verified** |
+| S16 | We report the primary contrast as invalid rather than repairing or reweighting it. | `PREREGISTRATION.md` exclusions; `CLAIMS.md` C-002 falsification clause ("not supported if budget equality fails"); `docs/runs/primary_pilot_2026-08-18_results.md` | **WRITABLE — verified** |
+| S17 | We decline the secondary comparison that would have read more favourably. | `PREREGISTRATION.md`: "other comparisons ... cannot replace a failed primary analysis". The declined comparison and its confound are recorded in the results document | **WRITABLE — verified** |
+| S18 | One comparison survives both constraints and is a null. | `schedule_only` vs `random`, matched on both axes (human -0.00%, total +0.02%); interval contains zero | **WRITABLE — verified** |
+| S19 | Between-chain variance is small enough that the frozen seed set is already powered. | `docs/decisions/powered_design_sizing_2026-08-19.md`, derived from the chain artifacts | **WRITABLE — verified** |
+| S20 | We make no claim about allocation policy. | `CLAIMS.md` C-002 status; the absence of any such claim in §7 | **WRITABLE — verified** |
+| S21 | The contribution is the design, a validated apparatus, and a record of the checks. | `docs/runs/...results.md`; `FAILURE_LOG.md` F-015 to F-021a; the positive-control package | **WRITABLE — verified.** Deliberately *not* a novelty claim, so it does not depend on the outstanding external review |
+
+### Re-scored after execution
+
+- **S7** (positive control reproduced) — was BLOCKED. Stage A reproduced twice with verifying hashes. **WRITABLE.**
+- **S8** (one domain, screening model, ten generations) — was BLOCKED. Executed exactly as frozen. **WRITABLE.**
+- **S9** (primary outcomes) — was BLOCKED on U-004. D-022 froze the metric; U-004b is closed as unreachable. **WRITABLE.**
+- **S10** (what the joint policy did) — was CONDITIONAL. **Resolved to: not established.** The abstract states this and makes no performance claim, which is the outcome-contingent path for a failed fairness constraint.
+- **S11** (monitoring-omission stress test) — still CONDITIONAL and **correctly absent from the abstract**. C-003 is untested; no such intervention ran.
+- **S12** (contribution framing) — remains **BLOCKED on external novelty review** *as originally worded*, because it asserted a contribution relative to prior work. S21 replaces it with a statement about what was done rather than what is new, which the artifacts license without that review.
+
+### Result
+
+**Every sentence in the written abstract maps to a licensing artifact that exists and was
+checked.** No sentence depends on the outstanding external novelty review, and none states
+an outcome for C-002 or C-003.
+
+## Sentence count check (original, pre-execution)
 
 12 planned sentences.
 

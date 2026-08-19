@@ -519,3 +519,17 @@ suite compares the two units.
 | Cost | Zero. Caught by inspecting the dry run's output rather than trusting its verdict |
 | Scientific consequence | None yet; no chain has run under P-011. The consequence avoided was launching a $20 grid whose central correction was unverified |
 | Lesson, third time | The dry run's coverage boundary is now enumerated three ways: it cannot see the subprocess environment (F-017), it cannot check budget matching for score-dependent policies (F-020), and it cannot exercise anything that consumes the decoded corpus (F-022). Each was discovered by a paid or nearly-paid failure. The general rule -- **a simulation cannot validate a property of the thing it simulates away** -- is now stated in the runbook rather than rediscovered |
+
+### F-023 — the corpus record budget was derived wrong by a factor of eight (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Stage | Pre-grid validation chain for `primary_pilot_v2.json`. Caught by the step the runbook exists to make mandatory |
+| Observation | The validation chain completed and `validate_run.py` returned `invalid`: `total optimizer tokens 3,407,872 fall below the projected 16,100,000 by more than rounding explains`. Assembled corpus sizes were `[400, 3280, 400, 400, ...]` against an expected 400 everywhere |
+| Cause | `corpus_record_budget` was set to 400, derived from "the prompt corpus is built with `--limit 400` and upstream emits one continuation per prompt". The premise is wrong: **`--limit 400` bounds articles, not records.** Each article tokenises into several blocks, so the decode emits roughly **3,280** records. Capping the corpus at 400 discarded about seven eighths of every generation's training data |
+| Magnitude | Realised total optimizer tokens fell from ~17,000,000 under the additive assembly to **3,407,872** -- a fifth of the intended volume. Every generation after the first trained on 400 records instead of ~3,280 |
+| Who found it | The runbook's step 17, which reads the assembled corpus sizes directly rather than trusting that the config value was right. Cost: one chain, 0.43 h, roughly $1.30 |
+| Why the dry run missed it | F-022, already recorded: a dry run performs no decode, so there is no synthetic corpus to displace and the budget is never exercised. This is the failure F-022 predicted, arriving on schedule |
+| Fixed | The budget is no longer a number. `corpus_record_budget: "match_synthetic"` keeps exactly as many records as that generation's decode produced, so human examples displace synthetic ones one for one and the corpus size follows the decode. There is no correct constant -- only the size the decode happens to produce -- so the config names that instead of guessing it. Two tests pin it, including that spending 0, 5 or 25 examples leaves the corpus size unchanged |
+| Scientific consequence | None. No grid ran on the wrong value. The chain that found it is discarded |
+| Lesson | The fix for a confound was itself specified by a derivation nobody had checked against the artifacts. "Derived, not chosen" was stated in the config as a virtue, and the derivation was wrong -- a plausible chain of reasoning about `--limit` that never met a record count. Where a self-calibrating definition exists, prefer it to a derived constant: `match_synthetic` cannot be wrong by a factor of eight because it is not a guess about the data, it is a reading of it |

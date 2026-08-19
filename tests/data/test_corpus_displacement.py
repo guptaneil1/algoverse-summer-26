@@ -185,3 +185,49 @@ def test_additive_assembly_reports_no_shortfall(tmp_path, synthetic):
         resolve_text=lambda example: example.text,
     )
     assert result["corpus_record_shortfall"] == 0
+
+
+def test_match_synthetic_keeps_the_decode_size(tmp_path, synthetic):
+    """The specification: corpus size follows the decode, not a constant.
+
+    FAILURE_LOG.md F-023. A hand-derived integer was wrong by a factor of eight because
+    `--limit` bounds articles and each article becomes several blocks. There is no
+    correct constant, only the size the decode happens to produce.
+    """
+    from human_data_budget.data.corpus import MATCH_SYNTHETIC
+
+    for count in (0, 5, 25):
+        result = assemble_training_corpus(
+            synthetic_corpus=synthetic,
+            rescue_manifest=manifest(),
+            selected_example_ids=[f"train-{i:04d}" for i in range(count)],
+            output_path=tmp_path / f"ms{count}.json",
+            generation=1,
+            selection_policy="test",
+            resolve_text=lambda example: example.text,
+            corpus_record_budget=MATCH_SYNTHETIC,
+        )
+        assert result["total_record_count"] == BUDGET, (
+            f"spending {count} examples changed the corpus size to "
+            f"{result['total_record_count']}; volume must not track spend"
+        )
+        assert result["human_record_count"] == count
+        assert result["corpus_record_shortfall"] == 0
+
+
+def test_match_synthetic_at_generation_zero_is_additive(tmp_path):
+    """No decode yet, so there is nothing to match and nothing to displace."""
+    from human_data_budget.data.corpus import MATCH_SYNTHETIC
+
+    result = assemble_training_corpus(
+        synthetic_corpus=None,
+        rescue_manifest=manifest(),
+        selected_example_ids=[f"train-{i:04d}" for i in range(7)],
+        output_path=tmp_path / "gen0ms.json",
+        generation=0,
+        selection_policy="test",
+        resolve_text=lambda example: example.text,
+        corpus_record_budget=MATCH_SYNTHETIC,
+    )
+    assert result["total_record_count"] == 7
+    assert result["corpus_record_shortfall"] == 0

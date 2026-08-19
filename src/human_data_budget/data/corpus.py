@@ -34,6 +34,10 @@ from human_data_budget.data.hashing import content_hash
 from human_data_budget.data.manifest import Example, ManifestError, PartitionManifest
 from human_data_budget.runner.upstream_driver import sha256_file
 
+#: Sentinel for ``corpus_record_budget``: keep exactly as many records as the decode
+#: produced. See DECISIONS.md P-011 and FAILURE_LOG.md F-023.
+MATCH_SYNTHETIC = "match_synthetic"
+
 
 class CorpusAssemblyError(ValueError):
     """Raised when a generation's training corpus cannot be assembled."""
@@ -120,18 +124,24 @@ def assemble_training_corpus(
     selection_policy: str,
     selection_scores: Mapping[str, float] | None = None,
     resolve_text: Callable[[Example], str] | None = None,
-    corpus_record_budget: int | None = None,
+    corpus_record_budget: int | str | None = None,
 ) -> dict[str, Any]:
     """Write generation ``generation``'s training corpus and its provenance sidecar.
 
     ``synthetic_corpus`` is ``None`` at generation 0, where no prior decode exists and
     the corpus is human-only.
 
-    ``corpus_record_budget`` implements **displacement** (``DECISIONS.md`` P-011): the
-    assembled corpus holds at most that many records, and rescued human examples
-    *replace* synthetic ones rather than being appended to them. Passing ``None``
-    restores the additive behaviour the first pilot ran under, retained only so that
-    run's artifacts stay reproducible.
+    ``corpus_record_budget`` implements **displacement** (``DECISIONS.md`` P-011):
+    rescued human examples *replace* synthetic records rather than being appended.
+    ``MATCH_SYNTHETIC`` keeps exactly as many records as the decode produced, which is
+    the specification; an integer caps at that count; ``None`` restores the additive
+    behaviour the first pilot ran under, retained only so that run's artifacts stay
+    reproducible.
+
+    Use ``MATCH_SYNTHETIC`` rather than a number. A hand-derived integer was tried and
+    was wrong by a factor of eight -- ``--limit 400`` bounds *articles*, each of which
+    tokenises into several blocks -- which cut realised total optimizer tokens from
+    ~17,000,000 to 3,407,872 before a validation chain caught it (F-023).
 
     Why displacement is the specification. Under addition, an arm that spends its
     human budget trains on strictly more data than one that does not, so every contrast
@@ -158,6 +168,17 @@ def assemble_training_corpus(
         raise CorpusAssemblyError(str(error)) from error
 
     displaced = 0
+    if corpus_record_budget == MATCH_SYNTHETIC:
+        # Self-calibrating, and the reason this is the specification rather than an
+        # integer: the corpus keeps exactly as many records as the decode produced, so
+        # human examples displace synthetic ones one for one and no arm's training
+        # volume depends on what it spent. FAILURE_LOG.md F-023 -- a hand-derived
+        # integer was wrong by a factor of eight, because `--limit 400` bounds *articles*
+        # and each article tokenises into several blocks. There is no correct constant
+        # here, only the size the decode happens to produce, so the config names that
+        # rather than a number.
+        corpus_record_budget = len(synthetic) if synthetic else None
+
     if corpus_record_budget is not None:
         if corpus_record_budget < len(rescued):
             raise CorpusAssemblyError(

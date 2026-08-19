@@ -139,3 +139,49 @@ def test_the_control_arm_trains_on_the_same_volume(tmp_path, synthetic):
                        name="spender")
     assert control["total_record_count"] == spender["total_record_count"] == BUDGET
     assert control["human_record_count"] == 0
+
+
+def test_shortfall_is_reported_when_synthetic_cannot_fill_the_budget(tmp_path):
+    """Displacement equalises volume only when there is volume to displace.
+
+    With no synthetic corpus -- generation 0, or any dry run, where no decode has
+    happened -- the assembled corpus is the human records alone and falls far short of
+    the budget. That is not an error, but it must be visible: an arm whose corpus fell
+    short trained on less than the design specifies and its total is not comparable.
+
+    This is why P-011 cannot be validated by a dry run, and the reason is recorded here
+    rather than discovered again on a paid grid.
+    """
+    result = assemble_training_corpus(
+        synthetic_corpus=None,
+        rescue_manifest=manifest(),
+        selected_example_ids=[f"train-{i:04d}" for i in range(10)],
+        output_path=tmp_path / "gen0.json",
+        generation=0,
+        selection_policy="test",
+        resolve_text=lambda example: example.text,
+        corpus_record_budget=BUDGET,
+    )
+    assert result["total_record_count"] == 10
+    assert result["corpus_record_shortfall"] == BUDGET - 10
+
+
+def test_no_shortfall_when_the_budget_is_filled(tmp_path, synthetic):
+    """The real-run case: a full decode exists, so displacement fills the budget."""
+    result = assemble(tmp_path, synthetic, [f"train-{i:04d}" for i in range(10)])
+    assert result["total_record_count"] == BUDGET
+    assert result["corpus_record_shortfall"] == 0
+
+
+def test_additive_assembly_reports_no_shortfall(tmp_path, synthetic):
+    """Shortfall is meaningless without a budget, and must not be invented."""
+    result = assemble_training_corpus(
+        synthetic_corpus=synthetic,
+        rescue_manifest=manifest(),
+        selected_example_ids=["train-0000"],
+        output_path=tmp_path / "add.json",
+        generation=1,
+        selection_policy="test",
+        resolve_text=lambda example: example.text,
+    )
+    assert result["corpus_record_shortfall"] == 0

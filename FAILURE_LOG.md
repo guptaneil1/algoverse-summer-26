@@ -505,3 +505,17 @@ suite compares the two units.
 | Owner | The budget definition is Aarav's (`DECISIONS.md` U-003). This is a design decision of the same weight as F-015's, not a patch |
 | Cheap and worth doing first | Retain per-generation token accounting in the next run. `runner/real_chain` already knows each generation's assembled corpus; emitting its token count per generation would have made this diagnosable in minutes instead of unresolvable. That change costs nothing and is the difference between finding the cause and speculating about it |
 | Scientific consequence | The pilot's usable outputs are unchanged — variance, feasibility, the timing null, the apparatus. What changes is the plan: a re-run is **not** the next step, and deciding the total axis is |
+
+### F-022 — the dry run cannot validate displacement either (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Stage | Pre-launch for the corrected grid. Found while dry-running `primary_pilot_v2.json`, before any paid step |
+| Observation | The v2 dry run reports `budget matching: HOLDS` and 25/25 chains, and its assembled corpora hold 11-72 records against a `corpus_record_budget` of 400. Displacement did not take effect and the dry run did not notice |
+| Cause | Not a defect in displacement. A dry run performs no decode, so `prev_corpus` is empty and there are no synthetic records to displace; the assembled corpus is the rescued human examples alone. Displacement equalises training volume only when there is volume to displace |
+| Why it matters | P-011 exists to close F-021, and **the free check cannot confirm it worked**. Launching the grid on a green dry run would have repeated the exact pattern of F-017 and F-020: a passing dry run followed by a paid run that reproduces the defect it was supposed to have fixed. Third occurrence of the same shape |
+| Fixed | `assemble_training_corpus` now returns `corpus_record_shortfall`, so a corpus that could not be filled is visible per generation rather than silently small. Three tests in `tests/data/test_corpus_displacement.py` pin it, including the generation-0 and dry-run case |
+| The check that does work | One real chain of `selection_only` -- the arm whose totals ran 1.7% high under additive assembly -- then reading the assembled corpus sizes directly. Every generation after the first must hold exactly 400 records. `docs/RUNBOOK_V2_CORRECTED_GRID.md` step 3 |
+| Cost | Zero. Caught by inspecting the dry run's output rather than trusting its verdict |
+| Scientific consequence | None yet; no chain has run under P-011. The consequence avoided was launching a $20 grid whose central correction was unverified |
+| Lesson, third time | The dry run's coverage boundary is now enumerated three ways: it cannot see the subprocess environment (F-017), it cannot check budget matching for score-dependent policies (F-020), and it cannot exercise anything that consumes the decoded corpus (F-022). Each was discovered by a paid or nearly-paid failure. The general rule -- **a simulation cannot validate a property of the thing it simulates away** -- is now stated in the runbook rather than rediscovered |

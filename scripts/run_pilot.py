@@ -116,6 +116,9 @@ def chain_config(pilot: dict, arm: str, seed: int) -> dict:
         "base_corpus": corpora["base_corpus"],
         "prompt_corpus": corpora["prompt_corpus"],
         "test_corpus": corpora["test_corpus"],
+        # P-011. Null or absent keeps additive assembly, which is what the 2026-08-18
+        # grid ran and what F-021 records as confounding training volume with strategy.
+        "corpus_record_budget": pilot.get("corpus_record_budget"),
         "tail_modes": pilot["tail_modes"],
         "model": pilot["model"],
         "training": pilot["training"],

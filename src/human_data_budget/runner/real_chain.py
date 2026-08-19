@@ -213,6 +213,11 @@ def run_real_chain(
                     selection_policy=policy.name,
                     selection_scores=pending_scores,
                     resolve_text=_resolver(config),
+                    # DECISIONS.md P-011. Absent or null, assembly is additive and every
+                    # arm's training volume tracks what its policy spent -- the confound
+                    # FAILURE_LOG.md F-021 measured at 2.26% across arms. A config that
+                    # sets this makes the total-token condition hold by construction.
+                    corpus_record_budget=config.get("corpus_record_budget"),
                 )
                 train_file = Path(assembled["corpus_path"])
                 human_tokens = assembled["human_token_count"]

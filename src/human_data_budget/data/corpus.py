@@ -224,6 +224,16 @@ def assemble_training_corpus(
         "total_record_count": len(records),
         "displaced_synthetic_records": displaced,
         "corpus_record_budget": corpus_record_budget,
+        # Non-zero means the synthetic corpus was too small to fill the budget, so this
+        # generation trained on less than the design specifies and its total is not
+        # comparable to an arm that filled. Surfaced rather than silently tolerated:
+        # displacement only equalises volume when there is volume to displace, and a
+        # dry run -- where no decode happens -- produces a shortfall of the whole
+        # budget. That is why P-011 cannot be validated by a dry run.
+        "corpus_record_shortfall": (
+            max(0, corpus_record_budget - len(records))
+            if corpus_record_budget is not None else 0
+        ),
     }
 
 

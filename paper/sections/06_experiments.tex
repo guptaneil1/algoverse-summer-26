@@ -73,8 +73,22 @@ Stage A uses WikiText-2, the upstream default. The pilot design targets a larger
 from the same family; the two stages therefore use different corpus sizes, recorded as a
 deviation before execution rather than after.
 
-\subsection{Status of the primary comparison}
+\subsection{Executed configuration}
 
-The primary configurations remain unfrozen at the time of writing and the runner refuses to
-launch them. No primary chain has been executed. Section~\ref{sec:results} reports that
-outcome directly.
+The pilot configuration was frozen before any chain ran, and every scientific value in it
+traces to written evidence recorded at freeze time: the retraining regime, the corpus
+subsample, the lifetime and per-generation budgets, the ordered seed set, the horizon, the
+outcome definitions, the contrast, and the exclusion rules. Two further reference
+configurations remain unfrozen and the runner continues to refuse them.
+
+The executed grid is the five treatment families of Section~\ref{sec:method} crossed with
+the five preregistered seeds: twenty-five chains at horizon ten, GPT-2 at a pinned
+revision, WikiText-103 subsampled to four hundred articles from the frozen base-training
+partition, a lifetime budget of $750{,}000$ human-origin optimizer tokens per chain, and
+generation prompts drawn from a partition held disjoint from training data. Execution took
+\PilotWallHours{} hours across four accelerators.
+
+Budget matching is asserted after execution rather than assumed, over the whole grid rather
+than per shard, and a violation is a non-zero exit rather than a warning. That assertion is
+what determines the status of the primary comparison in Section~\ref{sec:results}, and it
+did not pass.

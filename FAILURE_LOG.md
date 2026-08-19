@@ -462,3 +462,15 @@ suite compares the two units.
 | Cost | The full grid, ~7.7 hours and the session's remaining GPU budget. The run is not wasted — it delivers the variance estimate the pilot was commissioned for — but the contrast it was also meant to inform must be re-run |
 | Scientific consequence | No invalid claim was published: the guard caught this before any result was read, which is what P-008 was built to do. `docs/runs/primary_pilot_2026-08-18_results.md` records the contrast as NOT ESTABLISHED and the variance estimate as sound |
 | Lesson | Three of this session's five defects (F-016, F-018, F-020) were the same shape: a check whose *intent* was documented and whose *implementation* did not achieve it, with no test asserting the intent. A guard that has never been observed to bind is a guard whose binding is unverified |
+
+### F-020a — the grid's wall time was overstated (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Relation to F-020 | **Correction, appended not edited.** F-020's cause, fix and scientific consequence stand; one of its cost figures was wrong |
+| What was wrong | F-020 records the cost as "the full grid, ~7.7 hours". That figure was the span between launch (21:40) and the operator *observing* completion (05:24). It is not the run's duration |
+| Measured | From the shard summaries: shard 0 ran **6.75 h** over 7 chains; shards 1-3 ran 5.80, 5.81 and 5.80 h over 6 chains each. Wall time for the grid is the longest shard, **6.75 h**, so the run finished near 04:25 and about an hour of pod time was billed idle afterwards |
+| Why it matters | The overstatement propagated into `docs/STATUS.md`, `docs/runs/primary_pilot_2026-08-18_results.md` and the cost estimate for a re-run, inflating it by roughly 15%. Anyone sizing the powered experiment from these documents would have over-budgeted |
+| How it happened | The figure was computed from timestamps in the operator's terminal rather than read from `wall_seconds` in the artifacts, which is the same class of error the project's "no invented numbers" rule exists to prevent: a number that was inferred rather than read, and that nothing checked |
+| Fixed | Corrected in both documents. The manuscript now cites `\PilotWallHours`, generated from the shard summaries by `scripts/generate_pilot_outputs.py`, so the figure cannot be typed by hand again |
+| Scientific consequence | None. No result depends on wall time; only cost planning did |

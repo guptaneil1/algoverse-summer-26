@@ -17,7 +17,8 @@ seven conditional xfails. Evidence: `docs/positive_control/observed_table.md`,
 F-006 through F-009.
 
 > **Pilot executed and analysed, 2026-08-19.** The 25-chain primary pilot ran to
-> completion on 4× RTX 4090 (21:40 → 05:24, ~7.7 h). All 25 chains completed, none
+> completion on 4× RTX 4090. The longest shard ran **6.75 h**; the grid was observed
+> complete at 05:24 after roughly an hour of idle billing. All 25 chains completed, none
 > failed, every one certifies `valid_with_limitation`. Full record:
 > `docs/runs/primary_pilot_2026-08-18_results.md`.
 >
@@ -43,8 +44,8 @@ F-006 through F-009.
 > `valid_with_limitation`, the limitations being `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`
 > and `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE`.
 >
-> **Re-running the grid is blocked on funding, not on code.** ~7.7 h and ~$23 at the
-> measured rate; the session ended with roughly $6.
+> **Re-running the grid is blocked on funding, not on code.** 6.75 h at the measured
+> per-shard wall time, roughly $20 at the observed rate; the session ended with about $6.
 >
 > Getting there took four defects, every one found *after* a passing dry run and every
 > one invisible to a then-740-test suite (`FAILURE_LOG.md` F-016 through F-019a): a

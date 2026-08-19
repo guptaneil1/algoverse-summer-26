@@ -2,7 +2,9 @@
 
 **Run id:** `primary_pilot_2026-08-18`
 **Config:** `configs/experiment/primary_pilot.json` (`FROZEN`)
-**Executed:** 2026-08-18 21:40 → 2026-08-19 05:24 UTC, 4× RTX 4090, RunPod
+**Executed:** launched 2026-08-18 21:40 UTC on 4× RTX 4090, RunPod. Longest shard
+**6.75 h** (the other three 5.80–5.81 h), from the shard summaries. Observed complete at
+05:24, so roughly an hour of pod time was idle after the run finished.
 **Code:** `499ebbc` (the F-020 fix below post-dates the run and was not in it)
 **Chains:** 25 of 25 complete, 0 failed
 **Certification:** every chain `valid_with_limitation` (`validate_run.py` exit 2)
@@ -147,7 +149,8 @@ figures above are computed from `metrics[].human_nll` and nothing else.
 ## What must happen before the contrast can be claimed
 
 1. F-020's fix (`policies/terminal.py`, committed after this run) must be in the code.
-2. The grid must be re-run. ~7.7 hours on 4× RTX 4090 at the measured rate.
+2. The grid must be re-run. 6.75 hours on 4× RTX 4090, the longest shard's measured
+   wall time.
 3. `--check-only` must exit 0 before any comparison is read.
 
 Re-running was not possible in this session: the measured cost of the grid exceeded

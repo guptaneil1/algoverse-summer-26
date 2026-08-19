@@ -7,6 +7,12 @@
 \author{Anonymous August 2026 Project Draft}
 \date{}
 
+% Result numbers quoted in section prose are defined here and generated from immutable
+% chain artifacts by scripts/generate_pilot_outputs.py. Sections cite macros rather than
+% literals so prose cannot drift from the run, which is what
+% tests/analysis/test_generated_outputs.py enforces.
+\input{tables/pilot_macros}
+
 \begin{document}
 \maketitle
 \input{sections/01_abstract}

@@ -119,6 +119,8 @@ def chain_config(pilot: dict, arm: str, seed: int) -> dict:
         # P-011. Null or absent keeps additive assembly, which is what the 2026-08-18
         # grid ran and what F-021 records as confounding training volume with strategy.
         "corpus_record_budget": pilot.get("corpus_record_budget"),
+        # Operational only; see --preprocessing-workers. Not a frozen value.
+        "preprocessing_workers": pilot.get("preprocessing_workers", 1),
         "tail_modes": pilot["tail_modes"],
         "model": pilot["model"],
         "training": pilot["training"],
@@ -143,6 +145,16 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--upstream-dir", type=Path)
     parser.add_argument("--shim-dir", type=Path)
+    parser.add_argument(
+        "--preprocessing-workers", type=int, default=1,
+        help="upstream tokenisation worker processes (default 1). Purely operational: "
+             "HuggingFace `map` shards the dataset and reassembles it in order, so the "
+             "tokenised output is identical whatever this is set to. It is deliberately "
+             "NOT part of the frozen training block, because it changes how fast a "
+             "chain runs and nothing about what it computes. Raising it is the cheapest "
+             "speed-up available -- the 2026-08-18 grid ran at 1 and left the GPUs idle "
+             "through every tokenisation phase.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--check-only", action="store_true",
@@ -207,6 +219,7 @@ def main() -> int:
         pilot["shim_dir"] = str(args.shim_dir)
     if args.cuda_device is not None:
         pilot["cuda_device"] = args.cuda_device
+    pilot["preprocessing_workers"] = args.preprocessing_workers
 
     root = args.output_dir or Path(pilot["output_dir"])
     arms = [args.only_arm] if args.only_arm else list(pilot["arms"])

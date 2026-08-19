@@ -236,6 +236,7 @@ def run_real_chain(
                     "shim_dir": config.get("shim_dir"),
                     "cuda_device": config.get("cuda_device", 0),
                     "log_path": str(output_dir / "stdout_stderr.log"),
+                    "preprocessing_num_workers": config.get("preprocessing_workers", 1),
                     "dry_run": dry_run,
                 },
                 seed,

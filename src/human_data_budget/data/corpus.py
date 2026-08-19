@@ -120,11 +120,27 @@ def assemble_training_corpus(
     selection_policy: str,
     selection_scores: Mapping[str, float] | None = None,
     resolve_text: Callable[[Example], str] | None = None,
+    corpus_record_budget: int | None = None,
 ) -> dict[str, Any]:
     """Write generation ``generation``'s training corpus and its provenance sidecar.
 
     ``synthetic_corpus`` is ``None`` at generation 0, where no prior decode exists and
     the corpus is human-only.
+
+    ``corpus_record_budget`` implements **displacement** (``DECISIONS.md`` P-011): the
+    assembled corpus holds at most that many records, and rescued human examples
+    *replace* synthetic ones rather than being appended to them. Passing ``None``
+    restores the additive behaviour the first pilot ran under, retained only so that
+    run's artifacts stay reproducible.
+
+    Why displacement is the specification. Under addition, an arm that spends its
+    human budget trains on strictly more data than one that does not, so every contrast
+    confounds allocation strategy with training volume -- including the control
+    contrast, where "spending helps" cannot be separated from "more data helps". The
+    executed pilot measured realised totals spanning 2.26% across arms while human
+    spend matched to 0.04% (``FAILURE_LOG.md`` F-021, F-021a), which is that confound
+    appearing in practice. Displacement makes ``PROTOCOL.md`` §4's total-token
+    condition hold by construction rather than by luck.
 
     Returns a serializable summary. ``human_token_count`` is summed from
     ``optimizer_token_count`` -- the same field the policy prices candidates in
@@ -140,6 +156,22 @@ def assemble_training_corpus(
         rescued = _resolve(rescue_manifest, selected_example_ids)
     except ManifestError as error:  # pragma: no cover - defensive
         raise CorpusAssemblyError(str(error)) from error
+
+    displaced = 0
+    if corpus_record_budget is not None:
+        if corpus_record_budget < len(rescued):
+            raise CorpusAssemblyError(
+                f"corpus_record_budget {corpus_record_budget} is smaller than the "
+                f"{len(rescued)} rescued examples this generation allocated; the "
+                "budget cannot displace the human data it exists to make room for"
+            )
+        # Drop synthetic records from the end, keeping the oldest. The decode order is
+        # the prompt order, which is frozen, so this is deterministic across arms and
+        # seeds -- dropping at random would make the corpus depend on chance rather
+        # than on the policy.
+        keep = max(0, corpus_record_budget - len(rescued))
+        displaced = max(0, len(synthetic) - keep)
+        synthetic = synthetic[:keep]
 
     records: list[dict[str, Any]] = list(synthetic)
     provenance: list[dict[str, Any]] = []
@@ -186,6 +218,12 @@ def assemble_training_corpus(
         "human_record_count": len(rescued),
         "human_token_count": sum(_optimizer_tokens(e) for e in rescued),
         "human_word_count": sum(e.token_count for e in rescued),
+        # Recorded per generation so the total-token divergence F-021 found is
+        # diagnosable next time without re-running. The pilot's artifacts carried
+        # chain totals only, which is why its mechanism is still unconfirmed.
+        "total_record_count": len(records),
+        "displaced_synthetic_records": displaced,
+        "corpus_record_budget": corpus_record_budget,
     }
 
 

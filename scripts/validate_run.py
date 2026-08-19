@@ -13,14 +13,16 @@ reproducibility).
 Exit codes
 ----------
 0   valid
-2   valid_with_limitation
-1   invalid
-64  usage error — the validator did not run
+1   valid_with_limitation
+2   invalid
+3   usage error — the validator did not run
 
-64 exists so that 2 stays exclusive to ``valid_with_limitation``. argparse exits
-with 2 on any usage error, which would otherwise be indistinguishable from a
-genuine limitation: a CI wrapper treating 2 as "proceed with acknowledgement"
-would proceed on a validator that produced no verdict at all.
+**This block previously stated 2 for ``valid_with_limitation`` and 1 for
+``invalid``, contradicting the mapping a few lines below in this same file.**
+`_EXIT_CODES` has been correct since that inversion was found; the prose had not
+caught up, and `Makefile` and two runbooks repeated the wrong version. A reader
+following them would accept an invalid run and reject a limited one --- exactly
+backwards. See ``FAILURE_LOG.md`` F-024.
 
 The non-zero code for ``valid_with_limitation`` is deliberate: a limitation must
 be acknowledged explicitly by whoever consumes the result, not silently treated

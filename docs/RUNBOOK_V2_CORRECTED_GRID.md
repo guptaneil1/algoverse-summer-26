@@ -16,7 +16,7 @@ running command.
 |---|---|
 | 12 | Not `793 passed`, not `budget: 400`, or fewer than 2 GPUs |
 | 17 | `ALL 400: False` ← **this one saves you $20** |
-| 18 | You see `BUDGET_TOTAL_MISMATCH` |
+| 18 | You see `BUDGET_TOTAL_MISMATCH`, or `EXIT=2` |
 
 ---
 
@@ -174,7 +174,12 @@ python scripts/validate_run.py /workspace/v2_smoke/selection_only/seed101/
 echo "EXIT=$?"
 ```
 
-Want `EXIT=0` or `EXIT=2`, and **no `BUDGET_TOTAL_MISMATCH`** anywhere in the output.
+Want `EXIT=0` (valid) or `EXIT=1` (valid_with_limitation), and **no
+`BUDGET_TOTAL_MISMATCH`**. `EXIT=2` means **invalid** --- stop.
+
+The mapping is **0 valid / 1 limited / 2 invalid**. Earlier versions of this file,
+`Makefile`, and `validate_run.py`'s own docstring all stated it backwards, which would
+have accepted an invalid run and rejected a good one. See F-024.
 
 ---
 

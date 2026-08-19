@@ -28,7 +28,8 @@ figures:
 fixture-artifacts:
 	python scripts/build_fixture_artifacts.py --seeds 5
 
-# Three-state run validator. Exits 0 valid, 2 valid_with_limitation, 1 invalid.
+# Three-state run validator. Exits 0 valid, 1 valid_with_limitation, 2 invalid,
+# 3 usage error. Non-zero for a limitation is deliberate: it must be acknowledged.
 # Usage: make validate RUN=results/runs/chain-001
 validate:
 	python scripts/validate_run.py $(RUN)

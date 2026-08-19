@@ -327,7 +327,7 @@ python scripts/validate_run.py /workspace/pilot/*/seed*/ --report /workspace/pil
 echo "EXIT=$?"
 ```
 
-Exit 0 `valid`, 2 `valid_with_limitation`, 1 `invalid`. The validator never inspects
+Exit 0 `valid`, 1 `valid_with_limitation`, 2 `invalid`, 3 usage error (F-024). The validator never inspects
 treatment outcomes, so it cannot be swayed by whether a result is favourable.
 
 > **Steps 9 and 10 only work on a real run.** Against dry-run artifacts both exit 2:

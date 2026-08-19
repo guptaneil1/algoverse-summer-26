@@ -533,3 +533,17 @@ suite compares the two units.
 | Fixed | The budget is no longer a number. `corpus_record_budget: "match_synthetic"` keeps exactly as many records as that generation's decode produced, so human examples displace synthetic ones one for one and the corpus size follows the decode. There is no correct constant -- only the size the decode happens to produce -- so the config names that instead of guessing it. Two tests pin it, including that spending 0, 5 or 25 examples leaves the corpus size unchanged |
 | Scientific consequence | None. No grid ran on the wrong value. The chain that found it is discarded |
 | Lesson | The fix for a confound was itself specified by a derivation nobody had checked against the artifacts. "Derived, not chosen" was stated in the config as a virtue, and the derivation was wrong -- a plausible chain of reasoning about `--limit` that never met a record count. Where a self-calibrating definition exists, prefer it to a derived constant: `match_synthetic` cannot be wrong by a factor of eight because it is not a guess about the data, it is a reading of it |
+
+### F-024 — the validator's documented exit codes were inverted against its own implementation (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Stage | Pre-grid, reading the validation chain's result |
+| Observation | The corrected validation chain returned `"classification": "valid_with_limitation"` with `budget_total_matches_plan` passing --- and `EXIT=1`. The runbook said to accept `EXIT=0 or 2`, so a correct run read as a failure. The previous, genuinely invalid chain had returned `EXIT=2`, which the same instruction read as acceptable |
+| Cause | `scripts/validate_run.py` implements `{valid: 0, valid_with_limitation: 1, invalid: 2}`, with a comment recording that an earlier inversion was found and corrected. **The module's own docstring was never updated** and still stated `0 valid, 2 valid_with_limitation, 1 invalid, 64 usage error`. `Makefile` repeated the docstring's version, and both runbooks repeated the Makefile |
+| Consequence | An operator following the written instruction would **accept an invalid run and reject a valid one** --- the exact inversion the code comment says was fixed in the implementation and, evidently, nowhere else. It also means this session's earlier reading of the first pilot was wrong in a worse way than F-021 recorded: `VALIDATE_EXIT=2` was not "all chains limited", it was **invalid**, and the aggregate was telling the truth while the reader had the key backwards |
+| Fixed | Docstring, `Makefile`, and both runbooks corrected to `0 valid / 1 limited / 2 invalid / 3 usage`. The docstring now states what it previously said and why that was wrong, rather than quietly reading correctly |
+| Why nothing caught it | `tests/validation/test_validator_cli.py` asserts the *code's* mapping, which was right. No test compares prose to behaviour, and prose is what a human follows at 2am on a metered pod |
+| Cost | Zero, and one avoided false stop. The chain that exposed it had already passed |
+| Scientific consequence | None directly. The risk it carried was procedural and severe: the documented contract for the project's own certification tool said the opposite of what the tool does |
+| Lesson | Fourth instance of the shape F-016, F-018 and F-020 share --- documented intent diverging from implementation with nothing asserting the two agree. Here the divergence was inside a single file, between its docstring and a constant forty lines below it |

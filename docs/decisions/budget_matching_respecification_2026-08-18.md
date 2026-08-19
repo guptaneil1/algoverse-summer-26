@@ -1,7 +1,8 @@
 # P-008 — realised budget matching, re-specified
 
 **Date:** 2026-08-18
-**Status:** Proposed, awaiting ratification. `DECISIONS.md` P-008.
+**Status:** Accepted by the project owner 2026-08-19, not ratified by the team.
+`DECISIONS.md` P-008 and its acceptance note.
 **Supersedes:** the exact-equality guard in `scripts/run_pilot.py`.
 **Owner of the underlying question:** Aarav (`DECISIONS.md` U-003, U-007), per `FAILURE_LOG.md` F-015.
 

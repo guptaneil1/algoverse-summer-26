@@ -5,8 +5,9 @@ Written to be followed literally. Every command is copy-pasteable in order.
 
 **What this runs:** `configs/experiment/primary_pilot.json` — 5 arms × 5 seeds = 25
 chains, horizon 10.
-**Prior estimate:** ~$8 and ~2.8 hours on 4× RTX 4090 (`docs/HANDOVER_2026-08-18.md`).
-Not measured this session; treat as an estimate, not a quote.
+**Measured, 2026-08-18:** 6.75 h wall on 4x RTX 4090 (longest shard; the other three
+5.80-5.81 h), 57.9 min per chain, roughly $20 at an observed $3/hour. This replaces the
+~$8 / ~2.8 h estimate the earlier handover carried, which predated any chain.
 **What you get:** per-generation curves, between-chain variance for sizing a powered
 study, feasibility numbers, and a Gate D artifact. Not a verdict — see
 [What to expect](#12-what-to-expect-from-the-result).
@@ -18,8 +19,8 @@ study, feasibility numbers, and a Gate D artifact. Not a verdict — see
 You need:
 
 - A RunPod account with credit on it. Provisioning and paying is yours to do.
-- The repo pushed. As of 2026-08-18 `stage-a/env-freeze` is at `3b4f81b`, and the
-  fixed budget guard is in it. A fresh clone of that branch is all the pod needs.
+- The repo pushed. A fresh clone of `stage-a/env-freeze` is all the pod needs; check
+  `git log --oneline -1` matches the branch head you intend to run.
 - ~30 minutes of attention at the start, then it runs unattended.
 
 You do **not** need to copy anything from your laptop to the pod. The pod clones from
@@ -97,8 +98,8 @@ Confirm the checkout is the branch you think it is:
 cd /workspace/algoverse-summer-26 && git log --oneline -3
 ```
 
-You should see `Correct the handover runbook for the P-008 budget check` at the top. If
-you don't, you are on the wrong branch and the budget guard will be the broken one.
+Confirm the top commit matches the branch head you intended to clone. If it does not,
+you are on the wrong branch and the budget guards may be the pre-F-021 ones.
 
 ---
 
@@ -112,8 +113,9 @@ python -m pytest -q 2>&1 | tail -3
 nvidia-smi -L
 ```
 
-Expect `719 passed, 13 skipped` and four `GPU 0..3` lines. If tests fail here but pass
-on your laptop, the environment is wrong — stop and fix it, don't proceed.
+Expect the suite to pass clean (781 passed, 13 skipped as of 2026-08-19) and four
+`GPU 0..3` lines. If tests fail here but pass on your laptop, the environment is wrong --
+stop and fix it, don't proceed.
 
 ---
 
@@ -146,7 +148,11 @@ ls -la data/corpora/pilot_*.json
 ## 5. Dry run
 
 Free. Simulated training, but real allocation, real manifests, real budget arithmetic.
-It has caught three confounds so far.
+
+**Necessary, and known insufficient.** It cannot see anything that depends on the
+subprocess's working directory or filesystem (F-017), and it cannot check budget matching
+for score-dependent policies at all, because those allocate from simulated statistics
+(F-020). Treat a passing dry run as a precondition, never as clearance.
 
 ```bash
 cd /workspace/algoverse-summer-26 && export PYTHONPATH=src
@@ -405,5 +411,8 @@ the contrast will show.
 - **`primary_no_rescue.json` and `primary_fresh_random.json` stay
   `AWAITING_JULY_31_FREEZE`** and must stay refused. Tests assert this.
 - **Do not push to `main`.** Branch and PR.
-- Decisions P-001 through P-008 are **proposed, not ratified**. Nothing here ratifies
-  them.
+- Decisions P-001 through P-011 are **accepted by the project owner** (2026-08-19), not
+  ratified by the team. `DECISIONS.md` records exactly what that means and its limits.
+- **Do not re-run this grid yet.** F-020 is fixed, but F-021a shows a re-run would
+  reproduce the total-token divergence, which is a design issue P-011 addresses and no
+  chain has yet validated.

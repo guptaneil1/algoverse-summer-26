@@ -6,9 +6,12 @@
 `RESULT_PENDING` and is filled only from generated artifacts, never typed by hand
 (`CLAUDE.md` rule 3).
 
-**Honesty note for the current state:** if either talk is delivered before Stage A completes, the
-status slide is not optional and must not be softened. A mentor audience will discover the absence
-of results in the first question if it is not stated in the talk.
+**Honesty note, updated 2026-08-19.** Stage A is reproduced and the pilot has executed. The
+status slide is still not optional and still must not be softened, but what it must say has
+changed: the run happened, the preregistered fairness check rejected it on both axes, and the
+primary contrast is **not established**. A mentor audience will find that in the artifacts
+within one question if the talk does not lead with it. Leading with it is also the strongest
+move available -- see the revised slides below.
 
 ## Five-minute outline (5 slides)
 
@@ -30,17 +33,22 @@ identical lifetime human tokens and identical total optimizer tokens — that ma
 fairness constraint. The experimental unit is a complete seeded chain, not a generation.
 *Visual:* the four-family decomposition table.
 
-**4. Status — 60s**
-State plainly: pipeline, policies, evaluation, and analysis are built and unit-tested; the published
-positive control has not been reproduced; no experimental results exist. Name the critical path —
-GPU access → positive control → pilot.
-*Visual:* the critical-path chain from `docs/STATUS.md`.
+**4. What happened — 60s**
+The pilot ran: 25 chains, 5 policies x 5 frozen seeds, horizon 10, 6.75 h on 4x RTX 4090. Every
+chain completed. **The preregistered fairness check then rejected the run on both of its axes** --
+one policy under-spent its human budget by 10.1%, and realised total tokens span 2.26% across arms.
+The primary contrast is reported as invalid, not null. Say this in the first sentence of the slide.
+*Visual:* the two-axis budget table, both rows failing.
+*Speaker note:* the numbers come from `pilot_macros.tex`, generated from chain artifacts.
 
-**5. What we would conclude — 45s**
-The design permits a null or harmful answer, and we have precommitted to reporting it. If a fixed
-schedule matches joint allocation at equal cost, the adaptivity is not justified — and that is a
-useful finding.
-*Visual:* the four outcome templates as four boxes.
+**5. What survives, and why it matters — 45s**
+Three things. Between-chain variance is small enough that five seeds is already powered at the
+preregistered threshold -- so chain count is not the constraint, which is the opposite of what the
+pilot was commissioned to find out. One comparison is matched on both axes and is a null: **when**
+the budget is spent does not detectably change the outcome. And the check that killed our headline
+did so before anyone read the result -- we declined the secondary comparison that would have looked
+better. That last point is the contribution a methods audience will actually respect.
+*Visual:* three boxes -- variance, the surviving null, the declined comparison.
 
 ## Ten-minute outline (10 slides)
 
@@ -74,19 +82,31 @@ Before any novel comparison, reproduce Drayson et al. (EMNLP 2025), upstream pin
 `transformers` unpinned from Git main, so reproducing it requires pinning that ourselves.
 *Visual:* Stage A acceptance criteria.
 
-**8. Status and critical path — 90s**
-As slide 4 of the short talk, expanded. Show the week-by-week reality: Week 1 complete, Week 2 the
-live frontier, Weeks 3–4 gated rather than late. One workstream is compute-blocked; three have
-available work.
+**8. What the run cost us, and what it taught — 90s**
+Seven defects, F-015 through F-021a, every one found *after* a passing dry run and every one
+invisible to a 740-test suite. Three share a shape: a check whose intent was documented and whose
+implementation did not achieve it, with no test asserting the intent. **A guard never observed to
+bind is a guard whose binding is unverified.** Two limits on dry runs are now written down: they
+cannot see the subprocess environment, and they cannot test budget matching for score-dependent
+policies at all.
+*Visual:* the seven defects, with the three sharing a shape grouped.
 
-**9. Outcome commitments — 60s**
-Walk the four templates. Emphasize that a tight interval around zero and a wide interval are
-different results and will be reported differently.
+**9. The design change the run forced — 60s**
+Adding human data to a fixed synthetic corpus makes training volume depend on how much a policy
+spent -- so strategy and quantity cannot be separated, including against a control that spends
+nothing. We now specify that human examples **displace** synthetic records rather than being
+appended. That makes the total-token condition hold by construction. It is untested; no chain has
+run under it.
+*Visual:* two corpora side by side, additive vs displacement.
 
 **10. Asks — 60s**
-Specific, not vague: GPU allocation for Stage A; a decision on training regime, domain, and
-budgets; an external reviewer for the novelty claim; and a revised timeline.
-*Visual:* the four blockers mapped to the four members.
+Specific, not vague. (1) Ratify P-001 through P-011 -- accepted by the owner, never team-reviewed,
+three in others' CODEOWNERS areas. (2) An external novelty reviewer; the stop rule has been applied
+internally and is not triggered, but internal is not the same as external. (3) A statistics review
+of the 2% threshold, which every interval in the paper is read against. (4) Roughly $20 and one
+validation chain to re-run the grid under the corrected design -- the variance data says five seeds
+is already enough, so this is the cheapest empirical result available to the project.
+*Visual:* four asks mapped to owners.
 
 ## Slide-count discipline
 
@@ -95,7 +115,12 @@ slides or it is cut. The status slide is never the one cut.
 
 ## Filling result slots
 
-When results exist, `RESULT_PENDING` markers are replaced by values read from
-`results/aggregates/`, and each results slide carries the generating command in its speaker notes.
-No number is typed by hand into a slide, for the same reason no number is typed by hand into the
-paper.
+Results now exist. Every number on a slide is read from
+`results/runs/primary_pilot_2026-08-18/` or from `paper/tables/pilot_macros.tex`, which is
+generated from those artifacts by `scripts/generate_pilot_outputs.py`. Each results slide carries
+the generating command in its speaker notes. No number is typed by hand into a slide, for the same
+reason no number is typed by hand into the paper.
+
+**The figure to use** is `results/figures/pilot_nll_by_generation.png`, also generated. Its caption
+must carry the same qualification the paper's does: two of the five trajectories are not
+budget-matched.

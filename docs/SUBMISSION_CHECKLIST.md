@@ -90,7 +90,7 @@ has no computation defined anywhere, and C-002 rests on both.
 | ☑ | Both limitations stated in §7 | `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`, `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` |
 | ☑ | All 25 retained, including the 10 invalid | `results/runs/primary_pilot_2026-08-18/` |
 | ☐ | Validity certificate issued per headline result, by someone who did not operate the run | `docs/VALIDITY_CERTIFICATE_TEMPLATE.md` |
-| ☐ | Primary NLL and tail metrics independently recomputed from frozen outputs | Neil |
+| ◐ | **Automatable half done.** `scripts/reproduce_pilot_table.py` recomputes every published value from `chain_result.json` with arithmetic written independently of the generator; all reproduce, and `test_published_values_reproduce.py` runs it in CI. The human half -- a person other than the analysis author running it -- still stands | Neil |
 | ☐ | Results freeze tagged | `week-3-results-freeze-YYYY-MM-DD` |
 
 ## Gate E — Analysis and writing
@@ -118,7 +118,7 @@ has no computation defined anywhere, and C-002 rests on both.
 | ☐ | Hostile external novelty review obtained from someone outside the team |
 | ☐ | Statistics and experimental-design review obtained |
 | ☐ | Uninvolved-reader review obtained |
-| ☐ | Headline table reproduced by someone who did not write the analysis |
+| ☐ | **Needs a person.** `python scripts/reproduce_pilot_table.py` is one command and prints pass/fail; anyone on the team can run it |
 | ☐ | No mock-review score below 3/4 on quality, clarity, significance, originality |
 | ☐ | No unresolved fatal novelty or correctness objection |
 | ☐ | The contribution can be summarised correctly after one reading |
@@ -131,7 +131,7 @@ has no computation defined anywhere, and C-002 rests on both.
 | ☐ | Submission archive builds | `make submission` |
 | ☑ | No secrets: scanned 2026-08-19, the only hits are documentation prose about *not* committing credentials. Largest tracked asset is `base_train.jsonl` at 5.8 MB |
 | ☐ | Every headline value traces to a frozen artifact | claim-to-evidence audit |
-| ☐ | Presentation prepared from `docs/presentation_outline.md` |
+| ◐ | Outline rewritten for the executed run (2026-08-19): status slide leads with the rejected fairness check, new slides for what survives, the seven defects, and the design change. Slides themselves not built |
 | ☐ | Final tag created | `submission-final-YYYY-MM-DD` |
 
 ---

@@ -84,10 +84,22 @@ def policy_for_final_generation(
         return ScheduleOnlyPolicy(schedule)
     if isinstance(policy, JointPolicy):
         # JointPolicy caps its maximum at 2x base, so half the remainder as base
-        # leaves the cap at the remainder itself. Its urgency rule still decides
-        # how much of that it wants; the feasibility clamp then floors it at the
-        # reserve, which at the last generation is the whole remainder.
-        return JointPolicy(horizon, max(1, allowance // 2))
+        # leaves the cap at the remainder itself.
+        #
+        # The horizon passed here is deliberately the *reconciliation* generation
+        # plus one, not the chain's horizon. JointPolicy is the only arm whose spend
+        # is gated by an internal rule rather than by its allowance alone:
+        # `_feasible_budget` floors the allocation at
+        # `remaining - maximum * future_generation_count`, and that floor equals the
+        # whole remainder only when the policy believes no spending generation
+        # follows. Reconciliation fires at `horizon - 2`, where the chain's real
+        # horizon leaves `future_generation_count == 1` and the floor collapses to
+        # ~0 -- so the urgency rule, not the reconciliation, decided the spend.
+        #
+        # FAILURE_LOG.md F-020: this stranded 75,807 tokens per chain at every seed
+        # of the first real pilot -- a 10.1% spread that invalidated the primary
+        # contrast. Raising the cap was never sufficient; the floor has to bind.
+        return JointPolicy(last_spending_generation(horizon) + 1, max(1, allowance // 2))
     if isinstance(policy, NoRescuePolicy):  # pragma: no cover - covered by name check
         return policy
     raise TypeError(f"no terminal reconciliation defined for {type(policy).__name__}")

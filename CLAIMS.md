@@ -8,7 +8,7 @@ No claim in this file is a result unless its status is explicitly `SUPPORTED BY 
 |---|---|---|---|---|
 | C-000 | Fact about this repository | No Human Data Budget experiment has been run or verified in this repository | Repository audit | Verified |
 | C-001 | Literature-grounded motivation | Recursive training on generated data can degrade model fit, diversity, or tail coverage in studied settings, while the outcome depends strongly on the data workflow and source distribution | Audited primary literature | Supported with scope qualifiers |
-| C-002 | Hypothesis | At equal lifetime human-token budget and total optimizer-token budget, joint allocation across time and under-covered modes reduces chain-level regret relative to the strongest schedule-only and selection-only baselines | Powered recursive-chain experiment | Untested |
+| C-002 | Hypothesis | At equal lifetime human-token budget and total optimizer-token budget, joint allocation across time and under-covered modes reduces chain-level regret relative to the strongest schedule-only and selection-only baselines | Powered recursive-chain experiment | **Untested. One attempt, 2026-08-18, did not test it:** the 25-chain grid executed and every chain certified, but realised human spend differed 10.1% across arms, so this contract's own falsification clause -- "not supported if budget equality fails" -- applies. That is a failed precondition, not evidence about the hypothesis. Cause `FAILURE_LOG.md` F-020, fixed; re-run required. Sizing: `docs/decisions/powered_design_sizing_2026-08-19.md` |
 | C-003 | Hypothesis | The advantage of targeted allocation decreases or reverses when the monitoring reference omits globally important modes | Predeclared monitoring-bias intervention | Untested |
 | C-004 | Provisional novelty claim | The exact joint problem of allocating one fixed lifetime stock of human-origin optimizer tokens across recursive generations and monitored human-distribution modes is distinguishable from the closest audited work | Saturated search, external expert review, and continuing 2026 search | Unverified and deliberately narrow |
 | C-005 | Proposed mechanism | Under-covered modes with high projected future regret may have greater marginal value for human anchors | Theory or mechanism intervention plus experiment | Untested |
@@ -109,6 +109,24 @@ At the same total number of human-origin optimizer-consumed tokens and total opt
 ### Falsification
 
 C-002 is not supported if the powered interval for the joint-versus-strongest-eligible-non-joint contrast includes the frozen practically equivalent or harmful region, if budget equality fails, if leakage occurs, or if the conclusion depends on post-hoc exclusions.
+
+### Status against this contract, 2026-08-19
+
+The comparison was attempted once. Of the seven required comparators, four ran (no rescue,
+fresh random, schedule-only, selection-only); comparators 5-7 are not implemented, and the
+absence of the oracle upper bound (7) is deliberate and bounds what any result could claim.
+
+**Budget equality failed**, so the falsification clause above applies and the run does not
+support C-002. It is equally not evidence against it: a precondition failed, and the
+contrast was never validly computed. `joint` consumed 674,193 human tokens against the
+other arms' ~749,850, a 10.1% shortfall traced to `FAILURE_LOG.md` F-020 and since fixed.
+
+Two things the run does establish, neither of which touches C-002: the apparatus executes
+the required comparison end to end and produces certifiable artifacts, and between-chain
+variance is low enough that the frozen five-seed set is already powered at the
+preregistered threshold. Secondary contrasts among the four budget-matched arms are
+recorded in `docs/runs/primary_pilot_2026-08-18_results.md` and, per `PREREGISTRATION.md`,
+cannot substitute for the primary analysis.
 
 ## Claim C-004 novelty contract
 

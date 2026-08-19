@@ -3,7 +3,7 @@
 **Date:** 2026-08-18
 **Made by:** this working session, at the project owner's direction, after confirming no
 decision had been recorded on `origin/main`.
-**Status: PROPOSED, AWAITING RATIFICATION.** `DECISIONS.md` assigns no owner to U-001
+**Status: ACCEPTED BY THE PROJECT OWNER 2026-08-19, NOT TEAM-RATIFIED.** `DECISIONS.md` assigns no owner to U-001
 through U-007; `docs/SUBMISSION_CHECKLIST.md` Gate C infers owners from directory ownership
 and says to confirm each with the person named. That confirmation has not happened. Every
 decision below records the evidence it rests on and what would reverse it.

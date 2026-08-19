@@ -34,6 +34,7 @@ from human_data_budget.evaluation.real import mode_nll_to_retention_scores
 from human_data_budget.evaluation.tail import tail_retention
 from human_data_budget.models import ChainResult, GenerationMetric, PolicyState
 from human_data_budget.policies.base import validate_allocation
+from human_data_budget.policies.terminal import allocate_with_reconciliation
 from human_data_budget.runner.chain import policy_from_config
 from human_data_budget.runner.checkpoint import (
     checkpoint_path,
@@ -139,6 +140,18 @@ def run_real_chain(
 
     from human_data_budget.generation.real import real_generate_step  # noqa: PLC0415
     from human_data_budget.training.real import real_train_step  # noqa: PLC0415
+
+    # Corpus paths reach upstream as subprocess arguments, and upstream runs with
+    # cwd=upstream_dir (see runner/upstream_driver.run_upstream_step). A config's
+    # repo-relative "data/corpora/pilot_base.json" therefore resolves against the
+    # upstream checkout, where it does not exist. Absolutise here, against the
+    # process working directory, before any of the three reaches a command line.
+    # FAILURE_LOG.md F-017. The dry-run path cannot catch this: it prints the
+    # command instead of executing it, so a wrong path still reads as correct.
+    config = dict(config)
+    for key in ("base_corpus", "prompt_corpus", "test_corpus"):
+        if config.get(key):
+            config[key] = str(Path(config[key]).resolve())
 
     output_dir = Path(output_dir)
     experiment = output_dir / "upstream"
@@ -291,7 +304,12 @@ def run_real_chain(
                 candidates=candidates,
                 history=tuple(allocations),
             )
-            allocation = policy.allocate(state, seed)
+            # F-015: raise the allowance to the whole remainder at the final
+            # generation so every arm converges on the same lifetime spend. Each
+            # policy still chooses which examples with its own rule.
+            allocation, reconciled = allocate_with_reconciliation(
+                policy, state, seed, config=config
+            )
             validate_allocation(allocation, state)
             remaining -= allocation.selected_human_tokens
             allocations.append(allocation.as_dict())
@@ -311,6 +329,7 @@ def run_real_chain(
                     "metrics": [m.as_dict() for m in metrics],
                     "pending_selection": pending,
                     "pending_scores": pending_scores,
+                    "terminal_reconciliation": reconciled,
                     "previous_corpus": prev_corpus,
                 },
                 checkpoint_path(output_dir, generation),

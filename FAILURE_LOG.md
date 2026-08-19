@@ -337,3 +337,171 @@ suite compares the two units.
 | Why this was a correctness bug, not only a crash | `PROTOCOL.md` §3 holds five partitions disjoint, and lists generation prompts separately from training data. Prompting from `train_file` would have drawn prompts from the training set. Had `generate.py` tolerated a missing `context` instead of raising, this would have produced numbers rather than an error |
 | Resolution | `prompt_corpus` is now a required config key, built from the frozen `prompts` partition and passed unchanged for every generation. The launcher resolves and prechecks it alongside the other assets |
 | Scientific consequence | None realised -- the run crashed rather than completing. Recorded because the failure mode it would have caused is silent |
+
+
+### F-015 — realised human spend differs 24% across arms; budget matching does not hold (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **pre-execution**. Found by a dry run of the frozen config, before any GPU time |
+| Classification | **Method design defect** -- not implementation. The policies behave as specified; the specification does not equalise spend |
+| Observation | Against a 750,000-token lifetime budget, realised lifetime human-origin spend was: `no_rescue` 0 (by design), `schedule_only` ~517,000, `selection_only` 574,731, `random` ~580,000, `joint` 641,002. The ordering and magnitudes are identical at every one of the five frozen seeds |
+| Magnitude | Joint consumes **23.7-24.3% more** human-origin optimizer tokens than schedule_only, at every seed |
+| Why | Policies stop when the next indivisible candidate does not fit the remaining per-generation allowance, and they differ in how many generations they can spend in at all. `schedule_only`'s frozen back-loaded schedule gives it five spending generations; `joint` spends adaptively across all ten. Neither reaches the 750,000 ceiling, and they fall short by different amounts |
+| Consequence | `PROTOCOL.md` §4 requires every policy in a budget-matched comparison to consume "exactly the same lifetime number of human-origin optimizer tokens". It does not hold. A joint-versus-schedule_only contrast is confounded by data quantity: if joint wins, the cause cannot be separated from its extra ~124,000 tokens. `CLAIMS.md` C-002's contract is unmet as configured |
+| Not a discretisation artifact | Candidates average 4,082 tokens, so rounding could explain a spread of a few thousand. 124,000 is thirty times that, and the gap is stable across seeds rather than varying with them |
+| Options, none chosen here | (1) Require every policy to spend its full lifetime budget by the final generation, with a terminal top-up, making the constraint hold by construction. (2) Re-specify the constraint as an equal *ceiling* rather than equal realised spend, and report realised spend as a reported covariate. (3) Equalise post hoc by truncating every arm to the minimum realised spend, which discards data and changes what each policy did. (4) Accept and state the confound, which forfeits C-002 |
+| Owner | Budget definition and the joint allocation rule are Aarav's (`DECISIONS.md` U-003, U-007) |
+| Cost of finding it here | Zero. A dry run of the frozen grid on CPU. Discovering it after the pilot would have cost the run and produced a comparison that could not support its primary claim |
+| Scientific consequence | None yet. No chain has run. The pilot should not launch for a C-002 contrast until this is resolved, though it could still legitimately launch as a **variance-estimation** exercise if that limitation is stated in advance |
+
+### F-015a — F-015 closed; the residual is an indivisibility floor (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, still **pre-execution**. No chain has run |
+| Relation to F-015 | **Closure.** F-015 is not edited. This entry records what changed, which of its four options was taken, and what the constraint now asserts |
+| What was fixed | Two defects, both in commit `2626483`. (1) `data/corpus.py` summed `token_count` for its human ledger while policies priced candidates in `optimizer_token_count`, so a fully-allocated budget read as under-spent by the BPE ratio — F-010b resurfacing in the ledger after being fixed in the pricing. (2) Terminal reconciliation fired one generation too late: an allocation at generation *g* is assembled into generation *g+1*'s corpus, so the final generation's allocation was never consumed, and `schedule_only`'s back-loaded schedule placed a full 150,000 allowance exactly there |
+| Option taken | F-015's **option 2** — re-specify the constraint as an equal *ceiling* reached up to indivisibility, rather than equal realised spend. Recorded as `DECISIONS.md` P-008 |
+| Measured after the fix | Dry run of the frozen grid, 25/25 chains, 2026-08-18: `no_rescue` 0 at every seed; `random` 749,757–749,970; `schedule_only` 749,709–749,995; `selection_only` 749,866 at every seed; `joint` 749,844 at every seed. Spread across the four spending arms **0.0381%** against a 750,000 ceiling |
+| Why this is a floor, not a defect | Candidates are indivisible. The largest in the frozen rescue pool costs **26,902** optimizer tokens (4,235 candidates, mean 4,082.4, measured from `data/manifests/rescue_candidates.jsonl`). An arm stops when the next candidate does not fit, so a shortfall of up to one candidate is arithmetic rather than policy. The largest observed shortfall is **291** |
+| Not claimed | That realised spend is equal. It is not, and cannot be over indivisible examples. What is asserted is that every spending arm reaches its ceiling to within one candidate, and that the residual spread stays an order of magnitude below the practical effect threshold |
+| Scientific consequence | The 24% confound recorded in F-015 does not hold at the frozen configuration. `CLAIMS.md` C-002's contract is met as configured. This closes the confound, not the pilot's inference limits: the run remains a variance-estimation exercise under five frozen seeds |
+
+### F-016 — the budget-matching guard could never pass, and nothing tested it (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **pre-execution**. Found by the dry run that F-015 established as the pre-launch gate |
+| Observation | `scripts/run_pilot.py` asserted budget matching as `len({consumed_human_tokens}) > 1` — exact set equality over every completed chain. Run against the frozen grid it printed `BUDGET MATCHING VIOLATED` on a 0.0381% spread: the very state commit `2626483` had recorded as F-015's closure |
+| Classification | **Implementation defect in the guard**, not in the policies. The measured spend was correct and within its intended bound; the assertion over it was unsatisfiable |
+| Two independent reasons it was unsatisfiable | (1) `no_rescue` consumes 0 by construction, so 0 was always in the set beside ~749,000 — no configuration containing the control arm could ever pass. (2) Indivisible candidates make exact equality unreachable across seeds even among the spending arms |
+| Why the suite missed it | Nothing exercised the guard's **pass** condition. The string `BUDGET MATCHING` occurred in `scripts/run_pilot.py` and nowhere else in the repository. 706 tests passed against a launcher that would have flagged every physically possible run |
+| Second defect, same guard | A violation only printed. The exit code keyed off failed chains, so an unequal comparison exited **0** and appeared below the results rather than stopping the run |
+| Third defect, sharded path | Each shard evaluated only the ~6 chains it ran, so no process ever assessed the whole grid. The launch command in `docs/HANDOVER_2026-08-18.md` shards four ways, so this was the path the pilot was about to take |
+| Fixed | `src/human_data_budget/runner/budget_matching.py` asserts the three conditions P-008 specifies; violations exit non-zero; `--check-only` reassembles every shard summary into a whole-grid verdict. `tests/runner/test_budget_matching.py` (13 tests) pins both directions, including that F-015's historical numbers still fail the replacement check |
+| Cost of finding it here | Zero. It would not have been free later: the run would have completed, exited 0, and printed a fairness violation under 25 chains of otherwise valid results, with no way to tell from the exit code that anything was wrong |
+| Scientific consequence | None. No chain has run. Had it gone unfound, the pilot's own fairness check would have been uninformative in both directions — unable to pass when the constraint held, and unable to stop the run when it did not |
+
+### F-017 — corpus paths resolved against the upstream checkout, killing all 25 chains (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **first real launch**. Found on GPU, after the dry run passed |
+| Observation | All 25 chains failed within seconds of launch, every one at generation 0's training step: `FileNotFoundError: Unable to find '/workspace/model_collapse/data/corpora/pilot_base.json'`. GPU utilisation never left 0% and memory never left 1 MiB, so no training ever began |
+| Cause | `runner/upstream_driver.run_upstream_step` runs each subprocess with `cwd=upstream_dir`. The three corpus paths a config supplies — `base_corpus`, `prompt_corpus`, `test_corpus` — were passed through to the command line unchanged. They are repo-relative (`data/corpora/pilot_base.json`), so upstream resolved them against `/workspace/model_collapse`, where they do not exist. The corpora were present and correct in the repository the whole time |
+| Why the dry run did not catch it | The dry-run path *prints* the command rather than executing it, so a path that can never resolve renders identically to one that will. The dry run reported `budget matching: HOLDS` with the expected figures minutes before the launch failed. This is a real limit on what a dry run certifies: it exercises allocation, manifests and budget arithmetic, not the filesystem the subprocess will actually see |
+| Why the test suite did not catch it | 719 tests passed. Nothing asserted a property of the corpus arguments on the command line. The builders were pinned for their *flags*, never for whether their path values would resolve from the working directory upstream runs in |
+| Why screening did not catch it | The screening run of 2026-08-18 used corpora at paths that happened to resolve, so the defect was latent until the pilot config's relative paths met a real subprocess |
+| Fixed | `runner/real_chain.run_real_chain` absolutises the three corpus paths against the process working directory before any reaches a command line, on a copy of the config so the caller's dict is untouched. `tests/runner/test_corpus_paths_are_absolute.py` (5 tests) asserts the command line itself; 2 of the 5 fail if the fix is reverted, verified by reverting it |
+| Cost of finding it here | Roughly a minute of 4-GPU time and the operator's attention. No compute was consumed: every chain died before loading a model. Nothing scientific was lost, and no artifact needs discarding |
+| Scientific consequence | None. No chain produced a result, valid or otherwise. The `pilot_summary*.json` files from this launch record 25 failures and no chain results |
+| Lesson recorded | A passing dry run is necessary and not sufficient. It cannot certify anything that depends on the subprocess's working directory, its filesystem, or its environment — F-007 and F-014 were the same class. The cheap check that *would* have caught this is a single real chain (`--only-arm no_rescue` at one seed) before the full grid |
+
+### F-018 — the certification path carried two more copies of the guard F-016 fixed (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **after the first real chain, before the grid**. Found by checking the validator against a measured chain rather than by running it |
+| Observation | With one real chain complete (`no_rescue` seed 101: 0 human tokens, 16,678,912 total), `scripts/validate_run.py` blocks it twice: `lifetime human-token budget violated: manifest declares 750000, chain consumed 0` and `total optimizer-token budget violated: manifest declares 16100000, chain consumed 16678912`. `validation/audit.py` raises `BUDGET_HUMAN_MISMATCH` and `BUDGET_TOTAL_MISMATCH` on the same chain |
+| Consequence had it not been found | Every one of the 25 chains would have been certified **invalid** after roughly seven hours and the project's remaining budget. The chains themselves would have been sound; only the certification of them was wrong. `docs/RUNBOOK_PILOT_LAUNCH.md` step 11 would have reported a total failure of a successful run |
+| Cause, human axis | Identical to F-016. Both files asserted realised spend *equals* the declared budget. A control arm spends zero by construction, and a spending arm stops one indivisible candidate short, so neither can satisfy exact equality. F-016 corrected `scripts/run_pilot.py` and left these two untouched — three independent implementations of one constraint, only one of which was fixed |
+| Cause, total axis | Different, and not indivisibility. `total_optimizer_tokens` = 16,100,000 is P-005's **projection** of training volume, not a budget any policy spends against. The measured value is 16,678,912 on the arm that spends *nothing*, so the projection is 3.6% low before any rescue data is added. Asserting equality against a projection makes every chain fail regardless of policy |
+| Fixed | One shared implementation, `runner/budget_matching.check_chain_budget`, used by `scripts/validate_run.py` and `validation/audit.py`; the grid-level check in `scripts/run_pilot.py` already used the same module. Human axis follows P-008. Total axis follows P-009: reported rather than asserted, inside a band the human budget explains |
+| Verified | The measured chain now certifies, and a rescue arm at its residual certifies. F-015's shape (517,000 against 750,000) still blocks, as does a control arm that consumed anything. Checked by running `_check_budget_matching` against the measured numbers directly, not only through unit tests |
+| Guard tests re-pointed, not deleted | `test_human_budget_violation_is_invalid` asserted 59-against-60 and `test_total_budget_violation_is_invalid` asserted 301-against-300 — both violations only under exact equality. They now assert violations that are real under the replacement, and new tests pin the cases that must now pass. The two re-pointed tests are named as such in their docstrings so the change is visible rather than silent |
+| Left strict deliberately | `analysis/simulator.py` still asserts exact equality. It constructs its own divisible fixture candidates and excludes `no_rescue`, so exact spend is achievable there and the assertion catches simulator defects. Relaxing it would remove a working check |
+| Cost of finding it here | Zero. One measured chain and a reading of the validator |
+| Scientific consequence | None. One chain has run and it is sound; what was wrong was the rule used to certify it. No result is affected, and the smoke chain's artifacts remain usable |
+| Lesson | A constraint implemented three times is a constraint that will be fixed once. The launcher, the validator and the auditor now share one function; adding a fourth copy is the failure mode to watch for |
+
+### F-019 — F-004 recurring: the pilot config's partitions were declared but unrecognised (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **after one real chain, during the grid launch**. The grid was killed roughly two minutes in |
+| Observation | `scripts/validate_run.py` on the completed smoke chain returned `"classification": "invalid"`, `checks_failed: ["separation_partitions_recorded", "token_ledger_recomputed"]`, `SEPARATION_MISSING_PROVENANCE`. Fourteen checks passed, including all three budget checks fixed under F-018 |
+| Relation to F-004 | The same defect, on a different code path. F-004 recorded it for the toy chain in August and was closed by `build_partitions` resolving provenance from a declared source. That fix was never exercised by an experiment config, so it did not cover the one the pilot uses |
+| Cause | `build_partitions` accepts provenance from `data.partitions` (inline records) or `data.partition_manifests` (canonical name → JSONL path). `configs/experiment/primary_pilot.json` declares its five partitions under **`data.manifests`**, keyed by the `data/` module's vocabulary (`base_train`, `prompts`, `test`) and carrying `{path, manifest_hash}`. Three names and one shape apart, so the builder recognised nothing and returned `None`. The config was not missing provenance; it was declaring it in a vocabulary the builder did not read. F-002 recorded that exact two-vocabulary split as an open interface defect |
+| Consequence had it not been found | All 25 chains would have completed and every one classified `invalid`. The compute would not have been recoverable by re-validating: `data.partitions` is written into `run_manifest.json` at chain start, and F-004 already records that provenance cannot be back-filled after a run |
+| Why the dry run missed it | The dry run builds a manifest and would have written the same empty `data` block. Nothing in the dry-run path validates the manifest it produces, so a manifest that cannot certify still reads as a clean dry run |
+| Why the suite missed it | Every manifest test supplied its own fixture `data` block. No test asked whether *the config about to be launched* yields a certifiable manifest. 740 tests passed against a frozen, executable config that could not produce one |
+| Fixed | `runner/manifest.build_partitions` accepts `data.manifests` as a third provenance source, at lowest precedence, mapping the data-module vocabulary to the canonical one through the existing `_DATA_MODULE_PARTITIONS` table. No config was edited: the frozen config already carried the information, hash-pinned. Verified against it — 22,637 / 4,235 / 1,359 / 60 / 60 records resolved, disjointness asserted, manifest 4.9 MB per chain |
+| Pinned by | `tests/runner/test_frozen_configs_are_certifiable.py`, which asks of every executable partitioned-stage config whether it resolves all five partitions, plus a guard test that fails if the filter ever stops covering `primary_pilot`. `positive_control` is excluded by stage and the reason is recorded in the file: Stage A drives WikiText-2 through its own adapter and never used these partitions |
+| Cost of finding it here | About two minutes of four-GPU time, plus the ~57-minute smoke chain that surfaced it. That chain paid for itself twice: it caught F-017's successor and this |
+| Scientific consequence | None. No certified result existed and none was lost. The smoke chain's artifacts remain uncertifiable for this reason and are not used for any claim |
+| Lesson | Three defects in a row (F-017, F-018, F-019) were invisible to both the dry run and the test suite, and all three were caught by running one real chain and validating it. The single-chain-then-validate step is now in the runbook ahead of the grid; it is the only step that exercises the subprocess, the artifacts, and the certification path together |
+
+### F-019a — the F-019 fix was verified against the wrong object (2026-08-18)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, between the second smoke chain and the grid |
+| Relation to F-019 | **Correction, appended not edited.** F-019 records the cause correctly and its fix was necessary; it was not sufficient, and the verification that accompanied it did not test the path that matters |
+| Observation | With F-019's fix committed, a second real chain still returned `SEPARATION_MISSING_PROVENANCE`, and its `run_manifest.json` hash was **byte-identical** to the first: `f607ca6d...`. The operator had not pulled the fix, which is how it was noticed; but the fix would not have worked either |
+| Cause | `run_pilot.chain_config` flattens the pilot config into per-chain keys — `rescue_manifest`, `base_corpus`, `model`, and so on — and carried **no `data` key at all**. `new_manifest` therefore read `config.get("data", _DEFAULT_DATA)` and got the default, so the corrected `build_partitions` was never handed the `manifests` block it had just been taught to read |
+| Why the F-019 verification missed it | It called `new_manifest(pilot_config)` with the config **as it exists on disk**, and `test_pilot_manifest_carries_partitions` did the same. Neither exercised `chain_config`, so both confirmed a property of a file rather than a property of the runner. The config on disk was never the object in question |
+| Fixed | `chain_config` passes the pilot's `data` block through. Confirmed by a dry run — free, no GPU — whose `run_manifest.json` now carries 22,637 / 4,235 / 1,359 / 60 / 60 records |
+| Verified against certification | The dry-run artifacts were patched with the chain's *measured* token counts (16,678,912 total, 0 human) and validated: `classification: valid_with_limitation`, reason codes `LIMIT_NEAR_DUPLICATE_NOT_CHECKED` and `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` only, exit 0. `SEPARATION_MISSING_PROVENANCE` is gone |
+| Pinned by | `test_the_launcher_passes_provenance_through_to_the_manifest`, which builds a manifest from `chain_config`'s output for **every arm**, not from the file |
+| Cost | Zero. Caught by a dry run and an artifact patch, both free, before a third paid chain |
+| Lesson | Verifying a fix against the object you edited proves the edit; it does not prove the behaviour. The manifest is written from a config the runner *constructs*, and no test had ever built that object. Two of the three checks written for F-019 shared the defect they were written to catch |
+
+### F-020 — terminal reconciliation raised joint's cap but not its floor (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, **after the full grid ran**. 25/25 chains complete, 0 failed |
+| Observation | `--check-only` over the completed grid exits 1: realised spend across spending arms spans 674,193 to 749,995 against a 750,000 ceiling, a **10.1070%** spread. `joint` consumed 674,193 at *every* seed — 75,807 short, where one indivisible candidate is at most 26,902 |
+| Consequence | The primary contrast is **invalid**, not null. `joint` received 10.1% less human data than the arm it is compared against, so `PROTOCOL.md` §4's fairness condition fails and `CLAIMS.md` C-002's contract is unmet by this run. F-015's confound, returning through a different mechanism at one tenth the magnitude |
+| Cause | `terminal.policy_for_final_generation` rebuilds `JointPolicy` with `base = allowance // 2`, raising its cap to the whole remainder. But `JointPolicy` is the only arm whose spend is gated by an internal rule rather than by its allowance: `_feasible_budget` floors the allocation at `remaining - maximum * future_generation_count`, and that floor equals the remainder only when the policy believes no spending generation follows. Reconciliation fires at `horizon - 2` = 8, where the chain's horizon of 10 leaves `future_generation_count == 1`, so the floor collapsed to **1** token. Measured directly. The urgency rule, not the reconciliation, then decided the spend — and at low urgency `_desired_budget` returns 0 |
+| The comment was wrong, not just the code | `terminal.py` stated the clamp "floors it at the reserve, which at the last generation is the whole remainder". True at generation 9; reconciliation runs at generation 8. The claim and the call site disagreed and nothing checked |
+| Why the dry run missed it | `JointPolicy` allocates from `mode_statistics`, which the dry run simulates. The simulated grid reached a different urgency and recorded `joint` at 749,844 — matching the other arms and passing the check. The real grid recorded 674,193. **Budget matching for score-dependent policies is not testable by simulation.** `random` and `schedule_only`, which do not score, reproduced their dry-run spends to the token |
+| Why the suite missed it | `terminal.py` had tests, but none asserted the property the module exists for: that after reconciliation a spending arm has actually spent its remainder. The tests checked that reconciliation was *applied*, not that it *bound* |
+| Fixed | `policy_for_final_generation` now rebuilds `JointPolicy` with horizon `last_spending_generation(horizon) + 1`, so at the reconciliation generation it sees no future generation and the floor becomes the whole remainder. `tests/policies/test_terminal_reconciliation_binds.py` (19 tests) asserts every spending arm lands within one candidate of its ceiling across four urgency levels; 4 fail if the fix is reverted, verified by reverting it |
+| Cost | The full grid, ~7.7 hours and the session's remaining GPU budget. The run is not wasted — it delivers the variance estimate the pilot was commissioned for — but the contrast it was also meant to inform must be re-run |
+| Scientific consequence | No invalid claim was published: the guard caught this before any result was read, which is what P-008 was built to do. `docs/runs/primary_pilot_2026-08-18_results.md` records the contrast as NOT ESTABLISHED and the variance estimate as sound |
+| Lesson | Three of this session's five defects (F-016, F-018, F-020) were the same shape: a check whose *intent* was documented and whose *implementation* did not achieve it, with no test asserting the intent. A guard that has never been observed to bind is a guard whose binding is unverified |
+
+### F-020a — the grid's wall time was overstated (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Relation to F-020 | **Correction, appended not edited.** F-020's cause, fix and scientific consequence stand; one of its cost figures was wrong |
+| What was wrong | F-020 records the cost as "the full grid, ~7.7 hours". That figure was the span between launch (21:40) and the operator *observing* completion (05:24). It is not the run's duration |
+| Measured | From the shard summaries: shard 0 ran **6.75 h** over 7 chains; shards 1-3 ran 5.80, 5.81 and 5.80 h over 6 chains each. Wall time for the grid is the longest shard, **6.75 h**, so the run finished near 04:25 and about an hour of pod time was billed idle afterwards |
+| Why it matters | The overstatement propagated into `docs/STATUS.md`, `docs/runs/primary_pilot_2026-08-18_results.md` and the cost estimate for a re-run, inflating it by roughly 15%. Anyone sizing the powered experiment from these documents would have over-budgeted |
+| How it happened | The figure was computed from timestamps in the operator's terminal rather than read from `wall_seconds` in the artifacts, which is the same class of error the project's "no invented numbers" rule exists to prevent: a number that was inferred rather than read, and that nothing checked |
+| Fixed | Corrected in both documents. The manuscript now cites `\PilotWallHours`, generated from the shard summaries by `scripts/generate_pilot_outputs.py`, so the figure cannot be typed by hand again |
+| Scientific consequence | None. No result depends on wall time; only cost planning did |
+
+### F-021 — total optimizer tokens were never matched, and 10 chains certify invalid (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Stage | B pilot, post-run analysis. Found while running the submission checklist's mechanical checks, not by the run's own gates |
+| Observation | Running `scripts/validate_run.py` over all 25 retained chains returns **10 `invalid`, 15 `valid_with_limitation`** — not the uniform `valid_with_limitation` recorded in `docs/runs/primary_pilot_2026-08-18_results.md`, `docs/STATUS.md` and `paper/sections/07_results.tex`. The five `joint` chains fail on `BUDGET_HUMAN_MISMATCH` and `BUDGET_TOTAL_MISMATCH`; the five `selection_only` chains fail on `BUDGET_TOTAL_MISMATCH` alone |
+| How the wrong claim was made | The pod run reported `VALIDATE_EXIT=2` for the whole set, and 2 was read as "every chain is `valid_with_limitation`". It is the aggregate exit code, not a per-chain classification, and it does not distinguish "all limited" from "some limited, some invalid". The per-chain report was written to `validation.json` and never read |
+| The substantive defect | `PROTOCOL.md` §4 requires matched lifetime human-origin tokens **and matched total optimizer tokens**. Only the human axis was ever asserted — by `run_pilot --check-only`, by `runner/budget_matching`, and by every statement made about this run. Realised totals: `no_rescue` 16,678,912; `schedule_only` 16,773,427; `random` 16,777,421; `joint` 17,025,024; `selection_only` 17,063,936. **Cross-arm spread 2.26%, above the 2% practical effect threshold** |
+| What this costs the secondary analysis | The claim that the twenty non-`joint` chains are "budget-matched" is true on the human axis (0.038%) and **false on the total axis**. Pairwise, only **`random` vs `schedule_only`** is matched on both (human −0.00%, total +0.02%). Every contrast involving `selection_only` carries a **1.7%** total-token gap in the same direction as its measured advantage |
+| What survives | The `schedule_only` vs `random` null — timing does not detectably help — is matched on both axes and stands as the one clean contrast this run supports. Its interval already contained zero |
+| What does not | The `selection_only` advantage (8.4–10.1% depending on comparator) is **confounded by 1.7% more total training volume**. The effect is roughly five times the confound and same-signed, so it is suggestive rather than nothing, but it is no longer a budget-matched result and must not be reported as one |
+| Also violated | `docs/SUBMISSION_CHECKLIST.md`: "No chain classified `invalid` is included in any analysis." Ten invalid chains were included in the secondary analysis before this was found |
+| Mechanism, not yet root-caused | Human spend matches to 0.038% while totals differ by up to 2.26%, so the divergence is not in the rescue accounting. The likely path is block packing: examples are tokenized into fixed-size blocks, so selecting a different set of examples changes how they pack and therefore how many optimizer tokens the same nominal budget consumes. Unconfirmed — the per-generation batch records needed to settle it were not retained |
+| Fixed | Not fixed. The measurement is recorded and the affected claims are corrected. Matching totals is a design change, not a patch: it requires either equalising realised total tokens by construction or re-specifying the constraint, which is an owner decision of the same kind as F-015's four options |
+| Scientific consequence | Material. One reported finding is withdrawn to "suggestive but confounded", one is retained as clean, and the run's certification status is corrected from uniformly limited to 10 invalid. No claim survives that was not restated |
+| Lesson | The run had a budget guard and it passed, because it asserted one of the two axes the protocol names. A guard that checks half a constraint reports success for the half it checks. `--check-only` should assert both axes; that it does not is why three documents carried a false statement for a day |
+
+### F-021a — a re-run would not fix the total-token axis (2026-08-19)
+
+| Field | Value |
+|---|---|
+| Relation to F-021 | **Analysis, appended.** F-021 records the defect; this records what does and does not repair it, because the difference decides whether to spend on a re-run |
+| The question | F-020 is fixed, so a re-run would give `joint` its full human budget. Does that also close the 2.26% total-token spread F-021 found? |
+| Answer: no | `selection_only` and `random` consumed 749,827 and 749,869 human tokens — matched to 0.04% — and their **totals differ by 1.71%** regardless. The divergence is therefore not caused by `joint`'s underspend and is untouched by fixing it. A re-run at the current design would reproduce it |
+| What that means for the money | Re-running now buys a valid *human* axis and leaves the *total* axis violated, so the primary contrast would still fail `PROTOCOL.md` §4 and still certify invalid. **Spending on a re-run before the total axis is decided buys a differently-broken run, not a fixed one** |
+| Mechanism, still unconfirmed | Human spend matches while totals do not, so the difference is not in rescue volume. Candidates are block packing (different examples pack differently into fixed-size blocks) or the generated corpus (arms train differently, generate differently, and the synthetic corpus tokenizes to different lengths). The per-generation batch records that would settle it were not retained — `chain_result.json` carries only chain totals |
+| Options, none chosen here | The same shape as F-015's four. (1) Equalise realised total tokens by construction, e.g. truncating each generation's assembled corpus to a fixed token count. (2) Re-specify the constraint so total tokens are a reported covariate rather than an asserted equality, as P-009 did for the projection. (3) Match on totals post hoc by truncation, which discards data and changes what each policy did. (4) Accept and state the confound, which forfeits the `PROTOCOL.md` §4 guarantee for every contrast |
+| Owner | The budget definition is Aarav's (`DECISIONS.md` U-003). This is a design decision of the same weight as F-015's, not a patch |
+| Cheap and worth doing first | Retain per-generation token accounting in the next run. `runner/real_chain` already knows each generation's assembled corpus; emitting its token count per generation would have made this diagnosable in minutes instead of unresolvable. That change costs nothing and is the difference between finding the cause and speculating about it |
+| Scientific consequence | The pilot's usable outputs are unchanged — variance, feasibility, the timing null, the apparatus. What changes is the plan: a re-run is **not** the next step, and deciding the total axis is |

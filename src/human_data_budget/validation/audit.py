@@ -19,6 +19,8 @@ from typing import Any
 from human_data_budget.data.hashing import content_hash
 from human_data_budget.data.overlap import find_near_duplicate_pairs
 from human_data_budget.data.token_accounting import consumed_tokens
+from human_data_budget.policies import spends_human_tokens
+from human_data_budget.runner.budget_matching import check_chain_budget
 from human_data_budget.validation.classification import (
     LIMITING_CODES,
     AuditReport,
@@ -429,23 +431,40 @@ def check_budgets(manifest: dict[str, Any], chain_result: dict[str, Any]) -> lis
         )
     )
 
-    human_ok = planned_human == consumed_human
+    # One rule, shared with the launcher and scripts/validate_run.py. Exact equality
+    # here was the same defect as FAILURE_LOG.md F-016: a control arm's structural
+    # zero and an indivisibility residual both read as violations. See F-018.
+    policy_name = (manifest.get("policy") or {}).get("name")
+    try:
+        spends = spends_human_tokens(policy_name)
+    except ValueError:
+        # Unknown policy: hold it to the constraint rather than exempt it.
+        spends = True
+
+    report = check_chain_budget(
+        declared_human=planned_human,
+        declared_total=planned_total,
+        consumed_human=consumed_human,
+        consumed_total=consumed_total,
+        spends_human=spends,
+    )
+    total_failures = [f for f in report.failures if f.startswith("total optimizer tokens")]
+    human_failures = [f for f in report.failures if f not in total_failures]
+
     checks.append(
         CheckResult(
             name="budget_human_matches_plan",
-            passed=human_ok,
-            code=None if human_ok else "BUDGET_HUMAN_MISMATCH",
-            detail="" if human_ok else f"planned {planned_human}, consumed {consumed_human}",
+            passed=not human_failures,
+            code=None if not human_failures else "BUDGET_HUMAN_MISMATCH",
+            detail="; ".join(human_failures),
         )
     )
-
-    total_ok = planned_total == consumed_total
     checks.append(
         CheckResult(
             name="budget_total_matches_plan",
-            passed=total_ok,
-            code=None if total_ok else "BUDGET_TOTAL_MISMATCH",
-            detail="" if total_ok else f"planned {planned_total}, consumed {consumed_total}",
+            passed=not total_failures,
+            code=None if not total_failures else "BUDGET_TOTAL_MISMATCH",
+            detail="; ".join(total_failures),
         )
     )
     return checks

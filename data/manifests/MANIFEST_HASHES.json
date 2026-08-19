@@ -1,4 +1,5 @@
 {
+  "_file_sha256_note": "manifest_file_sha256 refreshed 2026-08-18 after scripts/add_optimizer_token_counts.py added the optimizer_token_count field (DECISIONS.md P-002, FAILURE_LOG.md F-010b). manifest_hash is UNCHANGED for every partition: it digests only [example_id, content_hash] pairs, so partition identity and disjointness are unaffected. Only the serialized bytes moved.",
   "common_cutoff_tokens": 2661,
   "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
   "exact_duplicates_cross_split": [
@@ -15,7 +16,7 @@
   "partitions": {
     "base_train": {
       "example_count": 22637,
-      "manifest_file_sha256": "3d30c87abb185d7be316f0f96f86dab2d6119fc3fecb226905f878279b88379f",
+      "manifest_file_sha256": "01b70ee8f5ae75b543767b2356e7a2d7ce9462957f63eb30bce9594ac6055606",
       "manifest_hash": "77d2793a28cc1cd58dc723cb386277d7aa59112b4d0af100e1a5a6d4af30c8e3",
       "mode_counts": {
         "common": 11321,
@@ -26,7 +27,7 @@
     },
     "prompts": {
       "example_count": 1359,
-      "manifest_file_sha256": "3440684559c2e98bce00d75713be1778053062ee4698b935e3ff1b7de7af75b5",
+      "manifest_file_sha256": "aea81891a50d56ab5746294f8c95e493a19b1dba710f32deab04877057a40f2f",
       "manifest_hash": "e62501a937e691f61f629c0831b30ce00d77423ea3fc304340e86ab65ce32646",
       "mode_counts": {
         "common": 686,
@@ -37,7 +38,7 @@
     },
     "rescue_candidates": {
       "example_count": 4235,
-      "manifest_file_sha256": "964fe8f7af8226b0c83a44de090ea646f8b4608563553f43aaf4d34ac57e38b6",
+      "manifest_file_sha256": "7580d6912498230b82b28950839f4da02bb785f79e6980b3f7c018bd5d93bdbf",
       "manifest_hash": "9dfe2c868fde517c7834d8d89b67a914ee6533289ecd3995b3b816c403e4708d",
       "mode_counts": {
         "common": 2105,
@@ -48,7 +49,7 @@
     },
     "test": {
       "example_count": 60,
-      "manifest_file_sha256": "1d48dd2679fcb249f9874d600969d52a3f3670e25f2e399a72f342f029112287",
+      "manifest_file_sha256": "14e7034790b57349d6757bdba655a19c3e296db14b29c8018e393c8c867bc05e",
       "manifest_hash": "fbd5ef709a40d1bc5d2caca70f2d2a378f353ba449a16e8cd844f65350cb7aeb",
       "mode_counts": {
         "common": 31,
@@ -59,7 +60,7 @@
     },
     "validation": {
       "example_count": 60,
-      "manifest_file_sha256": "174117c506c4bc3fef778f31d8e853bf6ae7a658ff946f0fafd0eb859227a224",
+      "manifest_file_sha256": "4d50d96e102bcaf02ddbbe6c978cae8764b6c8586d045999f45c930e6b19c097",
       "manifest_hash": "ee70202bc1c01bd3a507022a286db433c046508ae6d1200c0bf026c83e9fd87e",
       "mode_counts": {
         "common": 31,

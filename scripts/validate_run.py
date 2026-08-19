@@ -41,6 +41,8 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from human_data_budget.policies import spends_human_tokens
+from human_data_budget.runner.budget_matching import check_chain_budget
 from human_data_budget.runner.schema import validate_json
 from human_data_budget.validation.audit import audit_run
 
@@ -135,33 +137,37 @@ def _check_schema(document: dict, schema_name: str, verdict: Verdict, label: str
     return True
 
 
-def _check_budget_matching(manifest: dict, result: dict, verdict: Verdict) -> None:
-    """Budget equality is the fairness constraint (PROTOCOL.md §4)."""
-    budget = manifest.get("budget", {})
-    declared_human = budget.get("lifetime_human_optimizer_tokens")
-    declared_total = budget.get("total_optimizer_tokens")
-    consumed_human = result.get("consumed_human_tokens")
-    consumed_total = result.get("consumed_total_tokens")
+def _arm_spends_human(manifest: dict) -> bool:
+    """Whether this run's policy can spend human tokens at all.
 
-    if declared_human is not None and consumed_human != declared_human:
-        verdict.block(
-            "lifetime human-token budget violated: manifest declares "
-            f"{declared_human}, chain consumed {consumed_human}"
-        )
-    if declared_total is not None and consumed_total != declared_total:
-        verdict.block(
-            "total optimizer-token budget violated: manifest declares "
-            f"{declared_total}, chain consumed {consumed_total}"
-        )
-    if (
-        consumed_human is not None
-        and consumed_total is not None
-        and consumed_human > consumed_total
-    ):
-        verdict.block(
-            f"impossible accounting: human tokens {consumed_human} exceed "
-            f"total tokens {consumed_total}"
-        )
+    Defaults to True for a policy name the registry does not know. A validator is
+    handed arbitrary run directories, including fixtures, and the safe default is the
+    one that *holds* an unknown arm to the constraint rather than exempting it.
+    """
+    name = (manifest.get("policy") or {}).get("name")
+    try:
+        return spends_human_tokens(name)
+    except ValueError:
+        return True
+
+
+def _check_budget_matching(manifest: dict, result: dict, verdict: Verdict) -> None:
+    """Budget matching is the fairness constraint (PROTOCOL.md §4).
+
+    Delegates to ``runner.budget_matching`` so the launcher and both validators apply
+    one rule. Three independent implementations of exact equality is precisely how
+    F-018 happened: F-016 corrected the launcher and left these two untouched.
+    """
+    budget = manifest.get("budget", {})
+    report = check_chain_budget(
+        declared_human=budget.get("lifetime_human_optimizer_tokens"),
+        declared_total=budget.get("total_optimizer_tokens"),
+        consumed_human=result.get("consumed_human_tokens"),
+        consumed_total=result.get("consumed_total_tokens"),
+        spends_human=_arm_spends_human(manifest),
+    )
+    for failure in report.failures:
+        verdict.block(f"budget matching violated: {failure}")
 
 
 def _check_metric_series(result: dict, verdict: Verdict) -> None:

@@ -7,13 +7,37 @@ budget-matched treatment families, and complete recursive chains as experimental
 allocation rule, hyperparameters, seed set, outcomes, and interpretation language were
 frozen before any primary execution, using interfaces, fixtures, and synthetic results.
 
-No primary chain completed before the results freeze. C-002 and C-003 remain untested, and
-we make no empirical claim about allocation policy. What the work establishes is narrower
-and worth stating plainly: the pipeline reproduces a published recursive-training result on
-real assets, across two independent executions on different hardware and dependency stacks;
-the treatment decomposition is well posed under the frozen rule; and the validity tooling
-refuses invalid comparisons rather than reporting them.
+The pilot ran to completion, and the preregistered fairness constraint rejected it. Equal
+lifetime human-origin spend failed on one arm; equal total optimizer tokens failed across
+arms, on an axis the launcher had never asserted. \textbf{We report the primary contrast as
+not established.} We did not repair it, reweight it, or promote the secondary comparison
+that would have supported the paper's hypothesis --- and that comparison was available,
+sizeable, and tempting. Declining it is the substantive claim this work can make about its
+own conduct.
 
-The remaining obstacle is a design freeze, not compute. Once the primary configurations are
-frozen, the estimand, contrast, seed set, and interpretation templates are already fixed,
-and the comparison can be executed without any further discretionary choice.
+What the work does establish is narrower and worth stating plainly. The pipeline reproduces
+a published recursive-training result on real assets, across two independent executions on
+different hardware and dependency stacks. The apparatus runs the full recursive allocation
+loop end to end and emits certifiable artifacts. One budget-matched comparison survives: at
+this budget and horizon, when a fixed human budget is spent does not detectably change the
+outcome, an interval containing zero and lying inside the practical equivalence region.
+Between-chain variance is small enough --- coefficients of variation from \PilotCVLow\% to
+\PilotCVHigh\% against a \PilotThresholdPct\% threshold --- that the frozen seed set is
+already powered at the preregistered effect size. That inverts the assumption the pilot was
+commissioned to test: for this design, chain count is not the binding constraint on a
+powered experiment, and the constraint lies elsewhere.
+
+It lies in the design. Measurement showed that adding human data to a fixed synthetic
+corpus makes total training volume depend on how much a policy spends, so allocation
+strategy and data quantity cannot be separated --- including in the comparison against a
+control that spends nothing. We therefore specify that rescued human examples \emph{displace}
+synthetic records rather than being appended to them, which makes the total-token condition
+hold by construction rather than by measurement. That specification is untested; no chain
+has yet run under it.
+
+The remaining obstacle is neither compute nor a design freeze. The estimand, contrast, seed
+set, and interpretation templates are fixed; the defects the pilot exposed are closed and
+pinned by regression tests; and a powered run is affordable at the measured cost. What
+remains is to validate the displacement specification on a single chain and then execute
+the grid with both fairness axes asserted. Until that happens, the hypotheses that motivated
+this work stay untested, and this paper claims nothing about them.

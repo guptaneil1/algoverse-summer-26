@@ -1,16 +1,26 @@
 \begin{abstract}
 Recursive training on model-generated data degrades a language model, and retaining
-human-origin data in the mixture substantially reduces that degradation. We ask a question
-this leaves open: under a \emph{fixed lifetime budget} of human-origin optimizer tokens,
-when during recursive training should those tokens be spent, and which under-covered modes
-of a human reference distribution should they target? We predefine four budget-matched
-treatment families --- random rescue, schedule-only allocation, selection-only allocation,
-and a joint time-and-mode policy --- with complete recursive chains as experimental units
-and uncertainty computed across chains. The joint rule, its urgency thresholds, feasibility
-clamp, seed set, primary outcome, and interpretation language were frozen before execution.
-We validate the pipeline against a published positive control, reproducing its arm ordering
-and degradation direction across two independent executions that agree to well under one
-per cent.
-No primary chain completed before the results freeze; the primary hypotheses remain
-untested and we make no empirical claim about allocation policy.
+human-origin data in the mixture substantially reduces that degradation. This leaves a
+question open: under a \emph{fixed lifetime budget} of human-origin optimizer tokens, when
+during recursive training should those tokens be spent, and which under-covered modes of a
+human reference distribution should they target? We predefine four budget-matched treatment
+families --- random rescue, schedule-only, selection-only, and a joint time-and-mode policy
+--- with complete recursive chains as experimental units, and freeze the allocation rule,
+seed set, outcomes, and interpretation language before execution. The pipeline is validated
+against a published positive control, reproducing its arm ordering and degradation
+direction across two independent executions.
+
+We then execute the pilot: \PilotChains{} chains over \PilotSeeds{} preregistered seeds and
+\PilotHorizon{} generations. The preregistered fairness constraint requires equal lifetime
+human-origin tokens \emph{and} equal total optimizer tokens; this run satisfies neither,
+with one policy under-spending by \PilotJointShortfallPct\% and realised totals spanning
+\PilotTotalSpreadPct\% across arms. We report the primary contrast as invalid rather than
+repairing or reweighting it, and we decline the secondary comparison that would have read
+more favourably. One comparison survives both constraints and is a null: at this budget and
+horizon, \emph{when} the budget is spent does not detectably change the outcome.
+Between-chain variance proves small enough that the frozen seed set is already powered at
+the preregistered threshold, inverting the assumption that chain count would bind. We make
+no claim about allocation policy. The contribution is the design, an apparatus validated on
+real models, and a record of checks that caught what they were built to catch --- including
+the one that invalidated our own primary result before it was read.
 \end{abstract}

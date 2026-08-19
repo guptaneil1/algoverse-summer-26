@@ -51,6 +51,23 @@ def _load_synthetic(path: Path | None) -> list[dict[str, Any]]:
     return records
 
 
+def _optimizer_tokens(example: Example) -> int:
+    """The example's price in the unit the policy budgets in.
+
+    Refuses to fall back to ``token_count``. That field is a whitespace word count
+    (``FAILURE_LOG.md`` F-010b); substituting it here would make the ledger disagree
+    with the allocation by the BPE ratio and make a fully-spent budget look
+    under-spent.
+    """
+    if example.optimizer_token_count is None:
+        raise CorpusAssemblyError(
+            f"example {example.example_id!r} has no optimizer_token_count. Run "
+            "scripts/add_optimizer_token_counts.py. Falling back to token_count "
+            "would price this spend in words -- see FAILURE_LOG.md F-010b."
+        )
+    return int(example.optimizer_token_count)
+
+
 def _resolve(manifest: PartitionManifest, example_ids: Sequence[str]) -> list[Example]:
     index = {example.example_id: example for example in manifest.examples}
     missing = [eid for eid in example_ids if eid not in index]
@@ -103,16 +120,34 @@ def assemble_training_corpus(
     selection_policy: str,
     selection_scores: Mapping[str, float] | None = None,
     resolve_text: Callable[[Example], str] | None = None,
+    corpus_record_budget: int | None = None,
 ) -> dict[str, Any]:
     """Write generation ``generation``'s training corpus and its provenance sidecar.
 
     ``synthetic_corpus`` is ``None`` at generation 0, where no prior decode exists and
     the corpus is human-only.
 
-    Returns a serializable summary. ``human_token_count`` is summed from the
-    manifest's frozen ``token_count`` values, which are non-padding tokens per
-    optimizer presentation under the frozen tokenizer -- the same quantity the policy
-    budgeted against, so the ledger and the allocation cannot drift apart.
+    ``corpus_record_budget`` implements **displacement** (``DECISIONS.md`` P-011): the
+    assembled corpus holds at most that many records, and rescued human examples
+    *replace* synthetic ones rather than being appended to them. Passing ``None``
+    restores the additive behaviour the first pilot ran under, retained only so that
+    run's artifacts stay reproducible.
+
+    Why displacement is the specification. Under addition, an arm that spends its
+    human budget trains on strictly more data than one that does not, so every contrast
+    confounds allocation strategy with training volume -- including the control
+    contrast, where "spending helps" cannot be separated from "more data helps". The
+    executed pilot measured realised totals spanning 2.26% across arms while human
+    spend matched to 0.04% (``FAILURE_LOG.md`` F-021, F-021a), which is that confound
+    appearing in practice. Displacement makes ``PROTOCOL.md`` §4's total-token
+    condition hold by construction rather than by luck.
+
+    Returns a serializable summary. ``human_token_count`` is summed from
+    ``optimizer_token_count`` -- the same field the policy prices candidates in
+    (``DECISIONS.md`` P-002) -- so the ledger and the allocation cannot drift apart.
+    Summing ``token_count`` instead would under-report every spend by the BPE ratio,
+    measured at 1.096-1.318x per example in ``FAILURE_LOG.md`` F-010b, and the chain
+    would appear to under-spend a budget it had in fact allocated in full.
     """
     output_path = Path(output_path)
     synthetic = _load_synthetic(Path(synthetic_corpus) if synthetic_corpus else None)
@@ -121,6 +156,22 @@ def assemble_training_corpus(
         rescued = _resolve(rescue_manifest, selected_example_ids)
     except ManifestError as error:  # pragma: no cover - defensive
         raise CorpusAssemblyError(str(error)) from error
+
+    displaced = 0
+    if corpus_record_budget is not None:
+        if corpus_record_budget < len(rescued):
+            raise CorpusAssemblyError(
+                f"corpus_record_budget {corpus_record_budget} is smaller than the "
+                f"{len(rescued)} rescued examples this generation allocated; the "
+                "budget cannot displace the human data it exists to make room for"
+            )
+        # Drop synthetic records from the end, keeping the oldest. The decode order is
+        # the prompt order, which is frozen, so this is deterministic across arms and
+        # seeds -- dropping at random would make the corpus depend on chance rather
+        # than on the policy.
+        keep = max(0, corpus_record_budget - len(rescued))
+        displaced = max(0, len(synthetic) - keep)
+        synthetic = synthetic[:keep]
 
     records: list[dict[str, Any]] = list(synthetic)
     provenance: list[dict[str, Any]] = []
@@ -165,7 +216,14 @@ def assemble_training_corpus(
         "provenance_path": str(provenance_path),
         "synthetic_record_count": len(synthetic),
         "human_record_count": len(rescued),
-        "human_token_count": sum(example.token_count for example in rescued),
+        "human_token_count": sum(_optimizer_tokens(e) for e in rescued),
+        "human_word_count": sum(e.token_count for e in rescued),
+        # Recorded per generation so the total-token divergence F-021 found is
+        # diagnosable next time without re-running. The pilot's artifacts carried
+        # chain totals only, which is why its mechanism is still unconfirmed.
+        "total_record_count": len(records),
+        "displaced_synthetic_records": displaced,
+        "corpus_record_budget": corpus_record_budget,
     }
 
 

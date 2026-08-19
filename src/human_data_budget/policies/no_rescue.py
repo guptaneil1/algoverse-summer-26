@@ -19,6 +19,12 @@ from human_data_budget.policies.base import Policy, build_allocation
 class NoRescuePolicy(Policy):
     name = "no_rescue"
 
+    # Zero by construction, per this module's docstring. That is why the arm is
+    # excluded from the realised budget-matching assertion and checked for an exact
+    # zero instead: comparing a structural zero against the spending arms would make
+    # equal realised spend unsatisfiable for every configuration.
+    spends_human_tokens = False
+
     def allocate(self, state: PolicyState, seed: int) -> Allocation:
         """Return an empty allocation, whatever the state and budget say.
 

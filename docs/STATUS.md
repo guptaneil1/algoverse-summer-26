@@ -1,7 +1,7 @@
 # Current Project Status
 
-**Last truthful update:** August 18, 2026 — pilot launched on 4× RTX 4090 after four
-execution defects were found and closed. **Result not yet in.**
+**Last truthful update:** August 19, 2026 — pilot executed, analysed, and its primary
+contrast recorded as NOT ESTABLISHED. Variance estimate delivered.
 **Previous update:** August 17, 2026
 **Update before that:** August 15, 2026 — upstream positive-control commit pinned.
 **Original deadline:** August 15, 2026 — **not met; see §Schedule reality**
@@ -16,13 +16,35 @@ seven conditional xfails. Evidence: `docs/positive_control/observed_table.md`,
 `docs/positive_control/measurements_2026-08-17_rtx4090/`, `COMPUTE.md`, and `FAILURE_LOG.md`
 F-006 through F-009.
 
-> **Pilot in flight, 2026-08-18.** The 25-chain primary pilot
-> (`configs/experiment/primary_pilot.json`, `FROZEN`) is running on 4× RTX 4090.
-> Nothing about its *result* is known, and nothing in this file should be read as one.
-> What is known: the apparatus executes end to end on real hardware, one full chain
-> completes in **3,393 s** measured, and a completed chain certifies
-> `valid_with_limitation` — the two limitations being `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`
+> **Pilot executed and analysed, 2026-08-19.** The 25-chain primary pilot ran to
+> completion on 4× RTX 4090 (21:40 → 05:24, ~7.7 h). All 25 chains completed, none
+> failed, every one certifies `valid_with_limitation`. Full record:
+> `docs/runs/primary_pilot_2026-08-18_results.md`.
+>
+> **The primary contrast is NOT ESTABLISHED — invalid, not null.** `--check-only`
+> exits 1: `joint` consumed 674,193 human tokens against every other spending arm's
+> ~749,850, a 10.1% spread, identically at all five seeds. It received 10% less human
+> data than the arm it is contrasted against, so `PROTOCOL.md` §4's fairness condition
+> fails and `CLAIMS.md` C-002's contract is unmet by this run. Cause and fix:
+> `FAILURE_LOG.md` F-020 — terminal reconciliation raised `joint`'s spending cap but
+> left its floor at 1 token, so its urgency rule, not the reconciliation, decided the
+> spend. **No claim about the joint-versus-baseline comparison follows from this run.**
+>
+> **What the run does establish is the between-chain variance the compute gate was
+> waiting on**, and it is unaffected by the spend gap because it is measured *within*
+> arms. Coefficients of variation are 0.41%–1.08% against a 2% practical threshold;
+> the paired `joint`-minus-`selection_only` SD is 0.00880 against a 2% threshold of
+> 0.04626. **Five paired chains already give roughly 80% power at 2%.** This inverts
+> the planning assumption: chain count is not the binding constraint on a powered
+> study. `COMPUTE.md`'s gate can be released on this evidence, with the caveat that
+> `joint`'s own variance was measured on chains that underspent.
+>
+> Also measured: one chain completes in **3,393 s**; a chain certifies
+> `valid_with_limitation`, the limitations being `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`
 > and `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE`.
+>
+> **Re-running the grid is blocked on funding, not on code.** ~7.7 h and ~$23 at the
+> measured rate; the session ended with roughly $6.
 >
 > Getting there took four defects, every one found *after* a passing dry run and every
 > one invisible to a then-740-test suite (`FAILURE_LOG.md` F-016 through F-019a): a

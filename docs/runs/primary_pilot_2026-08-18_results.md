@@ -69,6 +69,57 @@ Final-generation `tail_retention`, mean across five seeds:
 | `selection_only` | 0.9015 | 0.0021 |
 | `joint` | 0.8916 | 0.0015 |
 
+## Secondary analysis: the twenty budget-matched chains
+
+`joint` is the only arm that failed budget matching. Excluding it, the remaining 20
+chains satisfy the constraint:
+
+```
+spending arms: 749,709 to 749,995 against a 750,000 ceiling
+0.0381% spread, 0.2000% permitted -> budget matching: HOLDS
+```
+
+So contrasts among `random`, `schedule_only`, `selection_only` and the `no_rescue`
+control are budget-matched and interpretable. Paired by seed, 5 seeds, 95% CI from a
+paired *t* with 4 degrees of freedom. Lower AUC regret means less degradation. The 2%
+practical threshold is 0.05049 in these units.
+
+| contrast | difference | 95% CI | relative | distinguishable from zero |
+|---|---|---|---|---|
+| `selection_only` − `random` | −0.21133 | [−0.23472, −0.18794] | −8.37% | yes |
+| `schedule_only` − `random` | +0.02127 | [−0.01563, +0.05818] | +0.84% | **no** |
+| `random` − `no_rescue` | −0.11284 | [−0.12925, −0.09643] | −4.28% | yes |
+| `selection_only` − `schedule_only` | −0.23261 | [−0.26330, −0.20191] | −9.14% | yes |
+
+Read together: at this budget and horizon, *which* examples are selected moves the
+outcome substantially, and *when* the budget is spent does not — the timing contrast's
+interval contains zero and lies entirely inside the practical equivalence region.
+Spending the budget at all beats spending none.
+
+### These are secondary results and cannot carry the paper
+
+`PREREGISTRATION.md` is explicit:
+
+> There is one central budget, horizon, primary outcome, and primary contrast. Other
+> budgets, horizons, outcomes, and comparisons are secondary or exploratory. They
+> cannot replace a failed primary analysis.
+
+The primary contrast requires `joint` and is not established. Promoting any row above
+into the confirmatory result would be exactly the substitution the preregistration was
+written to prevent. They may be reported as secondary, alongside the primary reported
+as not established.
+
+### Further limits on the secondary rows
+
+- One budget (750,000), one horizon (10), one corpus and one model. Nothing here
+  speaks to other operating points.
+- Five seeds. Adequate given the measured variance, but the seeds were frozen for a
+  different contrast.
+- The `selection_only` advantage is measured against `random` selection, not against a
+  strong alternative selection rule.
+- No oracle upper bound exists (`PROTOCOL.md` names six treatment families; the sixth
+  is deliberately unimplemented), so the size of the remaining headroom is unknown.
+
 ## Observations that are not claims
 
 Recorded because they are in the artifacts and someone will compute them anyway. None

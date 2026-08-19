@@ -76,6 +76,21 @@ results/aggregates/*
 # Small generated aggregates ARE tracked — results/README.md: "Git contains only
 # small validated aggregates, generated tables/figures, and documentation."
 !results/aggregates/*.json
+
+# Chain results from executed runs ARE tracked. They are ~4 KB each and are what every
+# analysis actually reads. run_manifest.json is deliberately NOT tracked: each carries
+# 28,351 provenance records at ~6.5 MB, 162 MB for a 25-chain grid. The manifests stay
+# verifiable through ARTIFACT_HASHES.json committed beside them, so an archived copy
+# can be checked against the repository without being stored in it.
+!results/runs/
+results/runs/**
+!results/runs/**/
+!results/runs/**/chain_result.json
+!results/runs/**/pilot_summary*.json
+!results/runs/**/aggregate.json
+!results/runs/**/ARTIFACT_HASHES.json
+!results/runs/**/README.md
+
 !results/figures/
 results/figures/*
 !results/figures/README.md

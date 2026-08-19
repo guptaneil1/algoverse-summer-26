@@ -1,0 +1,419 @@
+{
+  "chains": [
+    {
+      "arm": "no_rescue",
+      "consumed_human_tokens": 0,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1788694577052246,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.295040445645028,
+          "tail_retention": 0.9631099398209401
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.3680913219713187,
+          "tail_retention": 0.9423794498328236
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4220346668539525,
+          "tail_retention": 0.9284304678331101
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.470432914042115,
+          "tail_retention": 0.9138546708791735
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.508590819675473,
+          "tail_retention": 0.9042636786689294
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5535326734369903,
+          "tail_retention": 0.8919132074002177
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.586224516528304,
+          "tail_retention": 0.8835532223508031
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.6155852853435357,
+          "tail_retention": 0.8767869669670161
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.6421203692909634,
+          "tail_retention": 0.8716791794151411
+        }
+      ],
+      "seed": 101,
+      "status": "complete"
+    },
+    {
+      "arm": "no_rescue",
+      "consumed_human_tokens": 0,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1776195667961105,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2962436106184767,
+          "tail_retention": 0.9630337363280332
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.366239607699619,
+          "tail_retention": 0.943026308520308
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4239943691584616,
+          "tail_retention": 0.925366879983204
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4683587698242824,
+          "tail_retention": 0.913830435913226
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.5094676754945877,
+          "tail_retention": 0.903055512941659
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.548737945855247,
+          "tail_retention": 0.8939708443614758
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.5888900527904335,
+          "tail_retention": 0.8835812103407588
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.6247146118721463,
+          "tail_retention": 0.8749532287537245
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.656909008486475,
+          "tail_retention": 0.8668413614209306
+        }
+      ],
+      "seed": 505,
+      "status": "complete"
+    },
+    {
+      "arm": "random",
+      "consumed_human_tokens": 749830,
+      "consumed_total_tokens": 16779776,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.178054019258602,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.292509266355033,
+          "tail_retention": 0.963681188204589
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.363731126480451,
+          "tail_retention": 0.9422429378222495
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4148678694374794,
+          "tail_retention": 0.928046612378548
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.457471364040586,
+          "tail_retention": 0.9174313155049543
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.503356790262659,
+          "tail_retention": 0.9044005693349971
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5382884006288733,
+          "tail_retention": 0.8955203653328583
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.568016184628282,
+          "tail_retention": 0.8897137903971041
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.602759832194329,
+          "tail_retention": 0.880585602361245
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.62432515342797,
+          "tail_retention": 0.8754633490446885
+        }
+      ],
+      "seed": 404,
+      "status": "complete"
+    },
+    {
+      "arm": "schedule_only",
+      "consumed_human_tokens": 749890,
+      "consumed_total_tokens": 16770048,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1801565271067758,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2959293532200444,
+          "tail_retention": 0.9634373266076364
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.37068993057679,
+          "tail_retention": 0.9421378564028636
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4292373089874326,
+          "tail_retention": 0.9259426007466625
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4725776408594258,
+          "tail_retention": 0.9136098734244826
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.516663166999195,
+          "tail_retention": 0.9022365304362938
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.548160819235924,
+          "tail_retention": 0.8939418524428333
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.5740282749243213,
+          "tail_retention": 0.8885037007167205
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5953317859945777,
+          "tail_retention": 0.8855942348044759
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.6026905793888617,
+          "tail_retention": 0.8841843171516882
+        }
+      ],
+      "seed": 303,
+      "status": "complete"
+    },
+    {
+      "arm": "selection_only",
+      "consumed_human_tokens": 749827,
+      "consumed_total_tokens": 17063936,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.179537269109538,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.28694549580454,
+          "tail_retention": 0.9669547234334368
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.352569333230135,
+          "tail_retention": 0.9481368181588413
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4036441292859183,
+          "tail_retention": 0.9338422084519541
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4413274457698853,
+          "tail_retention": 0.9255529788014308
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.478389394104442,
+          "tail_retention": 0.9162018101921847
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5039254125705828,
+          "tail_retention": 0.9086487084912481
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.529274308316006,
+          "tail_retention": 0.9019446987527818
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5539834736066944,
+          "tail_retention": 0.8964665187582371
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.550849969295295,
+          "tail_retention": 0.8986947190369186
+        }
+      ],
+      "seed": 202,
+      "status": "complete"
+    },
+    {
+      "arm": "joint",
+      "consumed_human_tokens": 674193,
+      "consumed_total_tokens": 17025024,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1788445300396484,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2896869218979328,
+          "tail_retention": 0.9658240175921151
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.3525149271368435,
+          "tail_retention": 0.9476052993105937
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4007371239310684,
+          "tail_retention": 0.9340994445994935
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.438784807955449,
+          "tail_retention": 0.9247242969810111
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.4729953594170437,
+          "tail_retention": 0.9164036170582393
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5032048433805243,
+          "tail_retention": 0.909449961655003
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.5290801066319615,
+          "tail_retention": 0.9022366290762129
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5593206655722542,
+          "tail_retention": 0.8951385211480343
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.5801466492057545,
+          "tail_retention": 0.8902398454874716
+        }
+      ],
+      "seed": 101,
+      "status": "complete"
+    },
+    {
+      "arm": "joint",
+      "consumed_human_tokens": 674193,
+      "consumed_total_tokens": 17025024,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1776195667961105,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.288390782823457,
+          "tail_retention": 0.9658883893503586
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.353634824709261,
+          "tail_retention": 0.9478495598487358
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4015695112792015,
+          "tail_retention": 0.9348983174690005
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.441036762354503,
+          "tail_retention": 0.9246883430717019
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.475821354835545,
+          "tail_retention": 0.9166333801052199
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.503823038338837,
+          "tail_retention": 0.9102262816883027
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.531723776939875,
+          "tail_retention": 0.9033002350907506
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5571568080357143,
+          "tail_retention": 0.8962445691197412
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.5791320442453523,
+          "tail_retention": 0.8919313313295347
+        }
+      ],
+      "seed": 505,
+      "status": "complete"
+    }
+  ],
+  "run_id": "primary_pilot_2026-08-18",
+  "wall_seconds": 24282.08880762395
+}

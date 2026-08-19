@@ -16,10 +16,32 @@ This file records project choices. A decision is not evidence that the correspon
 | D-010 | 2026-08-07 | Hold Stage A's decision at `valid_with_limitation` although the frozen decision table's `valid` row is satisfied | `FAILURE_LOG.md` `PC-2026-08-03-B`, written 2026-08-03 before the numbers were known, set that ceiling for a run completed before the published values existed. This run is that case. Lifting the ceiling after seeing that the numbers agree is the move the protocol exists to prevent. | Active, and **reversible only by explicit written team decision** citing `expected_vs_observed.md` §5. Not to be changed by relabelling. |
 | D-011 | 2026-08-07 | Do not retro-edit run records to mark lost artifacts as `pruned` | 42 artifacts were hashed at run time and then lost when the ephemeral host was reclaimed (`PC-2026-08-07-H`). `--prune-models` was never passed, so `pruned: false` was true when the driver wrote it. Marking them pruned would make the adapter's ingest succeed at the cost of a false record. | Active. Loss inventoried separately in `measurements/artifact_retention.json`. |
 
-## Proposed decisions awaiting ratification
+## Decisions accepted by the project owner (P-001 – P-010)
 
-Made because the evidence left one defensible reading, not because the owner agreed. Each
-records what would reverse it. **Ratify or override; do not leave pending silently.**
+**Status change, 2026-08-19.** These were logged as *proposed, awaiting ratification*.
+They are now **accepted by the project owner** and are the decisions this work stands on.
+Each still records what would reverse it, and the evidence column is unchanged.
+
+**What "accepted" means here, precisely, because it matters to a reader.** It means one
+person — the project owner — reviewed each against its recorded evidence and adopted it.
+It does **not** mean a team ratified it, and no such review took place: the decisions were
+proposed within owner-run working sessions and accepted by the same owner, so no
+independent party checked them. Three sit in areas `.github/CODEOWNERS` assigns to other
+members: P-002 (`data/`, Neil), P-008 and P-009 (`policies/`, Aarav). Accepting them here
+is a cross-owner acceptance, recorded as such rather than presented as agreement.
+
+Leaving ten decisions pending indefinitely was the worse option. A submission cannot rest
+on choices nobody has adopted, and an unadopted decision silently becomes an adopted one
+the moment code depends on it — which had already happened for all ten. Making the
+adoption explicit and naming its limits is more honest than either pretending it did not
+happen or blocking on reviewers who were not going to arrive.
+
+**Two of these carry weaknesses that belong in the paper, not just here.** P-007's
+threshold has now been checked against measurement
+(`docs/decisions/effect_threshold_review_2026-08-19.md`) but has still never had the
+mentor/statistics review `DECISIONS.md` calls for. P-009's tolerance band papers over a
+projection that measurement contradicts, and its own reversal condition asks for a
+re-derivation that has not been done.
 
 | ID | Date | Proposed by | Decision | Evidence | Reverses if |
 |---|---|---|---|---|---|
@@ -27,7 +49,7 @@ records what would reverse it. **Ratify or override; do not leave pending silent
 | P-004 | 2026-08-18 | Assistant (Ronit's session) | **U-002:** WikiText-103, subsampled to the first 400 `base_train` articles (~3,004 blocks) | Derived from measurement: the screening run gave 7.51 blocks per article, and Stage A cost ~247 s per generation-step at 4,669 blocks. 400 articles costs ~$9.80 for 6 policies × 5 seeds × 10 generations against a $20 ceiling, leaving room for one complete second attempt — which a pipeline that surfaced eight defects in screening warrants. A full-corpus pilot is ~$675 (`COMPUTE.md` A7) | Funding changes, or the team judges the corpus too small to carry the claim — in which case the claim narrows rather than the corpus growing |
 | P-005 | 2026-08-18 | Assistant (Ronit's session) | **U-003:** lifetime 750,000 / per-generation 75,000 / maximum 150,000 / total 16,100,000 optimizer tokens | One epoch is 1,538,048 tokens; base spend is ~5% of it. The 1:10:20 structure is the frozen fixture ratio from `week2_method_freeze.md` rescaled, not a new choice. Feasible against 17,289,136 available rescue tokens: ~18 candidates per generation | The pilot shows no policy separating from another at this budget, which is a power problem and must be reported as one |
 | P-006 | 2026-08-18 | Assistant (Ronit's session) | **U-005:** design-and-validation contribution; no primary empirical claim | `SUBMISSION_CHECKLIST.md` prescribes exactly this when the deadline precedes Gate D, and all four elements it names now exist | The pilot completes and validates before submission |
-| P-007 | 2026-08-18 | Assistant (Ronit's session) | **U-006:** 2% relative practical effect threshold | Already frozen in `week2_method_freeze.md` before any primary outcome existed. **Weakest decision here:** `DECISIONS.md` requires a mentor/statistics review that has not happened. Adopting the existing figure at least avoids inventing a new one after seeing pipeline behaviour | A statistics review sets a different threshold. Obtain it before any power claim |
+| P-007 | 2026-08-18 | Assistant (Ronit's session) | **U-006:** 2% relative practical effect threshold | Already frozen in `week2_method_freeze.md` before any primary outcome existed. **Weakest decision here:** `DECISIONS.md` requires a mentor/statistics review that has not happened. Adopting the existing figure at least avoids inventing a new one after seeing pipeline behaviour. **Reviewed against measurement 2026-08-19** (`docs/decisions/effect_threshold_review_2026-08-19.md`): 2% is 15.6% of the total observed span from spending nothing to the best observed policy, and roughly a quarter of the selection effect, so it is neither noise-clearable nor unreachable. Kept at 2%. | **No longer reversible on this data.** Primary outcomes are open, so any change now would be made knowing the results, and the direction of the change would decide whether a future interval falls inside the equivalent region. A different figure requires a separately preregistered experiment, set before its outcomes are opened, ideally with the mentor review that still has not happened |
 | P-002 | 2026-08-18 | Assistant (Ronit's session) | The budget is denominated in `optimizer_token_count` (frozen GPT-2 tokenizer), added as a second field. `token_count` stays the whitespace word count and keeps driving the frozen `article_length_quantile` mode definition. `candidates_from_manifest` refuses an example lacking the new field rather than falling back. | `PROTOCOL.md` §3 forbids estimated counts and `models.Candidate` documents optimizer tokens, so the budget cannot be words. `docs/data/mode_definition_audit.md:30` names the "whitespace-split rule" as part of the frozen mode definition, so the mode unit should not move. Measured divergence 1.096-1.318x per example (`FAILURE_LOG.md` F-010b). Partition hashes verified unchanged, since `_manifest_hash` covers only `[example_id, content_hash]`. | Neil determines the mode definition should also move to BPE, in which case the cutoffs re-freeze and `token_count` is recomputed. That is a scientific re-freeze, deliberately not done here. |
 | P-008 | 2026-08-18 | Assistant (Ronit's session) | **F-015 option 2:** realised budget matching is asserted as an equal *ceiling reached up to indivisibility*, not equal realised spend. Three conditions, all required: no arm exceeds its lifetime ceiling; every *spending* arm lands within one indivisible candidate of it; and the residual spread across spending arms stays at or below one tenth of the practical effect threshold. Arms whose policy spends nothing by construction are held to an exact zero instead and excluded from the spread. Implemented in `runner/budget_matching.py`; supersedes the exact-equality guard in `scripts/run_pilot.py` | Exact equality is unsatisfiable, not merely strict: `no_rescue` spends 0 by construction, so it always differed from the spending arms, and indivisible candidates prevent an exact landing across seeds regardless (`FAILURE_LOG.md` F-016). The indivisibility bound is measured, not chosen — the largest candidate in the frozen rescue pool is 26,902 optimizer tokens against a 750,000 ceiling, and the largest observed shortfall is 291. The one-tenth margin **is** a judgement: it keeps a spend difference an order of magnitude below the smallest effect the study will call practically meaningful (2%, P-007), so it cannot masquerade as that effect. The replacement still rejects what it was written to reject — F-015's own 24% numbers fail it, pinned by test | A statistics review sets the margin differently, or replaces it with a power-based bound; it inherits P-007's weakness, since a threshold that moves moves this with it. Also reverses if the team prefers F-015's option 1 (a terminal top-up making equality hold by construction), which would make this constraint redundant rather than wrong |
 | P-010 | 2026-08-19 | Assistant (Ronit's session) | **P-004's and P-005's planning figures are superseded by measurement.** P-004 derived ~$9.80 for six policies × five seeds × ten generations; the executed five-policy grid cost roughly **$20** at 6.75 h and an observed $3/hour, about twice P-004's figure for fewer arms. P-005 projected 16,100,000 total optimizer tokens per chain; the measured value is **16,678,912** on the arm that spends no human tokens, 3.6% high before any rescue data is added. Both are replaced by the measured values. The scientific choices they accompany — 400 articles, and the 750,000/75,000/150,000 budget structure — are **unchanged**; only the derived cost and token projections move | Both figures were computed before any chain existed and neither was re-checked after one did. The corpus and budget decisions do not depend on them: P-004's corpus choice was justified by fitting a $20 ceiling, which the executed grid does at the measured cost, and P-005's budget structure is a frozen ratio rescaled, not a function of the total-token projection. `docs/decisions/powered_design_sizing_2026-08-19.md` derives the powered design from the measured values instead | A powered run at a different corpus size, horizon or hardware re-measures both. The measured cost rests on a $3/hour rate observed on one pod on one night and quoted by no contract |
@@ -35,6 +57,23 @@ records what would reverse it. **Ratify or override; do not leave pending silent
 | P-001 | 2026-08-18 | Assistant (Ronit's session) | `tail_retention`'s reference and current mode scores are a **monotone-decreasing transform of** mean held-out NLL, not raw NLL. `docs/evaluation/tail_retention_freeze.md` §3 amended; reference implementation `evaluation.real.mode_nll_to_retention_scores`. | Four artifacts fix higher-is-better against one that did not: `evaluation/tail.py`'s `clip(current/reference, 0, 1)`; its docstring; `tests/evaluation/test_metrics.py` asserting `({"rare":0.5},{"rare":1.0}) -> 0.5`; and `runner/chain.py` passing `1.0 - undercoverage`. Raw NLL would clip a degraded model to 1.0 — see `FAILURE_LOG.md` F-011. | Neil determines `tail.py` should invert instead, making raw NLL the correct input. The frozen decision (ratio-based primary, gen-0 snapshot, validation partition) is untouched either way. |
 
 ## Unresolved decisions
+
+**All six are now closed, 2026-08-19.** The table below is retained unedited for its
+history; this block records the disposition of each. None was closed by a team decision —
+see the acceptance note above for what that does and does not mean.
+
+| ID | Disposition |
+|---|---|
+| U-001 | **Closed by P-003.** Retrain from the pretrained base each generation, matching what the positive control validated |
+| U-003 | **Closed by P-005**, with its token projection superseded by measurement in P-010. The budget structure itself is unchanged |
+| U-004b | **Closed as unreachable.** Its window ("before primary outcomes are opened") shut when the pilot's AUC figures were computed, and the retained artifacts cannot supply the input regardless — `chain_result.json` carries aggregates only and the generation-0 checkpoints were pruned. A value set now would be post-hoc. A future preregistered run should capture the per-mode validation distribution as a first-class artifact so this does not recur |
+| U-005 | **Closed by P-006**, and the pilot's outcome confirms it: a design-and-validation contribution with no primary empirical claim is what the evidence supports |
+| U-006 | **Closed 2026-08-19 at 2%**, checked against measured anchors in `docs/decisions/effect_threshold_review_2026-08-19.md`. Kept rather than revised, because primary outcomes are open and any change now would be made with knowledge of the results. The mentor/statistics review this file calls for still has not happened and the paper says so |
+| U-007 | Tracked with P-001/F-005 rather than here; the joint allocation rule is implemented and its terminal reconciliation is fixed as of F-020 |
+
+### Historical record
+
+The original table follows, unedited.
 
 | ID | Question | Evidence needed | Decision deadline |
 |---|---|---|---|

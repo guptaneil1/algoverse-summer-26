@@ -57,15 +57,15 @@ with the person named before treating it as agreed.
 
 | | Decision | ID | Owner (inferred) |
 |---|---|---|---|
-| ☐ | Training regime: continued fine-tuning or from scratch | U-001 | Team |
-| ☐ | Licensed primary domain selected and recorded | U-002 | Neil |
-| ☐ | Lifetime and total token budgets | U-003 | Aarav |
-| ☐ | One primary tail-retention metric | U-004 | Neil |
-| ☐ | Contribution type: empirical-led or theory-led | U-005 | Team |
-| ☐ | Smallest scientifically meaningful effect | U-006 | Aarav + mentors |
-| ☐ | **Under-coverage score definition frozen** | U-007 | Aarav |
-| ☐ | Ordered seed list declared | — | Aarav |
-| ☐ | Checkpoint retention policy declared before launch (`COMPUTE.md`) | — | Khantushig |
+| ☑ | Training regime: retrain from pretrained base each generation | U-001 | Closed by P-003 |
+| ☑ | WikiText-103, 400 base_train articles | U-002 | Closed by P-004; cost re-derived in P-010 |
+| ☑ | 750,000 lifetime / 75,000 per-gen / 150,000 max | U-003 | Closed by P-005; token projection superseded by P-010 |
+| ☑ | `tail_retention`, ratio-based | U-004 | Closed by D-022. **U-004b closed as unreachable** — window shut when primary outcomes opened |
+| ☑ | Design-and-validation, no primary empirical claim | U-005 | Closed by P-006; the executed pilot confirms it |
+| ☑ | 2% relative | U-006 | Closed 2026-08-19, checked against measured anchors. **Never externally reviewed**; the paper says so |
+| ☑ | Frozen and implemented | U-007 | Joint rule implemented; terminal reconciliation fixed at F-020 |
+| ☑ | 101, 202, 303, 404, 505 | — | Frozen in `primary_pilot.json`, executed |
+| ☑ | Pruned per chain on completion | — | Regenerable from frozen config and seed; recorded in the run README |
 
 **F-001 is no longer a submission blocker — see `FAILURE_LOG.md` F-005.** F-001 recorded
 `JointPolicy` as observationally identical to `SelectionOnlyPolicy`. That was true of the code it
@@ -84,11 +84,11 @@ has no computation defined anywhere, and C-002 rests on both.
 
 | | Check | Verify with |
 |---|---|---|
-| ☐ | Preflight budget equality passed for every chain | `make preflight CONFIGS="…"` |
-| ☐ | Every chain emitted a schema-valid manifest and chain result | `python scripts/validate_run.py runs/*` |
-| ☐ | No chain classified `invalid` is included in any analysis | validator exit code |
-| ☐ | Every chain classified `valid_with_limitation` has its limitation stated in the paper | validator output |
-| ☐ | Failed and incomplete chains retained, not deleted | `FAILURE_LOG.md` |
+| ☑ | Preflight budget equality passed | `preflight_budget.py` → PASSED. **Realised** equality failed on both axes: F-020, F-021 |
+| ☑ | All 25 chains emitted schema-valid artifacts | `validate_run.py` over the retained run |
+| ☐ | **10 chains classify `invalid`.** No *claim* rests on them, and §7 reports them as excluded — but the descriptive table lists all 25. Confirm that is acceptable, or regenerate it over the 15 | validator exit code |
+| ☑ | Both limitations stated in §7 | `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`, `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` |
+| ☑ | All 25 retained, including the 10 invalid | `results/runs/primary_pilot_2026-08-18/` |
 | ☐ | Validity certificate issued per headline result, by someone who did not operate the run | `docs/VALIDITY_CERTIFICATE_TEMPLATE.md` |
 | ☐ | Primary NLL and tail metrics independently recomputed from frozen outputs | Neil |
 | ☐ | Results freeze tagged | `week-3-results-freeze-YYYY-MM-DD` |

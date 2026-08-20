@@ -97,6 +97,48 @@ tail -n 3 /workspace/v2_seed${TAG}_shard*.log
 Want two blocks each showing a `src/train.py` command, and chains this phase does not need
 reported as `already complete, skipping`.
 
+## Step R2a — run the remaining phases unattended (optional, and what saved the money)
+
+Once one phase has run clean, the handoff between phases is pure idle billing: the pod
+charges while it waits for a person to notice and paste the next block. The previous two
+runs were noticed 59 and roughly 60 minutes late. Chaining the phases removes that, and
+the guard below stops the chain the moment anything fails, so an unattended run cannot
+burn hours compounding a broken phase.
+
+Measured per-generation time is what makes the estimate real: **5.07 min/generation**,
+from phase 1's `wall_seconds` divided by its 9 generations. Multiply by the wall
+generations in the phase table.
+
+```bash
+cat > /workspace/finish_v2.sh <<'EOF'
+cd /workspace/algoverse-summer-26
+export WANDB_MODE=disabled WANDB_SILENT=true STAGE_A_WANDB_SHIM=1 PYTHONPATH=/workspace/shim:src
+for SEED in 505 303 101,202; do
+  TAG=$(echo $SEED | tr ',' '-')
+  echo "=== phase $SEED starting $(date +%T) ==="
+  for i in 0 1; do
+    CUDA_VISIBLE_DEVICES=$i nohup python scripts/run_pilot.py --config configs/experiment/primary_pilot_v2.json --upstream-dir /workspace/model_collapse --shim-dir /workspace/shim --output-dir /workspace/v2 --preprocessing-workers 8 --only-seeds $SEED --shard-index $i --shard-count 2 --cuda-device 0 > /workspace/v2_seed${TAG}_shard$i.log 2>&1 &
+  done
+  wait
+  if grep -q FAILED /workspace/v2_seed${TAG}_shard0.log /workspace/v2_seed${TAG}_shard1.log; then
+    echo "=== ABORT: phase $SEED reported FAILED, later phases not started ==="
+    break
+  fi
+  echo "=== phase $SEED complete $(date +%T), $(ls /workspace/v2/*/seed*/chain_result.json | wc -l)/25 chains on disk ==="
+done
+echo "=== finished $(date +%T) ==="
+EOF
+nohup bash /workspace/finish_v2.sh > /workspace/finish_v2.log 2>&1 &
+echo "started; watch with: tail -f /workspace/finish_v2.log"
+```
+
+`wait` blocks until both shards of a phase exit, so phases never overlap and never contend
+for a GPU. The `grep -q FAILED` guard is why this is safe to leave: a phase that fails
+stops the chain instead of handing its problem to the next one.
+
+**This does not remove the need for the per-phase check.** Run Step R4 against the seeds
+completed once the chain finishes, or after any phase you want to inspect early.
+
 ## Step R3 — watch
 
 ```bash

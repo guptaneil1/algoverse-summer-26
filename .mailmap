@@ -1,0 +1,12 @@
+# Canonical identities for `git shortlog`, `git log`, and other git tooling.
+#
+# Format: Proper Name <proper@email> <commit@email>
+#
+# This file only affects how git renders authorship. It rewrites no history and
+# changes no commit object. GitHub's Insights/Contributors page does not read
+# .mailmap, so counts there are unaffected.
+#
+# Khantushig Lkhagvajargal committed the 2026-08-06..07 positive-control run
+# under a placeholder address (example.invalid, RFC 2606) that was never linked
+# to a GitHub account. Map it onto the real one.
+khantushig10 <tushigtushigtushigtushig@gmail.com> <khantushig@example.invalid>

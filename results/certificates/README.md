@@ -6,6 +6,7 @@
 |---|---|
 | `batch_verdicts.json` | `validate_run.py` over **every chain of both grids**, 50 in total. The complete certification record |
 | `primary_pilot_v2_2026-08-20_EVIDENCE_PACK.md` | Pre-gathered evidence for a certifier. **Not a certificate** — deliberately unsigned |
+| `reproduction_log.md` | Each time a human has run `reproduce_pilot_table.py`, what they saw, and how independent they actually were. Append entries; do not overwrite |
 
 No validity certificate has been issued. `docs/VALIDITY_CERTIFICATE_TEMPLATE.md` requires a
 certifier who did not operate the run, and none has been available.

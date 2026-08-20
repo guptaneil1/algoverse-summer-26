@@ -90,7 +90,7 @@ has no computation defined anywhere, and C-002 rests on both.
 | ☑ | Both limitations stated in §7 | `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`, `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` |
 | ☑ | All 25 retained | `results/runs/primary_pilot_v2_2026-08-20/`. The superseded 2026-08-18 grid is retained too, with its 10 invalid chains, and neither run's artifacts were edited |
 | ☐ | **Evidence pack prepared, certificate not issued.** `results/certificates/primary_pilot_v2_2026-08-20_EVIDENCE_PACK.md` gathers every machine-checkable field with the command that reproduces it, and states plainly what it does *not* close: the two blocking sections both carry a known unverified property, and a metric must still be recomputed from raw outputs rather than from `chain_result.json`. It is deliberately unsigned — it was assembled by the run operator | `docs/VALIDITY_CERTIFICATE_TEMPLATE.md`; needs a non-operator |
-| ◐ | **Automatable half done.** `scripts/reproduce_pilot_table.py` recomputes every published value from `chain_result.json` with arithmetic written independently of the generator; all reproduce for **both** the 2026-08-20 grid and the superseded 2026-08-18 one, and `test_published_values_reproduce.py` runs it in CI. The human half -- a person other than the analysis author running it -- still stands | Neil |
+| ◐ | **Automatable half done; human half partially done.** `scripts/reproduce_pilot_table.py` recomputes every published value from `chain_result.json` with arithmetic written independently of the generator; all reproduce for **both** the 2026-08-20 grid and the superseded 2026-08-18 one, and `test_published_values_reproduce.py` runs it in CI. **Run by a human 2026-08-20** — the project owner, exit 0, logged with its output in `results/certificates/reproduction_log.md`. That advances the item without closing it: the owner directed the analysis and is not a disinterested party, which is why this row names Neil | Neil |
 | ☑ | Results freeze tagged `results-freeze-2026-08-20`, annotated with the grid it covers and the primary result. Batch verdicts over all 50 chains of both grids retained at `results/certificates/batch_verdicts.json`, regenerating byte-identically with `--audited-at`. **The batch exits 2** because the superseded grid contributes ten deliberately-retained invalid chains; `results/certificates/README.md` records why that does not block the freeze rather than suppressing it by running the batch over the good grid alone | `git show results-freeze-2026-08-20` |
 
 ## Gate E — Analysis and writing
@@ -118,7 +118,7 @@ has no computation defined anywhere, and C-002 rests on both.
 | ☐ | Hostile external novelty review obtained from someone outside the team |
 | ☐ | Statistics and experimental-design review obtained |
 | ☐ | Uninvolved-reader review obtained |
-| ☐ | **Needs a person.** `python scripts/reproduce_pilot_table.py` is one command and prints pass/fail; anyone on the team can run it |
+| ◐ | **Run once by the project owner, 2026-08-20**, exit 0, logged in `results/certificates/reproduction_log.md`. Still wants a run by someone with no stake in the outcome — one command, no GPU, no pod, works from any checkout. Append to the log rather than overwriting it |
 | ☐ | No mock-review score below 3/4 on quality, clarity, significance, originality |
 | ☐ | No unresolved fatal novelty or correctness objection |
 | ☐ | The contribution can be summarised correctly after one reading |

@@ -1,164 +1,91 @@
-# Filling an empty Overleaf project — EvoRobust submission
+# Overleaf → EvoRobust, in six steps
 
-Start to finish, from a blank project to a submittable PDF. Roughly fifteen minutes.
+**Deadline: 29 August 2026, 11:59pm AoE.**
+Submit at: <https://openreview.net/group?id=NeurIPS.cc/2026/Workshop/EvoRobust>
 
-**Target:** EvoRobust @ NeurIPS 2026 · **4 content pages** including figures and tables ·
-references and supplementary unlimited · **deadline 29 Aug 2026, 11:59pm AoE** · NeurIPS 2026
-style file required · anonymised.
-
----
-
-## What you are uploading
-
-**Two files.**
-
-| File | Where it comes from | Goes where |
-|---|---|---|
-| `evorobust-submission.tex` | `dist/evorobust-submission.tex` | project root |
-| `neurips_2026.sty` | the EvoRobust CFP page | project root |
-
-**No `.bib`** — the bibliography is embedded in the `.tex`.
-**No image file.** Every figure in this version is vector TikZ drawn inside the document.
-The NLL trajectory plot, which is a PNG, was moved to supplementary and then out of this
-version entirely, because EvoRobust counts figures against the four-page limit and Table 1
-already carries that result.
-
-`python scripts/preflight_overleaf.py dist/evorobust-submission.tex` prints this list from
-the document itself. It is generated rather than remembered, because an earlier draft of
-this tutorial told you to upload a figure the file never references.
+You need one file from me: **`evorobust-submission.tex`**. No `.bib`, no images.
 
 ---
 
-## Step 1 — Create the project
+### 1. Open the NeurIPS template
 
-Overleaf → **New Project** → **Blank Project**. Name it something that does not identify you;
-reviewers will not see the name, but shared links do.
+<https://www.overleaf.com/latex/templates/formatting-instructions-for-neurips-2026/bjdwqfdkyftc>
 
-Overleaf creates a `main.tex` with placeholder content.
+Click **Open as Template**. This creates a project in your account that already contains
+`neurips_2026.sty` — which is why we start here rather than from a blank project. EvoRobust
+requires that style file and does not host it itself.
 
-## Step 2 — Delete the placeholder
+### 2. Delete everything except `neurips_2026.sty`
 
-In the file tree, right-click Overleaf's `main.tex` → **Delete**.
+In the file tree, delete `neurips_2026.tex`, `checklist.tex`, and anything else.
 
-Do this **before** uploading. If two `.tex` files both look like main documents, Overleaf
-compiles the wrong one and you get a one-page "Hello World".
+**Keep `neurips_2026.sty`.** That is the only thing you came for.
 
-## Step 3 — Upload the submission
+### 3. Upload `evorobust-submission.tex`
 
-Click the **upload icon** (a page with an up-arrow, top-left above the file tree) → **Select
-from your computer** → choose `evorobust-submission.tex`.
+Upload icon (top-left, above the file tree) → **Select from your computer**.
 
-That is the only content file. It contains the whole paper, the bibliography and every
-figure; nothing else needs to accompany it except the style file in the next step.
+### 4. Set it as the main file
 
-> If you are instead uploading the **8-page version** for NewInML or CL4FMAgents, that one
-> *does* use a PNG. Upload `pilot_nll_by_generation.png` alongside it, **at the top level of
-> the file tree** — not in a `figures/` folder. That document calls
-> `\includegraphics{pilot_nll_by_generation}` with no path, so a folder makes the figure
-> vanish with only a warning.
+Right-click `evorobust-submission.tex` → **Set as Main File**.
 
-## Step 4 — Get the venue style file
+### 5. Recompile twice
 
-Open the EvoRobust CFP page and download the **NeurIPS 2026 style file**
-(`neurips_2026.sty`). Upload it to the project root the same way.
+The first pass shows `[?]` where citations go. That is BibTeX not having run yet, not an
+error. Hit **Recompile** again and they become `[1]`, `[2]`, …
 
-**You do not edit anything to activate it.** The document opens with:
+### 6. Check four things, then submit
 
-```latex
-\IfFileExists{neurips_2026.sty}{\usepackage{neurips_2026}}{ ...fallback... }
-```
+- Content ends **by page 4** — everything before the word *References*.
+- No `??` anywhere in the PDF.
+- No `[?]` anywhere.
+- No author name; it should read *Anonymous Author(s)*.
 
-so the real style is used the moment the file exists. It is loaded **without** the `[final]`
-option on purpose: the default is the anonymous submission form, while `[final]` is the
-camera-ready option and prints author names. Without the style file you get a text block
-of the same dimensions — which is why the page counts quoted here are meaningful — but **the
-fallback is not the venue format and must not be submitted.**
-
-If the CFP offers an Overleaf template link instead of a file, open that template, copy
-`neurips_2026.sty` out of it, and upload it here.
-
-## Step 5 — Set the main document
-
-Right-click `evorobust-submission.tex` → **Set as Main File**. With Overleaf's `main.tex`
-deleted this is usually automatic; do it explicitly anyway.
-
-## Step 6 — Compile twice
-
-Press **Recompile**.
-
-The first pass shows `[?]` where every citation should be. **This is expected** — BibTeX has
-not run yet. Press **Recompile** a second time and they resolve to `[1]`, `[2]`, and so on.
-
-If they are still `[?]` after the second pass, open the **Logs** panel (next to the
-Recompile button) and look for a BibTeX error. The usual cause is Overleaf being set to
-`pdfLaTeX` without automatic BibTeX; switch **Menu → Compiler** to `pdfLaTeX` and
-**Menu → Advanced → Bibliography** to automatic.
-
-## Step 7 — Check before submitting
-
-Work through these in the compiled PDF, not in the editor.
-
-1. **Content page count.** Everything from the title to the line *References* is content.
-   EvoRobust allows **4**. It should end partway down page 4.
-2. **Search the PDF for `??`.** Zero. Anything else is a broken cross-reference.
-3. **Search for `[?]`.** Zero.
-4. **Search for `TODO`, `PENDING`, `PLACEHOLDER`.** Zero.
-5. **Table 1 renders** with bold values and the ↓/↑ direction markers in the header.
-6. **Figure 1** (the pipeline diagram) renders as boxes and arrows. It is drawn in TikZ,
-   so it cannot be a missing-image box — if it looks wrong, the style file is interfering.
-7. **No author name anywhere**, including the PDF properties (Overleaf takes them from
-   `\author`, which reads `Anonymous Submission`).
-
-## Step 8 — Submit
-
-EvoRobust uses OpenReview. Download the PDF (**Menu → Download → PDF**) and upload it there.
-Keep the Overleaf project — camera-ready may extend to 5 pages and you will want the source.
+**Menu → Download → PDF**, then upload that at the OpenReview link above.
 
 ---
 
-## If something goes wrong
+## If something breaks
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| "File `figures/pipeline.tex' not found" | You uploaded a non-bundled `.tex` | Use `dist/evorobust-submission.tex`; it has everything inlined |
-| Compile produces no PDF, "Emergency stop" | A missing input file | Read the first `!` line in the Logs. Only the first matters; the rest cascade |
-| Figure is a grey box | Only possible in the 8-page version; PNG is in a folder or missing | Move it to the project root |
-| Citations stay `[?]` | BibTeX did not run | Recompile again; check Menu → Compiler settings |
-| Page count too high | Style file missing, so the fallback geometry is in use | Upload `neurips_2026.sty` |
-| Overleaf compiles "Hello World" | Placeholder `main.tex` still present | Delete it, then Set as Main File |
+| What you see | Fix |
+|---|---|
+| "Hello World", or the NeurIPS instructions paper | Step 2 or 4 not done. Delete the leftover `.tex`, set ours as main |
+| `File 'figures/pipeline.tex' not found` | Wrong file. Use `evorobust-submission.tex` from `dist/` |
+| Citations stay `[?]` after two compiles | Menu → Compiler: **pdfLaTeX**; Menu → Advanced → Bibliography: **automatic** |
+| Content runs past page 4 | See below |
+| Overfull hbox warnings | Ignore. There is one, at 0.4pt — invisible |
 
----
+## If it is too long
 
-## If you need to cut further
+I tested against a text block matching the NeurIPS dimensions, not the real style file, so
+the true page count could differ slightly. If content runs past page 4, cut in this order:
 
-The submission ends partway down page 4, so there is a little slack but not much. If the
-real NeurIPS style runs longer than the fallback, cut in this order:
-
-1. The **Contributions** paragraph in Section 1 — condense to one sentence.
+1. The **Contributions** paragraph in Section 1 → one sentence.
 2. The **variance sentence** at the end of Section 3.
-3. The **"Both budgets are matched"** paragraph in Section 2 — reduce to two sentences and
-   move the rest to supplementary.
+3. The **"Both budgets are matched"** paragraph in Section 2 → two sentences.
 
-**Do not cut**, in any circumstances: the equivalence-region statement, the sentence saying
-joint is *not* shown to be worse, the missing-comparators limitation, or the
-confirmatory-outcome disagreement. Each is there because removing it lets a true sentence
-imply something false, and a reviewer who spots that will not believe the rest.
+**Never cut these**, whatever the page count says:
+
+- the sentence saying the interval lies inside the equivalence region
+- the sentence saying joint is *not* shown to be worse
+- the missing-comparators limitation
+- the confirmatory-outcome disagreement
+
+Each one stops a true sentence from implying something false. A reviewer who catches that
+will not trust the rest of the paper.
 
 ---
 
-## One thing to weigh before you submit here
+## Other versions, if you submit elsewhere too
 
-EvoRobust's scope is *"Self-Evolving Diversity-Driven Search for Robust AI Systems"* —
-novelty search, quality-diversity algorithms, failure discovery, agentic safety. This paper
-frames recursive training as a self-evolving system whose failure mode is diversity loss,
-and asks which intervention bounds it under a fixed budget. That connection is real and the
-submission makes it explicitly.
+These are non-archival workshops, so the same work may go to more than one.
 
-It is still a narrower fit than **AXIOM** ("Foundations of Efficient Deep Learning", which
-explicitly covers compute-optimal training under constraints — the same 4-page limit and
-deadline), and than **NewInML** (8 pages, non-archival, aimed at first-time authors). The
-assessment and evidence are in `docs/WORKSHOP_SUBMISSION_GUIDE.md`.
+| Venue | File | Also upload | Limit |
+|---|---|---|---|
+| EvoRobust, AXIOM | `evorobust-submission.tex` | — | 4 pages |
+| NewInML, CL4FMAgents | `human-data-budget-workshop-bundled.tex` | `pilot_nll_by_generation.png` | 8 pages |
 
-Submitting to more than one is allowed: these are non-archival workshops. The 8-page version
-for NewInML/CL4FMAgents is already built at
-`dist/human-data-budget-workshop-bundled.tex`, and needs the same three-file upload.
+The 8-page version **does** use an image. Put the PNG in the project root, not in a folder.
+
+`python scripts/preflight_overleaf.py <file>` prints the exact upload list for any of them,
+read from the document rather than from memory.

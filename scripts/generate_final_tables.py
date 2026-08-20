@@ -61,6 +61,14 @@ SECONDARY = (
 
 NOT_ESTABLISHED = r"\multicolumn{4}{c}{\textsc{not established}}"
 
+#: The arm that spends nothing by construction. It is the comparison's reference point,
+#: never a competitor, and the figure draws it dashed for that reason.
+CONTROL_ARM = "no_rescue"
+
+
+def tail_series(chain: dict) -> list[float]:
+    return [m["tail_retention"] for m in sorted(chain["metrics"], key=lambda m: m["generation"])]
+
 
 def pct(numerator: float, denominator: float) -> float:
     return 100.0 * numerator / denominator
@@ -124,29 +132,54 @@ def contrast(by_arm: dict[str, list[dict]], treatment: str, baseline: str) -> di
     }
 
 
-def verdict(c: dict, threshold_pct: float, permitted_pct: float) -> tuple[str, bool]:
+def verdict(c: dict, threshold_units: float, permitted_pct: float) -> tuple[str, bool]:
     """Preregistered label, plus whether the budget gate lets it be reported.
 
-    Labels are the four in PREREGISTRATION.md, decided by the mean and the interval
-    against the practical threshold -- not by a p-value and not by the sign alone.
-    The gate is the separate, tighter quantity: the permitted realised spread.
+    The four labels and their rules are ``PREREGISTRATION.md`` §Meaningful-effect
+    interpretation, read against the practical-equivalence region rather than against a
+    p-value. ``threshold_units`` is that region's half-width in outcome units; U-006
+    settles its denominator as the fresh-random mean, and the caller supplies it so this
+    function never picks a denominator after outcomes are open.
+
+    The gate is a separate and tighter quantity: the permitted realised spread (P-008).
     """
     gated = abs(c["total_gap"]) > permitted_pct or (
         c["human_gap"] == c["human_gap"] and abs(c["human_gap"]) > permitted_pct
     )
     if gated:
         return "not established", False
-    if c["relative"] <= -threshold_pct and c["high"] < 0:
-        label = "beneficial"
-    elif c["relative"] >= threshold_pct and c["low"] > 0:
-        label = "harmful"
-    elif -threshold_pct < c["relative"] < threshold_pct and c["low"] > -abs(
-        c["mean"] / c["relative"] * threshold_pct if c["relative"] else 0
-    ):
-        label = "negligible"
-    else:
-        label = "uncertain"
-    return label, True
+    inside = -threshold_units < c["low"] and c["high"] < threshold_units
+    if inside:
+        return "negligible", True
+    if c["high"] < 0 and c["mean"] <= -threshold_units:
+        return "beneficial", True
+    if c["low"] > 0 and c["mean"] >= threshold_units:
+        return "harmful", True
+    return "uncertain", True
+
+
+def select_baseline(summaries: dict) -> tuple[str, str]:
+    """Return the strongest eligible non-joint baseline and how it was chosen.
+
+    ``PREREGISTRATION.md`` §Baseline-selection rule makes schedule-only and
+    selection-only the eligible pair, takes the lower mean NLL-regret AUC, and breaks a
+    tie within 0.001 units toward selection-only. The preregistered *evidence* for that
+    comparison is validation-only screening chains. No run artifact carries them, so the
+    means here come from the primary outcomes, and the returned note says so rather than
+    letting the table imply a screening step that did not happen.
+    """
+    eligible = {a: summaries[a]["auc_mean"] for a in ("schedule_only", "selection_only")
+                if a in summaries}
+    if len(eligible) < 2:
+        return "", "eligible baselines absent from this run"
+    (a, mean_a), (b, mean_b) = sorted(eligible.items())
+    if abs(mean_a - mean_b) <= 0.001:
+        return "selection_only", "tie within 0.001 AUC units; frozen tie-break applies"
+    winner = a if mean_a < mean_b else b
+    return winner, (
+        "lower mean AUC regret of the two eligible arms, read from primary outcomes "
+        "because this run carries no validation-only screening chains"
+    )
 
 
 def banner(run_id: str, source: str) -> list[str]:
@@ -229,11 +262,11 @@ def table_outcomes(summaries: dict, run_id: str, source: str, comparable: set) -
         best_auc = best_tail = None
 
     def mark(value: float, best: float | None) -> str:
-        return (
-            rf"\textbf{{{value:.4f}}}"
-            if best is not None and abs(value - best) < 1e-12
-            else f"{value:.4f}"
-        )
+        # Compared at the printed precision: two arms that render identically must
+        # either both be bold or neither, or the table asserts a difference it is not
+        # showing.
+        tied = best is not None and f"{value:.4f}" == f"{best:.4f}"
+        return rf"\textbf{{{value:.4f}}}" if tied else f"{value:.4f}"
 
     lines = banner(run_id, source) + [
         r"\begin{tabular}{lrrrrrr}",
@@ -257,31 +290,55 @@ def table_outcomes(summaries: dict, run_id: str, source: str, comparable: set) -
     return lines
 
 
-def table_contrasts(contrasts: list[dict], thr: float, permitted: float, run_id: str,
+def contrast_row(c: dict, threshold_units: float, permitted: float, bold: bool) -> str:
+    name = f"{ARM_LABEL[c['treatment']]} $-$ {ARM_LABEL[c['baseline']].lower()}"
+    if bold:
+        name = rf"\textbf{{{name}}}"
+    text, reportable = verdict(c, threshold_units, permitted)
+    human = "---" if c["human_gap"] != c["human_gap"] else f"{c['human_gap']:.2f}"
+    if reportable:
+        body = (
+            f"{c['mean']:+.4f} & [{c['low']:+.4f}, {c['high']:+.4f}] & "
+            f"{c['relative']:+.2f} & {human} & {c['total_gap']:.2f}"
+        )
+    else:
+        body = f"{NOT_ESTABLISHED} & {human} & {c['total_gap']:.2f}"
+    return f"{name} & {body} & {text} \\\\"
+
+
+def table_contrasts(primary: dict | None, contrasts: list[dict], threshold_units: float,
+                    permitted: float, baseline_note: str, run_id: str,
                     source: str) -> list[str]:
+    """T3: the confirmatory row first, then the secondary ones, visibly separated."""
     lines = banner(run_id, source) + [
+        f"% primary baseline: {baseline_note}",
         r"\begin{tabular}{lrrrrrl}",
         r"\toprule",
         r"Contrast & $\Delta$ AUC $\downarrow$ & 95\% CI & Relative (\%) & "
         r"$\Delta$ human (\%) & $\Delta$ total (\%) & Verdict \\",
         r"\midrule",
-        r"\textbf{Joint $-$ selected baseline} & "
-        r"\multicolumn{5}{c}{\textsc{baseline not selected}} & --- \\",
+        r"\multicolumn{7}{l}{\emph{Preregistered primary contrast}} \\",
+    ]
+    if primary is None:
+        lines.append(
+            r"\textbf{Joint $-$ selected baseline} & "
+            r"\multicolumn{5}{c}{\textsc{baseline not selected}} & --- \\"
+        )
+    else:
+        lines.append(contrast_row(primary, threshold_units, permitted, bold=True))
+    lines += [
         r"\midrule",
+        r"\multicolumn{7}{l}{\emph{Secondary contrasts}} \\",
     ]
     for c in contrasts:
-        label = f"{ARM_LABEL[c['treatment']]} $-$ {ARM_LABEL[c['baseline']].lower()}"
-        text, reportable = verdict(c, thr, permitted)
-        human = "---" if c["human_gap"] != c["human_gap"] else f"{c['human_gap']:.2f}"
-        if reportable:
-            body = (
-                f"{c['mean']:.4f} & [{c['low']:.3f}, {c['high']:.3f}] & "
-                f"{c['relative']:.2f} & {human} & {c['total_gap']:.2f}"
-            )
-        else:
-            body = f"{NOT_ESTABLISHED} & {human} & {c['total_gap']:.2f}"
-        lines.append(f"{label} & {body} & {text} \\\\")
-    lines += [r"\bottomrule", r"\end{tabular}"]
+        lines.append(contrast_row(c, threshold_units, permitted, bold=False))
+    lines += [
+        r"\midrule",
+        rf"\multicolumn{{7}}{{l}}{{\footnotesize Practical-equivalence region "
+        rf"$\pm{threshold_units:.4f}$ AUC units (2\% of the fresh-random mean).}} \\",
+        r"\bottomrule",
+        r"\end{tabular}",
+    ]
     return lines
 
 
@@ -343,69 +400,115 @@ PALETTE = {
 }
 
 
-def write_svg(trajectory: dict[str, list[float]], comparable: set, out: Path) -> None:
-    """Held-out human NLL against generation, one line per arm."""
-    width, height = 720, 420
-    left, right, top, bottom = 70, 250, 30, 55
+def write_svg(trajectory: dict, comparable: set, control: str, out: Path) -> None:
+    """Two panels: held-out human NLL and tail retention, against generation.
+
+    Conventions follow the recursive-training literature this paper sits in. Small
+    multiples with a shared x-axis and a legend above the panels, as in Drayson et al.
+    Figure 1 and Gerstgrasser et al. Figure 2; a shaded band for the spread across seeds,
+    as in Shumailov et al. Figure 1, which plots $\\mu \\pm \\sigma$ over runs; and the
+    no-rescue control as a dashed reference line, the role Drayson et al. Figure 3 gives
+    its `Oracle` line. Raw SVG because the analysis environment carries no plotting
+    dependency, and a figure that cannot be regenerated is not evidence.
+    """
     arms = [a for a in ARM_ORDER if a in trajectory]
-    horizon = len(trajectory[arms[0]])
-    values = [v for series in trajectory.values() for v in series]
-    lo, hi = min(values), max(values)
-    pad = (hi - lo) * 0.08
-    lo, hi = lo - pad, hi + pad
-
-    def x(g: int) -> float:
-        return left + (width - left - right) * g / (horizon - 1)
-
-    def y(v: float) -> float:
-        return top + (height - top - bottom) * (hi - v) / (hi - lo)
+    horizon = len(trajectory[arms[0]]["nll_mean"])
+    width, height = 900, 430
+    top, bottom, gap = 78, 58, 70
+    left, right = 62, 230
+    panel_w = (width - left - right - gap) / 2
+    panels = [
+        ("nll", "Held-out human NLL (nats), lower better", 0.0),
+        ("tail", "Tail retention (ratio), higher better", left + panel_w + gap),
+    ]
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'font-family="system-ui, sans-serif" font-size="12">',
         f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
     ]
-    for tick in range(5):
-        v = lo + (hi - lo) * tick / 4
-        parts.append(
-            f'<line x1="{left}" y1="{y(v):.1f}" x2="{width - right}" y2="{y(v):.1f}" '
-            f'stroke="#e5e7eb"/>'
-        )
-        parts.append(
-            f'<text x="{left - 8}" y="{y(v) + 4:.1f}" text-anchor="end" '
-            f'fill="#4b5563">{v:.2f}</text>'
-        )
-    for g in range(horizon):
-        parts.append(
-            f'<text x="{x(g):.1f}" y="{height - bottom + 18}" text-anchor="middle" '
-            f'fill="#4b5563">{g}</text>'
-        )
-    parts.append(
-        f'<text x="{(left + width - right) / 2:.0f}" y="{height - 12}" '
-        f'text-anchor="middle" fill="#111827">Generation</text>'
-    )
-    parts.append(
-        f'<text x="16" y="{(top + height - bottom) / 2:.0f}" fill="#111827" '
-        f'transform="rotate(-90 16 {(top + height - bottom) / 2:.0f})" '
-        f'text-anchor="middle">Held-out human NLL (nats)</text>'
-    )
+
     for index, arm in enumerate(arms):
-        points = " ".join(f"{x(g):.1f},{y(v):.1f}" for g, v in enumerate(trajectory[arm]))
-        dash = "" if arm in comparable else ' stroke-dasharray="5 4"'
+        column, row = divmod(index, 3)
+        lx = left + column * 300
+        ly = 20 + row * 18
+        dash = ' stroke-dasharray="6 4"' if arm == control else ""
         parts.append(
-            f'<polyline points="{points}" fill="none" stroke="{PALETTE[arm]}" '
-            f'stroke-width="2"{dash}/>'
+            f'<line x1="{lx}" y1="{ly}" x2="{lx + 26}" y2="{ly}" '
+            f'stroke="{PALETTE[arm]}" stroke-width="2.5"{dash}/>'
         )
-        ly = top + 6 + index * 20
+        # ARM_LABEL already says "(control)" for the control arm; only the
+        # comparability caveat needs adding, and only when it applies.
+        suffix = "" if arm == control or arm in comparable else " (not comparable)"
         parts.append(
-            f'<line x1="{width - right + 10}" y1="{ly}" x2="{width - right + 34}" '
-            f'y2="{ly}" stroke="{PALETTE[arm]}" stroke-width="2"{dash}/>'
+            f'<text x="{lx + 32}" y="{ly + 4}" fill="#111827">{ARM_LABEL[arm]}{suffix}</text>'
         )
-        suffix = "" if arm in comparable else " (not comparable)"
+
+    for key, axis_label, offset in panels:
+        px = left + offset
+        values = [
+            v
+            for arm in arms
+            for m, sd in zip(trajectory[arm][f"{key}_mean"], trajectory[arm][f"{key}_sd"],
+                             strict=True)
+            for v in (m - sd, m + sd)
+        ]
+        lo, hi = min(values), max(values)
+        pad = (hi - lo) * 0.10
+        lo, hi = lo - pad, hi + pad
+
+        def x(g: int, px: float = px) -> float:
+            return px + panel_w * g / (horizon - 1)
+
+        def y(v: float, lo: float = lo, hi: float = hi) -> float:
+            return top + (height - top - bottom) * (hi - v) / (hi - lo)
+
+        for tick in range(5):
+            v = lo + (hi - lo) * tick / 4
+            parts.append(
+                f'<line x1="{px}" y1="{y(v):.1f}" x2="{px + panel_w:.1f}" '
+                f'y2="{y(v):.1f}" stroke="#e5e7eb"/>'
+            )
+            parts.append(
+                f'<text x="{px - 8}" y="{y(v) + 4:.1f}" text-anchor="end" '
+                f'fill="#4b5563">{v:.3f}</text>'
+            )
+        for g in range(0, horizon):
+            parts.append(
+                f'<text x="{x(g):.1f}" y="{height - bottom + 18}" text-anchor="middle" '
+                f'fill="#4b5563">{g}</text>'
+            )
         parts.append(
-            f'<text x="{width - right + 40}" y="{ly + 4}" fill="#111827">'
-            f'{ARM_LABEL[arm]}{suffix}</text>'
+            f'<text x="{px + panel_w / 2:.0f}" y="{height - bottom + 40}" '
+            f'text-anchor="middle" fill="#111827">Generation</text>'
         )
+        parts.append(
+            f'<text x="{px + panel_w / 2:.0f}" y="{top - 12}" text-anchor="middle" '
+            f'fill="#111827">{axis_label}</text>'
+        )
+
+        for arm in arms:
+            means = trajectory[arm][f"{key}_mean"]
+            sds = trajectory[arm][f"{key}_sd"]
+            upper = " ".join(
+                f"{x(g):.1f},{y(m + sd):.1f}"
+                for g, (m, sd) in enumerate(zip(means, sds, strict=True))
+            )
+            lower = " ".join(
+                f"{x(g):.1f},{y(m - sd):.1f}"
+                for g, (m, sd) in reversed(list(enumerate(zip(means, sds, strict=True))))
+            )
+            parts.append(
+                f'<polygon points="{upper} {lower}" fill="{PALETTE[arm]}" '
+                f'fill-opacity="0.13" stroke="none"/>'
+            )
+            dash = ' stroke-dasharray="6 4"' if arm == control else ""
+            points = " ".join(f"{x(g):.1f},{y(m):.1f}" for g, m in enumerate(means))
+            parts.append(
+                f'<polyline points="{points}" fill="none" stroke="{PALETTE[arm]}" '
+                f'stroke-width="2"{dash}/>'
+            )
+
     parts.append("</svg>")
     out.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
@@ -427,9 +530,9 @@ def write_markdown(payload: dict, out: Path) -> None:
         "**AUTO-GENERATED by `scripts/generate_final_tables.py`. Do not edit values.**",
         f"Source: `{payload['source']}`. Layout: `docs/paper/final_tables_plan.md`.",
         "",
-        "> These are **pilot** numbers, shown to exercise the layout the final grid will",
-        "> use. The pilot's primary contrast is not established (FAILURE_LOG.md F-020,",
-        "> F-021). Nothing here is a result.",
+        f"> Generated from {sum(v['n'] for v in arms.values())} chains under run "
+        f"`{payload['run_id']}`. Whether these numbers may be quoted anywhere else is",
+        "> governed by `PROTOCOL.md` §5, not by this file.",
         "",
         "## Table 1 — Budget realisation",
         "",
@@ -468,10 +571,12 @@ def write_markdown(payload: dict, out: Path) -> None:
         if arm not in arms:
             continue
         a = arms[arm]
-        auc = (f"**{a['auc_mean']:.4f}**" if best_auc is not None
-               and abs(a["auc_mean"] - best_auc) < 1e-12 else f"{a['auc_mean']:.4f}")
-        tail = (f"**{a['tail_mean']:.4f}**" if best_tail is not None
-                and abs(a["tail_mean"] - best_tail) < 1e-12 else f"{a['tail_mean']:.4f}")
+        auc = (f"**{a['auc_mean']:.4f}**"
+               if best_auc is not None and f"{a['auc_mean']:.4f}" == f"{best_auc:.4f}"
+               else f"{a['auc_mean']:.4f}")
+        tail = (f"**{a['tail_mean']:.4f}**"
+                if best_tail is not None and f"{a['tail_mean']:.4f}" == f"{best_tail:.4f}"
+                else f"{a['tail_mean']:.4f}")
         lines.append(
             f"| {label[arm]} | {a['n']} | {auc} | {a['auc_sd']:.4f} | {a['auc_cv']:.2f} "
             f"| {tail} | {a['tail_sd']:.4f} |"
@@ -481,19 +586,37 @@ def write_markdown(payload: dict, out: Path) -> None:
         "*Caption (draft).* Area under the generation-wise held-out human NLL-regret "
         "curve (nats x generations, lower is better) and end-of-horizon tail retention "
         "(ratio in [0,1], higher is better), each averaged over the frozen seed set with "
-        "between-chain SD. Bold marks the best value **among arms whose realised spend "
-        f"is within the permitted {permitted:.2f}% spread of one another** "
-        f"({', '.join(label[a] for a in comparable)}); the remaining arms received "
-        "different amounts of data and are shown but not ranked.",
+        "between-chain SD. Bold marks the best value among arms whose realised spend is "
+        f"within the permitted {permitted:.2f}% spread of one another"
+        + (
+            ". Every spending arm qualifies in this run, so the ranking is over all of "
+            "them; the control spends nothing by construction and is not ranked."
+            if len(comparable) == len([a for a in arms if arms[a]["human"] > 0])
+            else f" ({', '.join(label[a] for a in comparable)}); the remaining arms "
+                 "received different amounts of data and are shown but not ranked."
+        ),
         "",
         "## Table 3 — Paired contrasts",
         "",
         "| Contrast | ΔAUC ↓ | 95% CI | Relative (%) | Δhuman (%) | Δtotal (%) | Verdict |",
         "|---|---:|---:|---:|---:|---:|---|",
-        "| **Joint − selected baseline** | — | — | — | — | — | baseline not selected |",
     ]
+    primary = payload.get("primary")
+    if primary:
+        text, _ = verdict(primary, payload["threshold_units"], permitted)
+        lines.append(
+            f"| **{label[primary['treatment']]} − {label[primary['baseline']].lower()} "
+            f"(primary)** | {primary['mean']:+.4f} | "
+            f"[{primary['low']:+.4f}, {primary['high']:+.4f}] | "
+            f"{primary['relative']:+.2f} | {primary['human_gap']:.2f} | "
+            f"{primary['total_gap']:.2f} | **{text}** |"
+        )
+    else:
+        lines.append(
+            "| **Joint − selected baseline** | — | — | — | — | — | baseline not selected |"
+        )
     for c in payload["contrasts"]:
-        text, reportable = verdict(c, payload["threshold_percent"], permitted)
+        text, reportable = verdict(c, payload["threshold_units"], permitted)
         human = "—" if c["human_gap"] != c["human_gap"] else f"{c['human_gap']:.2f}"
         cells = (
             f"{c['mean']:.4f} | [{c['low']:.3f}, {c['high']:.3f}] | {c['relative']:.2f}"
@@ -509,18 +632,18 @@ def write_markdown(payload: dict, out: Path) -> None:
         "two-sided 95% intervals over the frozen seeds. A contrast whose arms differ by "
         f"more than {permitted:.2f}% on either budget axis is reported as not "
         "established rather than as a number: unequal data, not allocation strategy, "
-        "would explain any difference. The primary row stays empty because the "
-        "preregistered baseline is chosen from validation-only screening chains, which "
-        "this run does not carry.",
+        "would explain any difference. Verdicts are the four preregistered labels, read "
+        f"against a practical-equivalence region of ±{payload['threshold_units']:.4f} AUC "
+        f"units. Primary baseline: {payload['baseline_note']}.",
         "",
-        "## Figure 1 — Held-out NLL by generation",
+        "## Figure 1 — Trajectories",
         "",
-        "![NLL by generation](F1_nll_by_generation.svg)",
+        "![Trajectories](F1_trajectories.svg)",
         "",
-        "*Caption (draft).* Held-out human NLL (nats, lower is better) against "
-        "generation, averaged over the frozen seed set. Dashed lines mark arms whose "
-        "realised spend places them outside the comparable set, so their separation from "
-        "the solid lines cannot be read as an effect of allocation.",
+        "*Caption (draft).* Held-out human NLL (nats, lower is better) and tail retention "
+        "(ratio, higher is better) against generation, mean over the frozen seed set with "
+        "a ±1 SD band. The no-rescue control is dashed: it spends nothing by construction "
+        "and is the reference point rather than a competitor.",
         "",
         "## Appendix tables",
         "",
@@ -553,7 +676,18 @@ def main() -> None:
 
     by_arm = load_chains(args.run_dir)
     summaries = {arm: arm_summary(chains) for arm, chains in by_arm.items()}
-    contrasts = [contrast(by_arm, t, b) for t, b in SECONDARY]
+
+    # U-006 settles the practical-equivalence region against the fresh-random mean.
+    # Fixed here, from a named arm, so no denominator is chosen after outcomes are open.
+    threshold_units = (
+        config["practical_effect_threshold_relative"] * summaries["random"]["auc_mean"]
+    )
+    baseline, baseline_note = select_baseline(summaries)
+    primary = contrast(by_arm, "joint", baseline) if baseline else None
+    contrasts = [
+        contrast(by_arm, t, b) for t, b in SECONDARY
+        if not (primary and t == "joint" and b == baseline)
+    ]
 
     # Arms that may be ranked against one another: those whose realised spend sits
     # within the permitted spread of the reference arm on both axes. The control is
@@ -574,7 +708,8 @@ def main() -> None:
     write(args.outdir / "T2_per_arm_outcomes.tex",
           table_outcomes(summaries, run_id, source, comparable))
     write(args.outdir / "T3_paired_contrasts.tex",
-          table_contrasts(contrasts, threshold, permitted, run_id, source))
+          table_contrasts(primary, contrasts, threshold_units, permitted, baseline_note,
+                          run_id, source))
     write(args.outdir / "T4_trajectory.tex", table_trajectory(by_arm, run_id, source))
     write(args.outdir / "T5_per_chain.tex",
           table_per_chain(by_arm, ceiling, bound, run_id, source))
@@ -585,22 +720,35 @@ def main() -> None:
         "ceiling": ceiling,
         "threshold_percent": threshold,
         "permitted_spread_percent": permitted,
+        "threshold_units": threshold_units,
+        "primary": primary,
+        "primary_baseline": baseline,
+        "baseline_note": baseline_note,
         "indivisibility_bound": bound,
         "comparable_arms": sorted(comparable),
         "arms": {a: summaries[a] for a in ARM_ORDER if a in summaries},
         "contrasts": contrasts,
         "trajectory": {
-            a: [st.mean(nll_series(c)[g] for c in by_arm[a])
-                for g in range(len(by_arm[a][0]["metrics"]))]
+            a: {
+                f"{key}_{stat}": [
+                    (st.mean if stat == "mean" else st.stdev)(
+                        series(c)[g] for c in by_arm[a]
+                    )
+                    for g in range(len(by_arm[a][0]["metrics"]))
+                ]
+                for key, series in (("nll", nll_series), ("tail", tail_series))
+                for stat in ("mean", "sd")
+            }
             for a in ARM_ORDER if a in by_arm
         },
     }
     (args.outdir / "table_data.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    write_svg(payload["trajectory"], comparable, args.outdir / "F1_nll_by_generation.svg")
+    write_svg(payload["trajectory"], comparable, CONTROL_ARM,
+              args.outdir / "F1_trajectories.svg")
     write_markdown(payload, args.outdir / "PREVIEW.md")
-    print(f"wrote 5 tables, PREVIEW.md, F1_nll_by_generation.svg and table_data.json "
+    print(f"wrote 5 tables, PREVIEW.md, F1_trajectories.svg and table_data.json "
           f"to {args.outdir}")
 
 

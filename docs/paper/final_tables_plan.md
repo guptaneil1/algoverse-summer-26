@@ -1,18 +1,17 @@
 # Table plan for the final experiment
 
-**Status:** Proposal, with a working generator. The layouts below are implemented in
-`scripts/generate_final_tables.py` and exercised against the **pilot** artifacts in
-`docs/paper/table_previews/` so the shapes can be reviewed before the final grid exists.
-Those previews are pilot numbers and are not results; the final run's numbers may not
-enter the manuscript until it completes, its manifest validates, blocking tests pass, and
-the analysis is regenerated from immutable artifacts (`PROTOCOL.md` §5).
+**Status:** Implemented and run against the corrected grid. `scripts/generate_final_tables.py`
+produces the tables and the figure in `docs/paper/final_tables/` from
+`results/runs/primary_pilot_v2_2026-08-20`, the 25-chain run in which both budget axes
+hold. Whether any of it may be quoted in the manuscript is `PROTOCOL.md` §5's question,
+not this file's.
 **Date:** 2026-08-20
 **Author:** drafted for owner review; `paper/` is `@Ronit`'s under `.github/CODEOWNERS`, so
 nothing under `paper/` is edited by this document.
 
 ## What this is
 
-The final grid is the frozen design re-run with both budget axes asserted and P-011
+The grid is the frozen design re-run with both budget axes asserted and P-011
 displacement in force: five arms × five preregistered seeds = 25 chains, horizon 10, GPT-2
 at a pinned revision, WikiText-103 subsampled to 400 articles, 750,000 human-origin
 optimizer tokens per chain (`configs/experiment/primary_pilot.json`). This document fixes
@@ -139,10 +138,33 @@ Three constraints on this table, all of them preregistered rather than stylistic
    reading the run cannot support.
 
 The baseline named in row 1 is selected by the frozen rule (lower mean AUC on
-validation-only screening chains, ties to selection-only) and the generator must record
-*which* it selected and on what evidence, in the table's comment header.
+validation-only screening chains, ties to selection-only) and the generator records
+*which* it selected and on what evidence, in the table's comment header. **On this run
+that evidence is not the preregistered kind:** no validation-only screening chains exist,
+so the two eligible arms are compared on their primary outcomes. The generator says so in
+the header rather than letting the table imply a screening step that did not happen, and
+the paper should say so too. The preregistered tie-break names the same arm the outcome
+comparison does, which limits but does not erase the deviation.
 
-### T4 — Per-generation trajectory (main body or appendix; figure may replace it)
+### Figure 1 — Trajectories (main body)
+
+Two panels sharing a generation axis: held-out human NLL on the left, tail retention on
+the right, one line per policy, a ±1 SD band across the frozen seeds, and the no-rescue
+control dashed. The conventions are taken from the papers this one sits beside:
+
+- **Small multiples, one metric per panel, legend above, generations 0–9 on x** — Drayson
+  et al. Figure 1 and Figure 3, Gerstgrasser et al. Figure 2 (Replace vs Accumulate).
+- **A shaded band for spread across runs** — Shumailov et al. Figure 1, which plots
+  perplexity as $\mu \pm \sigma$ over five runs.
+- **A dashed horizontal reference the other lines are read against** — Drayson et al.
+  Figure 3's `Oracle` line. Our control plays that role: it spends nothing by
+  construction and is the reference point, not a competitor.
+
+What we do *not* copy: Drayson's panels have no uncertainty band at all, and at five
+seeds with CVs under 1.1% ours can afford one. Where a convention and the budget rules
+conflict, the budget rules win.
+
+### T4 — Per-generation trajectory table (appendix)
 
 Rows are generations 0–9, one column pair per arm (mean, SD) or a single column per arm
 with the SD in a companion figure. `results/figures/pilot_nll_by_generation.png` already
@@ -196,7 +218,7 @@ reference in the text. What that costs each table here:
   overclaim the budget apparatus exists to prevent, and on the pilot artifacts it would
   hand the win to an arm the run cannot rank. The caption names the comparable set.
 - **Captions state the takeaway**, which for a gated table is the gate: what was not
-  established and why. Draft captions are generated into `table_previews/PREVIEW.md`;
+  established and why. Draft captions are generated into `final_tables/PREVIEW.md`;
   they are drafts for `@Ronit`, not final prose.
 - **Every table gets referenced or moved to the appendix.** T4–T8 are appendix tables by
   default; if a section does not reference one, it stays there.
@@ -212,12 +234,14 @@ entire purpose.
   from `generate_pilot_outputs.py` rather than restating it, so the two cannot drift into
   disagreeing about what AUC regret means. T7 and T8 are not implemented: the checkpoints
   they need are not in the tracked artifact set.
-- Run it against the final grid with
-  `--run-dir results/runs/<RUN_ID> --config configs/experiment/primary_pilot_v2.json`.
-  Nothing else changes.
-- Its output on the pilot reproduces every published pilot value independently — the AUC
-  means and SDs in `paper/tables/primary_results.tex`, and the intervals, relative
-  differences and both budget spreads in `paper/tables/pilot_macros.tex`.
+- Run it with
+  `--run-dir results/runs/primary_pilot_v2_2026-08-20 --config configs/experiment/primary_pilot_v2.json`.
+  A later grid changes those two arguments and nothing else.
+- Its output reproduces every value published for both grids independently: the pilot's
+  AUC means and SDs in `paper/tables/primary_results.tex` and its intervals and budget
+  spreads in `paper/tables/pilot_macros.tex`, and the corrected grid's per-arm means, CVs,
+  contrasts, intervals and ±0.0507 equivalence region in
+  `docs/runs/primary_pilot_v2_2026-08-20_results.md`.
 - Prose cites macros. A bare decimal in `paper/sections/` is a test failure today
   (`tests/analysis/test_generated_outputs.py`) and must stay one.
 - Fixture tables stay in `results/tables/`; the manuscript's copies stay in

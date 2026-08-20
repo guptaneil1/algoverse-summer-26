@@ -32,7 +32,10 @@ def load_script(name: str):
 
 final_tables = load_script("generate_final_tables")
 
-THRESHOLD = 2.0
+# Practical-equivalence half-width in outcome units: 2% of the baseline arm's AUC
+# regret, which is 0.45 for the fixture below. The gate is the separate, tighter
+# quantity P-008 sets.
+THRESHOLD_UNITS = 0.009
 PERMITTED = 0.2
 
 
@@ -67,7 +70,7 @@ def test_gate_passes_when_both_axes_hold():
     contrast = final_tables.contrast(
         arms(750_000, 16_000_000), "selection_only", "random"
     )
-    label, reportable = final_tables.verdict(contrast, THRESHOLD, PERMITTED)
+    label, reportable = final_tables.verdict(contrast, THRESHOLD_UNITS, PERMITTED)
 
     assert reportable, "a contrast matched on both axes must be reportable"
     assert label == "beneficial", label
@@ -78,7 +81,7 @@ def test_gate_fires_on_the_human_axis():
     contrast = final_tables.contrast(
         arms(675_000, 16_000_000), "selection_only", "random"
     )
-    _, reportable = final_tables.verdict(contrast, THRESHOLD, PERMITTED)
+    _, reportable = final_tables.verdict(contrast, THRESHOLD_UNITS, PERMITTED)
 
     assert not reportable
 
@@ -88,7 +91,7 @@ def test_gate_fires_on_the_total_axis():
     contrast = final_tables.contrast(
         arms(750_000, 16_300_000), "selection_only", "random"
     )
-    _, reportable = final_tables.verdict(contrast, THRESHOLD, PERMITTED)
+    _, reportable = final_tables.verdict(contrast, THRESHOLD_UNITS, PERMITTED)
 
     assert not reportable
 
@@ -99,11 +102,27 @@ def test_a_gated_row_prints_no_numbers():
         arms(675_000, 16_000_000), "selection_only", "random"
     )
     rendered = "\n".join(
-        final_tables.table_contrasts([contrast], THRESHOLD, PERMITTED, "run", "source")
+        final_tables.table_contrasts(
+            None, [contrast], THRESHOLD_UNITS, PERMITTED, "note", "run", "source"
+        )
     )
 
     assert "not established" in rendered
     assert f"{contrast['mean']:.4f}" not in rendered
+
+
+def test_an_interval_inside_the_equivalence_region_is_negligible():
+    """The primary result's shape: matched, precise, and practically equivalent."""
+    contrast = final_tables.contrast(
+        arms(750_000, 16_000_000), "selection_only", "random"
+    )
+    # A region wide enough to contain the whole interval turns the same numbers from a
+    # beneficial effect into a negligible one. That is the preregistered rule, not a
+    # judgement call at reporting time.
+    label, reportable = final_tables.verdict(contrast, 0.5, PERMITTED)
+
+    assert reportable
+    assert label == "negligible", label
 
 
 def test_the_permitted_spread_is_the_projects_own():

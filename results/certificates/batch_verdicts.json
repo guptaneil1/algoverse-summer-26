@@ -1,0 +1,2407 @@
+[
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__joint__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "c0e960a0e208929d470c1409019394f0e9288695da9b2bfba251eab299799082",
+      "chain_result": "813394defd6101a83a3574d83950d7763d76ed1b3b831f67a843985418234024"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__joint__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "a5055f2bda7e8e101767639121da31600df997873308d33bd58473f945f8e1db",
+      "chain_result": "09eff28962582dcc3bcb2ccb8ea46dbe33ac9bf07aca5b7eded254141666ddf0"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__joint__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "4e988aad14b122a48cca8f33ed2048a028db761b589eb6711884644bc46d23aa",
+      "chain_result": "0ed99fd4fbddecb389e5db976808b45756c241350a82210995937692f0a6bc61"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__joint__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "d9581b5429ff624d95405fd01991ea99e8f07c4b686a434da126d528ddb6957a",
+      "chain_result": "04b03561db309ef678e08260655237755742c2635a68920cb3ac1f69fadc6f6f"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__joint__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "bcaa338941a6c2d97bbe879c3ef6cd00351df2ed08cfd597a36cc337e5e3cee9",
+      "chain_result": "0d64e87237d899876053f7238d0e7e05200c9b1b203e6dab187057308f1f49db"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__no_rescue__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "51a2edf0ffbba43fb87427f9f5f0737e7fb1b6865f163f4609660ae2f184cdca",
+      "chain_result": "3f1c565f3e04c9cf9fc377adb7df078b64b97d6a4233b0de8497242026ed5619"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__no_rescue__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "d1d618a96510e399d1aa54b05b7ecb21dfe6ff5a5fe29ff9e85fa063bdad68c0",
+      "chain_result": "9b2c28f0939f83f2af5342c182b5de597a1930521bf7811c00fcc9c751075897"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__no_rescue__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "582cea6b6c0b0c81180be6929e0add86645f70588437df5f3298f6855257bc48",
+      "chain_result": "68b922f15f7ff22514654a48b8f745aa56925095657e552c39fb4a5055b680e6"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__no_rescue__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "6c747ee3bd3c52a9109ed0e3170ced7f2246fc1702b63c2a863ef758bc3693c7",
+      "chain_result": "4290bdad18c5df0fd37819d9fac5dc44cfe1a7fd710acf9cd2e33bada3f22148"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__no_rescue__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "d5d701eb45cc28724378f714d06ff7ccec1bb431d5bca402da88423d6d4c4152",
+      "chain_result": "34b387b90dcff188d03593d2982fca8ff120ec817fdd0605ffd9f7170ebbc976"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__random__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "e1ea6aec3f2d1d1edb8efabe6af68a49f3d8b8ac17c02281fffc71ec7797c979",
+      "chain_result": "248b850b6a015740bfce67761452f4e923f5945d85d80fd9baa056bd4380dfe3"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__random__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "77be2dcaaf6391c9e9aeb235ba9f16190f6c0a1db49a4e733fd7d14ab50e936b",
+      "chain_result": "defe6b0a9fc2be910d6dbf0652a9b8678766f2a5aadb43d0c25900fa8d9c7a5b"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__random__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "6b14a8e529c9401e9116fbcdae5c7f53f0dad5b6c287aef87bd0976b5943c2a5",
+      "chain_result": "ebc02c1794333e2ec5f14415ba5ee9a0aac90438b730837e033e64add319b7ab"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__random__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "b62d3e465905c1564758f64ddab4d0fc793c5dd9bb9781adff6d5353d3d53320",
+      "chain_result": "873a0daf16d98f3ec43527a857759b864c96ca7787a7897aeca05241341f1e8f"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__random__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "2a2d6af30a805e764b69884e5e98aa7d686e56eeb246d68a1e9394ea7cdb80b1",
+      "chain_result": "c43a3ad02f98e1dbd6955d29c4658421ab40740b2cfae29186093868843073ab"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__schedule_only__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "8d182c8fb11f7445cf506288ce3a8605e18a4df4f503ec97b803a78256e5228b",
+      "chain_result": "03626ec8c66059143ef3863b7d9c9a7761ebff939188fcf266426eaf3a984d4c"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__schedule_only__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "79b2039f043d7e3051e206cf51cf002f05b0263b9d4b6ec8a9a5cc63fbfd0453",
+      "chain_result": "cea9154eb1013f341f87be5db738a4fb5cd3af5436e893aedf0d3550535eddc7"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__schedule_only__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "072f19b3b9f66088efb0f738075c0d6b7a22ecfc52da1358e31b2f77d355d8c4",
+      "chain_result": "ff95f198d6e5b6daa87fb55b3bb1c0415c0e5154ede217518976afaeaaa81492"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__schedule_only__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "0ac39606c316e7298b9eef8c51e9f090d219edebb8afeb7f0b09f7f40b8392df",
+      "chain_result": "246bbbc0597fe230c466d76d16e43daeb7ef6657f40259493cbec98d561cba73"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__schedule_only__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "945b242e79f3f090b3e4615b0d4aeedd255e42e412d4ecabe679a340b55e5276",
+      "chain_result": "fb19d8b54612224e20845b298c7974bd1e23213fc09171a11ec7d66dc08f615d"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__selection_only__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "af50c934db47aa4adf5d826c430fdd81f980f4fbf178cef5d963f8283e6f898a",
+      "chain_result": "8dd6d5e2aced3de3bbd5a5d8ddf60a0152dd5b2b82c5dcb7858c53535c09488b"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__selection_only__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "9d7dcf19c20e025af1785611d7b5f508550ad875f146d6ce82881e2af9f64f35",
+      "chain_result": "7b539005dbab0916773259684281c72f401fe7c4ca634903e399290351bb8bb7"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__selection_only__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "fd38579608232f588df49ab42f1164ea68411c203b3dc973e3905ebcb665d338",
+      "chain_result": "931a1c705900e96b8423691807013ed951693cbec3be09e8acf8494ab365e785"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__selection_only__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "65d53596d17a835d0922f22fdf4b12eb99a5ec17ed49322b98e5d11ca7635bc2",
+      "chain_result": "c780c782f8bd37ca0023129cfddb54618a0bdc65b60419d7af3ad7243a26fd91"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_v2_2026-08-19__selection_only__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "8226642a319f395ac6d408b1c443e7a1d2e3c4e83204a3ff2d1a0993b4b92c7d",
+      "chain_result": "99b5bce2b0f6d3c858904117ec916f58e10f6926ada5e3588c14ecc4d8d85be9"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__joint__seed101",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_HUMAN_MISMATCH",
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_human_matches_plan",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "5dbcecc8e972eeea8ca3b3ed9b842568994b2eabafd3e10c4e17bf5450fcd455",
+      "chain_result": "cea4e9ae945f0395fa971ed438fd55e44b6ccdfd3eae91d64fff28254fadcc86"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__joint__seed202",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_HUMAN_MISMATCH",
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_human_matches_plan",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "3e15e1817b87e971d991387d1bcb8ff6e3e56d062e67b54c3ead58a3e1f5caf0",
+      "chain_result": "bc803a832ffe6328b8ebb38b67b0fe01ded109cb84b8a763e32e495667bfed16"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__joint__seed303",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_HUMAN_MISMATCH",
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_human_matches_plan",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "ab4652c69c511331385a2afbfc22db0bc4b8842680632384f9f8094091d78b59",
+      "chain_result": "4f9084b4c7171bb0e99eab5d82b83d31c51683cd54405e3803c5bab4dd37f1dc"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__joint__seed404",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_HUMAN_MISMATCH",
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_human_matches_plan",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "07370cabed6ce44a26f0b5a4bfae9bb7d3b5b57017490d63c70d89a9a4b71559",
+      "chain_result": "7f4a82315831ed39c640d61f3a8b05a207b3c2f4224a2adff26a252c0e1d6784"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__joint__seed505",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_HUMAN_MISMATCH",
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_human_matches_plan",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "c6c07ce5694e16868c305c308451eb8575eb8a41273d999f7000315547e84a58",
+      "chain_result": "0006019f36cb42ea6ac158fd265bad9dd64d7434156a4943407bb12d0b57ab30"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: human shortfall: consumed 674,193 against a declared 750,000, falling 75,807 short. One indivisible candidate is at most 7,500, so indivisibility does not explain this",
+      "budget matching violated: total optimizer tokens 17,025,024 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__no_rescue__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "c4cb789d36e19b54c843aca201ca9b6fafa931625c2e54c2fd36e960ef630470",
+      "chain_result": "24a2a4cdc3cd0b67c905617c5f467d35ef9f54635b4e296a1f3a6beece02b3a6"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__no_rescue__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "87ba7dd2f992fe04f3a39b4657b2856712f66f317f44ad61da8c7472a1c9723e",
+      "chain_result": "c458f77234e94a5a053e6153f5cbd9d8c5bf4d476e701cb0d524f8b5ada1d728"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__no_rescue__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "438e9e536cf0749fba17c15755b3805342930f3f1e6d78eb0e2b7353bc126dfc",
+      "chain_result": "3ab1001705b4fd8f284c3191cda18524d481c84e1a19f45f9112145af1401c09"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__no_rescue__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "8e51aab8f9e2a3f95bf4c5ce82568d9e8de2029d9df781799d79697cc442cf4c",
+      "chain_result": "4213eec12efd971c19061eaad9b058b14237d457d0922a0c1dd45f1d61a484f3"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__no_rescue__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "dc80ea8b5ef07c3db5c3e123e563ca43ea96b22981cc11590825fba2e4051412",
+      "chain_result": "bef9044b9a7db44cbc80925486f0743ec466f4fc39d2385801ee5a668d7e903b"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__random__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "aa0a1a3f0cca4d3919fd1c9bfc681318fdb8cce9adcadf432533ee446347b3e2",
+      "chain_result": "ceb0da4f0df4e911e5152d6f8f816a7154acb1dabf7789ac30f4fe046362a60a"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__random__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "af4fd422792fb5094cdc16126bcde479731efc60bf7aa2f2cd8764feaddbb8e8",
+      "chain_result": "26b3b442320f647391de739d702e713235e79f7fec11d90fb7ca55920ea086d6"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__random__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "431170d6439ff855b94b670012046d07e69ff1b7c8955b39eb40c13888f01b2e",
+      "chain_result": "3df2efe3bfb2de80535c62f69025853854ba1765266a33ef98c351c535acdd8a"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__random__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "a628eeee115fe0d9c1ce445dc410cfb0e936aa2744690fee59c01858d15625bb",
+      "chain_result": "bc90b9def678e0fe44eb0b46cb1f94585f58e336bb218dd9b3ae013f0a677afd"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__random__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "1501c3759a42b0c069d35684898d366c68af2abd57ec34c91cd776217deb961d",
+      "chain_result": "ddb5c9643f5fd01e0b8ef68a1302845a1def4524832e36474ffaedc095397dc2"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__schedule_only__seed101",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "64097a13f734175151ce58ecde22105aea18a0886715f8d7da885d1404656ec7",
+      "chain_result": "ef63d2baf4d28e0f7d44536a4ef127152c4e054ad185e6ddee10681fa1aff257"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__schedule_only__seed202",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "67dae9bd906da49282c9621f44d1a9b90f8431a8036c453749c4b143a8c02f49",
+      "chain_result": "21c3f1e53dbaab5b191137079e9fa4e88089384dd933bb956dafcc5a3134993c"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__schedule_only__seed303",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "6ce9741ba1b3c6c1de41515b02e486e36ed622b1a2676a638c26ed0664e6cdf8",
+      "chain_result": "5da0145a50cba264a80dd334b3c6aa234023441ea6406f8818308b7ff6734860"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__schedule_only__seed404",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "dc8929b47234cc6b53b511cc0e82d38ba6d426ba257dc66292130d56e641cacb",
+      "chain_result": "6f83f5bab7d622ea5ba1316fd671cdb3dbda52927b9fae3f110f3da3b2e45666"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__schedule_only__seed505",
+    "classification": "valid_with_limitation",
+    "reason_codes": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "budget_total_matches_plan",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "f033d21ab0e03cc08ee3805b213d7bb2496aee0a9195211f0d8a47ddda63887e",
+      "chain_result": "ba881614640626d06d99c6635172d38bf453a94ffc947d8eb9ca6a2d67a7184f"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": []
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__selection_only__seed101",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "63edf7e8eec44f2f2062bfd6a9ba986234e0e2fbe6ffbc9a57b304c0aa2ce426",
+      "chain_result": "6ee46d1f14715a8e4e6b0fb8b9108385a3533db4949b6ab5540144f246ca15a1"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__selection_only__seed202",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "9887bfeaccd07064ab142240e07dec4718a2fa0bf4680dc2b6ddfb8715daf67b",
+      "chain_result": "7e378a58f8f8683074473e5574f6ff5919c2e5faad3cc44af0147f3c727c03aa"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__selection_only__seed303",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "5d05afa5b6f3b50dae31b69865b8a13534c8648f3513dc8fa86c04ba4d2ac6d6",
+      "chain_result": "177b535f64e97d7f72d698d5c2e135386bb1dd1c0275ab8c1e43aa0468201fd1"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__selection_only__seed404",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "0875e4b7d1c61c12959c956eb313c4fd9e2bc37cfb12e387519b0d741d96a10a",
+      "chain_result": "32d024dd96818040171cce100488777747bd489c6fa5ddcde5b20615afd71c78"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  },
+  {
+    "run_id": "primary_pilot_2026-08-18__selection_only__seed505",
+    "classification": "invalid",
+    "reason_codes": [
+      "BUDGET_TOTAL_MISMATCH",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE"
+    ],
+    "checks_passed": [
+      "artifact_present:chain_result.json",
+      "artifact_present:run_manifest.json",
+      "budget_human_matches_plan",
+      "budget_non_negative",
+      "commit_clean",
+      "environment_recorded",
+      "evaluation_metrics_present",
+      "evaluation_nll_finite",
+      "evaluation_tail_in_range",
+      "protocol_horizon_respected",
+      "protocol_policy_matches",
+      "protocol_seed_matches",
+      "protocol_status_terminal",
+      "provenance_scanned",
+      "separation_disjoint:base_human_train|final_human_test",
+      "separation_disjoint:base_human_train|rescue_candidates",
+      "separation_disjoint:generation_prompts|final_human_test",
+      "separation_disjoint:rescue_candidates|final_human_test",
+      "separation_disjoint:validation|final_human_test"
+    ],
+    "checks_failed": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)",
+      "budget_total_matches_plan",
+      "separation_near_duplicate_coverage",
+      "separation_near_duplicate_scanned",
+      "token_ledger_recomputed"
+    ],
+    "limitations": [
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: 28351 example(s) carried no text and were not compared: ['base_human_train:train-00026a4d29b8f9a3', 'base_human_train:train-0002d2e220e7cf69', 'base_human_train:train-0004dfa8844587c3', 'base_human_train:train-0006bf5aef5764c7', 'base_human_train:train-000a641b87c807b7', 'base_human_train:train-000e5f4c257f504d', 'base_human_train:train-000f09766d906988', 'base_human_train:train-0013d8b86fbdf61f', 'base_human_train:train-001408bd0dae310d', 'base_human_train:train-00141d7f14b799d1']",
+      "LIMIT_NEAR_DUPLICATE_NOT_CHECKED: no example text at all for partition pair(s) ['base_human_train|final_human_test', 'base_human_train|rescue_candidates', 'generation_prompts|final_human_test', 'rescue_candidates|final_human_test', 'validation|final_human_test']",
+      "LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE: no realized batch records at batch_records.jsonl and none declared in the manifest; the declared ledger was compared against the frozen budget but not recomputed"
+    ],
+    "input_hashes": {
+      "run_manifest": "75e35622f147162241679c9231f9f3a067e85e764c2dca99d6a8569fed51650f",
+      "chain_result": "0f1ece6f0dcf9d9d5848dd5193f2e3f48f47eacacfde3f717f9a59aa09256932"
+    },
+    "validator_commit": "unknown",
+    "audited_at": "2026-08-20T00:00:00Z",
+    "schema_failures": [
+      "budget matching violated: total optimizer tokens 17,063,936 exceed the projected 16,100,000 by more than the human budget could account for (upper bound 16,850,000)"
+    ]
+  }
+]

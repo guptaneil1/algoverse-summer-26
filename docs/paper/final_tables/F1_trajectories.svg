@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 740" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" role="img" aria-label="Recursive-training trajectories by allocation policy">
-<rect width="1060" height="740" fill="#fcfcfb"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 776" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" role="img" aria-label="Recursive-training trajectories by allocation policy">
+<rect width="1060" height="776" fill="#fcfcfb"/>
 <line x1="62.0" y1="30.0" x2="86.0" y2="30.0" stroke="#52514e" stroke-width="2.5" stroke-dasharray="7 4" stroke-linecap="round"/>
 <text x="94.0" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">No rescue (control) — reference</text>
 <line x1="318.6" y1="30.0" x2="342.6" y2="30.0" stroke="#2a78d6" stroke-width="2.5" stroke-linecap="round"/>
@@ -174,6 +174,6 @@
 <circle cx="894.1" cy="602.9" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.3121</title></circle>
 <circle cx="903.1" cy="600.8" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.3169</title></circle>
 <circle cx="912.1" cy="596.3" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.3268</title></circle>
-<text x="62.0" y="706.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Panels a–c: mean over the five frozen seeds, with a ±1 SD band.</text>
-<text x="62.0" y="722.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Between-chain SD is under 1.1% of the mean, so those bands sit inside the stroke at this scale. Panel d plots all 25 chains.</text>
+<text x="62.0" y="742.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Panels a–c: mean over the five frozen seeds, with a ±1 SD band.</text>
+<text x="62.0" y="758.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Between-chain SD is under 1.1% of the mean, so those bands sit inside the stroke at this scale. Panel d plots all 25 chains.</text>
 </svg>

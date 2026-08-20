@@ -52,6 +52,15 @@ SHORT = {
     "selection_only": "Selection",
     "joint": "Joint",
 }
+#: Axis-tick forms. Shorter than SHORT, for the one panel where five labels share a
+#: narrow axis and the full words would touch.
+COMPACT = {
+    "no_rescue": "Ctrl",
+    "random": "Rand",
+    "schedule_only": "Sched",
+    "selection_only": "Sel",
+    "joint": "Joint",
+}
 COLOR = {
     "random": "#2a78d6",
     "schedule_only": "#eb6834",
@@ -152,16 +161,22 @@ class Panel:
                 f'<line x1="{self.x:.1f}" y1="{sy:.1f}" x2="{self.x + self.w:.1f}" '
                 f'y2="{sy:.1f}" stroke="{GRID}"/>'
             )
+            rendered = self.fmt.format(value)
+            if rendered.lstrip("-").strip("0.") == "":
+                rendered = rendered.lstrip("-")
             parts.append(
-                text(self.x - 9, sy + 4, self.fmt.format(value), anchor="end", fill=MUTED,
-                     size=11)
+                text(self.x - 9, sy + 4, rendered, anchor="end", fill=MUTED, size=11)
             )
         for sx, body in x_ticks:
-            parts.append(text(sx, self.y + self.h + 18, body, anchor="middle", fill=MUTED,
-                              size=11))
+            # A tick label may carry a second line; stacking beats rotating, which is
+            # harder to read and collides with the axis title.
+            for offset, part in enumerate(body.split("\n")):
+                parts.append(text(sx, self.y + self.h + 18 + offset * 14, part,
+                                  anchor="middle", fill=MUTED, size=11))
+        depth = max((body.count("\n") for _, body in x_ticks), default=0)
         parts.append(
-            text(self.x + self.w / 2, self.y + self.h + 38, x_label, anchor="middle",
-                 fill=MUTED)
+            text(self.x + self.w / 2, self.y + self.h + 38 + depth * 14, x_label,
+                 anchor="middle", fill=MUTED)
         )
         return parts
 
@@ -243,7 +258,7 @@ def figure_trajectories(payload: dict, out: Path) -> None:
     trajectory = payload["trajectory"]
     arms = [a for a in ARM_ORDER if a in trajectory]
     horizon = len(trajectory[arms[0]]["nll_mean"])
-    width, height = 1060, 740
+    width, height = 1060, 776
     margin_x, panel_gap, label_gutter = 62, 46, 66
     panel_w = (width - margin_x * 2 - panel_gap - label_gutter * 2) / 2
     panel_h = 224
@@ -327,7 +342,7 @@ def figure_contrasts(payload: dict, out: Path) -> None:
     margin = 44
     name_x, value_right, plot_x = margin, 470, 520
     plot_w = width - plot_x - margin - 10
-    row_h, top, bottom = 48, 150, 96
+    row_h, top, bottom = 48, 196, 96
     height = top + row_h * len(rows) + bottom
 
     span = max([abs(r["low"]) for r in rows] + [abs(r["high"]) for r in rows] + [threshold])
@@ -366,6 +381,14 @@ def figure_contrasts(payload: dict, out: Path) -> None:
         text(value_right, top - 46, "Difference  [95% interval]", anchor="end",
              fill=MUTED, size=11, weight="600"),
     ]
+    # Each interval is drawn in its treatment arm's colour, so the figure needs the same
+    # key the other figures carry. One entry per arm: the same treatment appears in
+    # several rows and would otherwise be listed twice.
+    keyed: list[str] = []
+    for row in rows:
+        if row["treatment"] not in keyed:
+            keyed.append(row["treatment"])
+    parts += legend(keyed, margin, 108, width - margin * 2)
 
     for index, row in enumerate(rows):
         y = top + index * row_h
@@ -414,6 +437,132 @@ def figure_contrasts(payload: dict, out: Path) -> None:
                       anchor="middle", fill=MUTED))
     parts.append("</svg>")
     out.write_text("\n".join(parts) + "\n", encoding="utf-8")
+
+
+def figure_all_chains(payload: dict, out: Path) -> None:
+    """Three views that put every individual chain on screen.
+
+    The arm means in Figure 1 are summaries; a reader who wants to know whether the
+    ordering is carried by one lucky seed has to see the chains. Panel a draws all
+    twenty-five trajectories, panel b draws the paired difference at each seed for every
+    contrast, and panel c crosses the two outcomes chain by chain.
+    """
+    chains = payload["chains"]
+    arms = [a for a in ARM_ORDER if any(c["arm"] == a for c in chains)]
+    rows = ([payload["primary"]] if payload.get("primary") else []) + payload["contrasts"]
+    horizon = len(chains[0]["nll"])
+
+    width, height = 1200, 500
+    margin, gap = 58, 66
+    panel_w = (width - margin * 2 - gap * 2) / 3
+    panel_h = 236
+    top = 132
+
+    nll_values = [v for c in chains for v in c["nll"]]
+    p1 = Panel(margin, top, panel_w, panel_h,
+               "a. Every chain's NLL trajectory ↓", min(nll_values), max(nll_values))
+
+    seed_diffs = {
+        f"{COMPACT[r['treatment']]}\u2212{COMPACT[r['baseline']]}": [
+            next(c["auc"] for c in chains
+                 if c["arm"] == r["treatment"] and c["seed"] == seed)
+            - next(c["auc"] for c in chains
+                   if c["arm"] == r["baseline"] and c["seed"] == seed)
+            for seed in sorted({c["seed"] for c in chains})
+        ]
+        for r in rows
+    }
+    flat = [v for values in seed_diffs.values() for v in values]
+    p2 = Panel(margin + panel_w + gap, top, panel_w, panel_h,
+               "b. Paired difference at each seed ↓", min(flat + [0.0]),
+               max(flat + [0.0]))
+
+    tails = [c["tail_final"] for c in chains]
+    aucs = [c["auc"] for c in chains]
+    p3 = Panel(margin + (panel_w + gap) * 2, top, panel_w, panel_h,
+               "c. Both outcomes, per chain", min(tails), max(tails), fmt="{:.3f}")
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" '
+        f'role="img" aria-label="All twenty-five chains, three views">',
+        f'<rect width="{width}" height="{height}" fill="{SURFACE}"/>',
+        text(margin, 34, "Every chain in the grid", weight="600", size=14),
+        text(margin, 54,
+             "Five policies x five frozen seeds. Nothing here is averaged except where "
+             "a mean is drawn as a rule.", fill=MUTED, size=11),
+    ]
+    parts += legend(arms, margin, 82, width - margin * 2)
+
+    # a. one line per chain
+    def sx1(g: int) -> float:
+        return p1.x + p1.w * g / (horizon - 1)
+
+    parts += p1.frame([(sx1(g), str(g)) for g in range(0, horizon, 2)], "Generation")
+    for chain in chains:
+        line = " ".join(f"{sx1(g):.1f},{p1.sy(v):.1f}" for g, v in enumerate(chain["nll"]))
+        dash = ' stroke-dasharray="5 3"' if chain["arm"] == CONTROL else ""
+        parts.append(
+            f'<polyline points="{line}" fill="none" stroke="{COLOR[chain["arm"]]}" '
+            f'stroke-width="1.4" stroke-opacity="0.85"{dash}><title>'
+            f'{esc(SHORT[chain["arm"]])} seed {chain["seed"]}</title></polyline>'
+        )
+
+    # b. one column per contrast, one dot per seed, a rule at the mean
+    slot = p2.w / len(seed_diffs)
+    ticks = [(p2.x + slot * (i + 0.5), name.replace("\u2212", "\n\u2212 "))
+             for i, name in enumerate(seed_diffs)]
+    parts += p2.frame(ticks, "Contrast (first policy minus second)")
+    if p2.lo < 0 < p2.hi:
+        parts.append(
+            f'<line x1="{p2.x:.1f}" y1="{p2.sy(0):.1f}" x2="{p2.x + p2.w:.1f}" '
+            f'y2="{p2.sy(0):.1f}" stroke="{MUTED}" stroke-width="1.2" '
+            f'stroke-dasharray="4 3"/>'
+        )
+    for index, (name, values) in enumerate(seed_diffs.items()):
+        centre = p2.x + slot * (index + 0.5)
+        colour = COLOR[rows[index]["treatment"]]
+        mean = sum(values) / len(values)
+        parts.append(
+            f'<line x1="{centre - 20:.1f}" y1="{p2.sy(mean):.1f}" '
+            f'x2="{centre + 20:.1f}" y2="{p2.sy(mean):.1f}" stroke="{colour}" '
+            f'stroke-width="2.5"/>'
+        )
+        for offset, value in enumerate(sorted(values)):
+            cx = centre + (offset - (len(values) - 1) / 2) * 7
+            parts.append(
+                f'<circle cx="{cx:.1f}" cy="{p2.sy(value):.1f}" r="3.6" fill="{colour}" '
+                f'fill-opacity="0.9" stroke="{SURFACE}" stroke-width="1.5"><title>'
+                f'{esc(name)}: {value:+.4f}</title></circle>'
+            )
+
+    # c. tail retention against AUC regret, one point per chain
+    lo_auc, hi_auc = min(aucs), max(aucs)
+    pad = (hi_auc - lo_auc) * 0.12
+
+    def sx3(value: float) -> float:
+        return p3.x + p3.w * (value - lo_auc + pad) / (hi_auc - lo_auc + pad * 2)
+
+    x_ticks = [(sx3(v), f"{v:.1f}") for v in nice_ticks(lo_auc - pad, hi_auc + pad, 4)]
+    parts += p3.frame(x_ticks, "NLL-regret AUC ↓   (tail retention ↑ on y)")
+    for chain in chains:
+        parts.append(
+            f'<circle cx="{sx3(chain["auc"]):.1f}" cy="{p3.sy(chain["tail_final"]):.1f}" '
+            f'r="4.5" fill="{COLOR[chain["arm"]]}" fill-opacity="0.85" '
+            f'stroke="{SURFACE}" stroke-width="1.6"><title>{esc(SHORT[chain["arm"]])} '
+            f'seed {chain["seed"]}: AUC {chain["auc"]:.4f}, tail '
+            f'{chain["tail_final"]:.4f}</title></circle>'
+        )
+
+    parts.append(
+        text(margin, height - 18,
+             "Panel b: each dot is one seed's paired difference; the rule is their mean. "
+             "Panel c: upper-left is better on both outcomes — lower regret and more "
+             "tail retained.", fill=MUTED, size=11)
+    )
+    parts.append("</svg>")
+    out.write_text("\n".join(parts) + "\n", encoding="utf-8")
+
 
 
 REPORT_CSS = """
@@ -664,6 +813,7 @@ def main() -> None:
     args.outdir.mkdir(parents=True, exist_ok=True)
     figure_trajectories(payload, args.outdir / "F1_trajectories.svg")
     figure_contrasts(payload, args.outdir / "F2_contrasts.svg")
+    figure_all_chains(payload, args.outdir / "F3_all_chains.svg")
     figures = [
         ("Figure 1", "Trajectories over the ten-generation horizon. Panel b is the "
                      "primary outcome's integrand; panel d is every chain.",
@@ -671,10 +821,13 @@ def main() -> None:
         ("Figure 2", "Each contrast as an interval against the practical-equivalence "
                      "band. Inside the band means equivalent, not merely undecided.",
          (args.outdir / "F2_contrasts.svg").read_text(encoding="utf-8")),
+        ("Figure 3", "Every chain in the grid, three ways: all 25 trajectories, the "
+                     "paired difference at each seed, and the two outcomes crossed.",
+         (args.outdir / "F3_all_chains.svg").read_text(encoding="utf-8")),
     ]
     (args.outdir / "report.html").write_text(report_html(payload, figures),
                                              encoding="utf-8")
-    print(f"wrote F1_trajectories.svg, F2_contrasts.svg and report.html to {args.outdir}")
+    print(f"wrote F1, F2, F3 and report.html to {args.outdir}")
 
 
 if __name__ == "__main__":

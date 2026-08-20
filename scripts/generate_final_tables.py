@@ -735,6 +735,10 @@ def main() -> None:
                 "total": c["consumed_total_tokens"],
                 "auc": auc_regret(c),
                 "tail_final": c["metrics"][-1]["tail_retention"],
+                # Full per-generation series, so a figure can draw every chain rather
+                # than only its arm's mean.
+                "nll": nll_series(c),
+                "tail": tail_series(c),
             }
             for arm in ARM_ORDER if arm in by_arm
             for c in sorted(by_arm[arm], key=lambda c: c["chain_seed"])

@@ -1,8 +1,11 @@
 # Table plan for the final experiment
 
-**Status:** Proposal. No table below contains a number, and none may until the final run
-completes, its manifest validates, blocking tests pass, and the analysis is regenerated
-from immutable artifacts (`PROTOCOL.md` §5).
+**Status:** Proposal, with a working generator. The layouts below are implemented in
+`scripts/generate_final_tables.py` and exercised against the **pilot** artifacts in
+`docs/paper/table_previews/` so the shapes can be reviewed before the final grid exists.
+Those previews are pilot numbers and are not results; the final run's numbers may not
+enter the manuscript until it completes, its manifest validates, blocking tests pass, and
+the analysis is regenerated from immutable artifacts (`PROTOCOL.md` §5).
 **Date:** 2026-08-20
 **Author:** drafted for owner review; `paper/` is `@Ronit`'s under `.github/CODEOWNERS`, so
 nothing under `paper/` is edited by this document.
@@ -126,9 +129,12 @@ Three constraints on this table, all of them preregistered rather than stylistic
 2. **`Verdict` takes one of four frozen labels** — Beneficial, Harmful, Negligible,
    Uncertain — decided by the rule in `PREREGISTRATION.md` §Meaningful-effect
    interpretation, not by a p-value and not by the sign of the mean.
-3. **Every row is gated on T1.** If either budget axis fails for either arm in a contrast,
-   the generator must emit `NOT ESTABLISHED` across that row's numeric cells instead of
-   the numbers. This is not defensive styling: the pilot's numbers existed and were still
+3. **Every row is gated on T1**, at the project's own permitted spread rather than at the
+   effect threshold. `runner/budget_matching.SPREAD_MARGIN_BELOW_THRESHOLD` (P-008) puts
+   the gate an order of magnitude below the 2% practical threshold, so the bar is 0.2% on
+   each axis. The generator imports that constant rather than restating it. If either
+   axis fails for either arm in a contrast, the row's numeric cells render
+   `NOT ESTABLISHED` instead of the numbers. This is not defensive styling: the pilot's numbers existed and were still
    uninterpretable (F-020, F-021), and a table that prints them anyway invites exactly the
    reading the run cannot support.
 
@@ -175,11 +181,43 @@ rescued human tokens landing in that mode. This is the paper's second axis, and 
 T7 and T8 are the two tables that distinguish this paper from a schedule-versus-selection
 horse race, which is why the checkpoint-retention decision above matters.
 
+## Algoverse checklist §7 compliance
+
+The submission checklist requires of every table and figure: a caption readable on its
+own, stated units, a marked best result with the direction of "better" made explicit,
+a caption that states the takeaway rather than describing the visual, and an explicit
+reference in the text. What that costs each table here:
+
+- **Units and direction go in the header**, not the caption: `NLL-regret AUC ↓`,
+  `Tail retention ↑`, tokens labelled as optimizer tokens, AUC in nats × generations.
+- **The best result is bolded only inside the comparable set** — the arms whose realised
+  spend sits within the permitted spread of one another. Bolding the lowest number in a
+  column that mixes arms which received different amounts of data is precisely the
+  overclaim the budget apparatus exists to prevent, and on the pilot artifacts it would
+  hand the win to an arm the run cannot rank. The caption names the comparable set.
+- **Captions state the takeaway**, which for a gated table is the gate: what was not
+  established and why. Draft captions are generated into `table_previews/PREVIEW.md`;
+  they are drafts for `@Ronit`, not final prose.
+- **Every table gets referenced or moved to the appendix.** T4–T8 are appendix tables by
+  default; if a section does not reference one, it stays there.
+
+The checklist's other sections bear on tables indirectly. §3 (numbers consistent
+everywhere) is what the macro discipline already enforces. §6 (baselines fair) is T1's
+entire purpose.
+
 ## Generation and enforcement
 
-- One script emits T1–T8 plus the macro file, extending
-  `scripts/generate_pilot_outputs.py`, which today writes T1's ancestor
-  (`paper/tables/primary_results.tex`) and `paper/tables/pilot_macros.tex`.
+- `scripts/generate_final_tables.py` emits T1–T5, the figure, `table_data.json` and a
+  reviewable markdown preview from any run directory. It imports the outcome computation
+  from `generate_pilot_outputs.py` rather than restating it, so the two cannot drift into
+  disagreeing about what AUC regret means. T7 and T8 are not implemented: the checkpoints
+  they need are not in the tracked artifact set.
+- Run it against the final grid with
+  `--run-dir results/runs/<RUN_ID> --config configs/experiment/primary_pilot_v2.json`.
+  Nothing else changes.
+- Its output on the pilot reproduces every published pilot value independently — the AUC
+  means and SDs in `paper/tables/primary_results.tex`, and the intervals, relative
+  differences and both budget spreads in `paper/tables/pilot_macros.tex`.
 - Prose cites macros. A bare decimal in `paper/sections/` is a test failure today
   (`tests/analysis/test_generated_outputs.py`) and must stay one.
 - Fixture tables stay in `results/tables/`; the manuscript's copies stay in
@@ -205,6 +243,7 @@ Table conventions in the related literature (Drayson et al. EMNLP 2025, Shumailo
 Nature 2024) could not be checked in this session: the network egress proxy blocks
 `aclanthology.org` and `www.nature.com`. Nothing above is attributed to those papers'
 layouts. The conventions used here come from the frozen fixture tables in this repository
-and from `PREREGISTRATION.md`. If the team wants the final tables to mirror a specific
-published layout, someone with access should supply the layout and this plan can be
-revised against it.
+and from `PREREGISTRATION.md`, plus the Algoverse submission checklist §7, which the
+project owner supplied as a PDF in the session that produced this plan. If the team wants
+the final tables to mirror a specific published layout, someone with access should supply
+the layout and this plan can be revised against it.

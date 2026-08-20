@@ -1,0 +1,143 @@
+# Runbook — finishing the interrupted v2 grid, one seed block at a time
+
+Written 2026-08-19, after the v2 grid's second launch lost 17 of 25 chains to F-026.
+Use this instead of `RUNBOOK_V2_CORRECTED_GRID.md` Part 6. Parts 1–5 are already done and
+must not be repeated: the pod exists, the data is built, and the $3 validation chain
+passed. **Part 7 of the corrected-grid runbook is still how you finish.**
+
+## Why this is not just "re-run Step 19"
+
+Two things changed.
+
+**The resume defect.** F-026: the checkpoint is written at the end of a generation, so a
+resumed chain restarts on the generation it was interrupted in, whose `model/` directory
+the dead attempt had already filled. Upstream refuses a non-empty output directory. The
+fix is in `runner/real_chain`; the pod's checkout must be pulled before anything is
+launched, or 17 chains fail again in seconds.
+
+**The design does not need all five seeds.**
+`docs/decisions/powered_design_sizing_2026-08-19.md` sizes **three chains per arm** against
+the preregistered 2% threshold at 80% power, using the conservative paired SD measured in
+the first pilot. Five was already more than the threshold requires. Completing three seed
+blocks is therefore a complete experiment at the preregistered sensitivity, not a
+truncated one — and it costs roughly half of what completing all five costs.
+
+## What is on disk
+
+8 chains completed and are skipped automatically. 17 are incomplete, holding 140 of their
+170 generations still to run — most were killed early, so resume saves 30 generations,
+about 18%.
+
+Complete: `joint` 303 404 · `no_rescue` 303 404 · `schedule_only` 505 ·
+`selection_only` 101 404 505.
+
+## The order, and why
+
+Seed blocks are run cheapest-first. Each phase ends with one more **fully crossed** seed
+block — all five arms at that seed — so every stopping point is a design rather than a
+ragged set of arms. Wall cost is 34 generations across three phases against 32 for a
+single combined launch: two generations, about ten minutes, buys three clean places to
+stop.
+
+| Phase | Seed | Chains it runs | Shard loads | Wall |
+|---|---|---|---|---|
+| 1 | 404 | `random`, `schedule_only` | 9 / 9 | 9 generations |
+| 2 | 505 | `no_rescue`, `random`, `joint` | 11 / 9 | 11 generations |
+| 3 | 303 | `random`, `schedule_only`, `selection_only` | 9 / 14 | 14 generations |
+
+**Seed choice is outcome-independent and must stay that way.** 303, 404 and 505 are the
+three cheapest to complete because their chains were furthest along when the OOM hit, and
+how far a chain got is decided by shard scheduling and wall-clock alone. No chain was
+stopped, kept or dropped on account of anything it measured. Say so in the paper.
+
+## Step R1 — pull the fix (free)
+
+```bash
+cd /workspace/algoverse-summer-26 && git fetch origin stage-a/env-freeze && git checkout stage-a/env-freeze && git pull --ff-only origin stage-a/env-freeze && git log --oneline -1 && grep -c stale_model_dir src/human_data_budget/runner/real_chain.py
+```
+
+Want a commit that mentions F-026 and a count of `1`. If the count is `0` the fix is not
+there and the launch will fail exactly as before.
+
+## Step R2 — run one phase
+
+Change `SEED` only. Nothing else varies between phases.
+
+```bash
+cd /workspace/algoverse-summer-26
+export SEED=404
+export WANDB_MODE=disabled WANDB_SILENT=true STAGE_A_WANDB_SHIM=1 PYTHONPATH=/workspace/shim:src
+for i in 0 1; do
+  CUDA_VISIBLE_DEVICES=$i nohup python scripts/run_pilot.py \
+    --config configs/experiment/primary_pilot_v2.json \
+    --upstream-dir /workspace/model_collapse --shim-dir /workspace/shim \
+    --output-dir /workspace/v2 --preprocessing-workers 8 \
+    --only-seeds $SEED \
+    --shard-index $i --shard-count 2 --cuda-device 0 \
+    > /workspace/v2_seed${SEED}_shard$i.log 2>&1 &
+done
+sleep 120
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used --format=csv,noheader
+tail -n 3 /workspace/v2_seed${SEED}_shard*.log
+```
+
+`CUDA_VISIBLE_DEVICES=$i` with `--cuda-device 0` is F-025's isolation. Keep both.
+
+Want two blocks each showing a `src/train.py` command, and chains this phase does not need
+reported as `already complete, skipping`.
+
+## Step R3 — watch
+
+```bash
+cat > /workspace/status2.sh <<'EOF'
+echo "=== $(date +%T) ==="
+echo "results on disk : $(ls /workspace/v2/*/seed*/chain_result.json 2>/dev/null | wc -l) / 25"
+echo "failed this run : $(grep -h FAILED /workspace/v2_seed*_shard*.log 2>/dev/null | wc -l)"
+echo "shards alive    : $(pgrep -fc 'scripts/run_pilot.py')"
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used --format=csv,noheader
+EOF
+bash /workspace/status2.sh
+```
+
+`results on disk` counts `chain_result.json` files, which is the only count that cannot
+lie. The old `status.sh` grepped for the word `complete,`, which also matches
+`already complete, skipping`, and globbed logs from an abandoned launch — that is how the
+last run was reported as 10 chains when it had 8 (F-026).
+
+**Any `FAILED` line: stop and send it.** Do not start the next phase.
+
+## Step R4 — after each phase
+
+```bash
+cd /workspace/algoverse-summer-26 && export PYTHONPATH=src
+python scripts/run_pilot.py --config configs/experiment/primary_pilot_v2.json \
+  --output-dir /workspace/v2 --only-seeds 404 --check-only
+echo "EXIT=$?"
+```
+
+Exit codes are `0 valid / 1 limited / 2 invalid / 3 usage` (F-024 — several documents
+carried these backwards until 2026-08-19). Pass `--only-seeds` the seeds completed so far,
+comma-separated, so the check covers the crossed design that exists rather than the whole
+grid.
+
+Then either start the next phase, or stop here and go to Part 7 of
+`RUNBOOK_V2_CORRECTED_GRID.md`. **Both are legitimate endings.** One complete seed block is
+a crossed design at n=1 and supports no interval; two support a weak one; three meet the
+preregistered sizing.
+
+Free disk between phases if it ever matters — it did not last time, 537 T were free:
+
+```bash
+for d in /workspace/v2/*/seed*/; do
+  if [ -f "$d/chain_result.json" ]; then rm -rf "$d"upstream/*/model; fi
+done
+```
+
+## Step R5 — finish
+
+`RUNBOOK_V2_CORRECTED_GRID.md` Part 7, Steps 21–25, with one change: Step 21's
+`--check-only` and Step 22's `validate_run.py` should cover the seeds actually completed.
+If all five ran, nothing changes at all.
+
+**The pod bills while idle.** Set an alarm for each phase's expected end. The last run sat
+idle for an hour after finishing, and the one before that was noticed 59 minutes late.

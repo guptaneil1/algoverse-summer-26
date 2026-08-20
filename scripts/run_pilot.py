@@ -140,6 +140,60 @@ def chain_config(pilot: dict, arm: str, seed: int) -> dict:
     return config
 
 
+def summary_name(seeds: list[int] | None, shard_index: int, shard_count: int) -> str:
+    """Name this process's shard summary.
+
+    One summary per writer, because concurrent shards writing one path would race
+    and the last writer would silently discard the others' chains. A seed subset is
+    part of a writer's identity for the same reason: successive phases of a grid
+    finished block by block share a shard index, so without the seeds in the name
+    each phase would overwrite the previous phase's summary -- and ``--check-only``
+    reads summaries, so the whole-grid verdict would quietly cover only the last
+    block run.
+
+    ``seeds`` is None for a full run, which keeps the historical names exactly.
+    Every form still matches the ``pilot_summary*.json`` glob that reassembles them.
+    """
+
+    parts = ["pilot_summary"]
+    if seeds is not None:
+        parts.append("seeds" + "-".join(str(seed) for seed in seeds))
+    if shard_count > 1:
+        parts.append(f"shard{shard_index}of{shard_count}")
+    return "_".join(parts) + ".json"
+
+
+def select_seeds(config_seeds: list[int], only_seeds: str | None) -> list[int]:
+    """Restrict a run to a subset of the frozen seeds.
+
+    The frozen seed set is not changed by this; a subset of it is run. A grid
+    stopped by infrastructure leaves arms at uneven progress, and finishing it one
+    seed block at a time means every stopping point is a fully crossed design
+    rather than a ragged one -- which is the difference between a reduced design
+    and no design. ``docs/decisions/powered_design_sizing_2026-08-19.md`` sizes
+    three chains per arm against the preregistered threshold, so a three-seed
+    block is a complete experiment, not a partial one.
+
+    Order comes from the config, never from the command line: the shard deal is
+    positional, so a reordered seed list would move chains between shards without
+    saying so.
+    """
+
+    if not only_seeds:
+        return list(config_seeds)
+    requested = [int(token) for token in only_seeds.split(",") if token.strip()]
+    if not requested:
+        raise SystemExit("run_pilot: --only-seeds was given no seeds")
+    unknown = [seed for seed in requested if seed not in config_seeds]
+    if unknown:
+        raise SystemExit(
+            f"run_pilot: --only-seeds names {unknown}, which the config does not\n"
+            f"  declare. Frozen seeds are {list(config_seeds)}. A seed absent from\n"
+            "  the frozen set would produce chains nobody can certify."
+        )
+    return [seed for seed in config_seeds if seed in requested]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
@@ -164,6 +218,14 @@ def main() -> int:
              "does not hold. This is the whole-grid verdict a sharded run needs.",
     )
     parser.add_argument("--only-arm", help="run one arm; for debugging, not for a pilot")
+    parser.add_argument(
+        "--only-seeds",
+        help="comma-separated subset of the config's seeds, e.g. 303,404,505. The "
+             "frozen seed set is unchanged -- this runs part of it. A grid stopped "
+             "by infrastructure leaves arms at uneven progress, and completing it "
+             "seed block by seed block yields a fully crossed design at every "
+             "stopping point instead of a ragged one. Seeds keep their config "
+             "order, so sharding is unchanged for the seeds that remain.")
     parser.add_argument(
         "--shard-index", type=int, default=0,
         help="0-based index of this shard. Chains are dealt round-robin across "
@@ -200,9 +262,16 @@ def main() -> int:
 
     if args.check_only:
         root = args.output_dir or Path(pilot["output_dir"])
-        chains = load_grid_chains(root)
-        expected = len(pilot["arms"]) * len(pilot["seeds"])
+        # --only-seeds narrows the check to the seed blocks it names, so a grid being
+        # completed block by block can be certified over the crossed design that
+        # exists rather than over the whole plan. Without this the flag would be
+        # accepted and silently ignored, which is the F-024 shape.
+        checked_seeds = select_seeds(list(pilot["seeds"]), args.only_seeds)
+        chains = [c for c in load_grid_chains(root) if c["seed"] in checked_seeds]
+        expected = len(pilot["arms"]) * len(checked_seeds)
         print(f"run_pilot --check-only: {pilot['run_id']}")
+        if args.only_seeds:
+            print(f"  seeds {checked_seeds} of {list(pilot['seeds'])}")
         print(f"  {len(chains)} of {expected} chains found under {root}\n")
         report = budget_report(pilot, chains)
         print(report.render())
@@ -238,6 +307,7 @@ def main() -> int:
     root = args.output_dir or Path(pilot["output_dir"])
     arms = [args.only_arm] if args.only_arm else list(pilot["arms"])
     seeds = list(pilot["seeds"])
+    seeds = select_seeds(seeds, args.only_seeds)
 
     grid = [(arm, seed) for arm in arms for seed in seeds]
     total = len(grid)
@@ -293,10 +363,8 @@ def main() -> int:
 
     elapsed = time.perf_counter() - started
     root.mkdir(parents=True, exist_ok=True)
-    # One summary per shard: concurrent shards writing one path would race, and the
-    # last writer would silently discard the others' chains.
-    name = ("pilot_summary.json" if args.shard_count == 1
-            else f"pilot_summary_shard{args.shard_index}of{args.shard_count}.json")
+    name = summary_name(
+        seeds if args.only_seeds else None, args.shard_index, args.shard_count)
     (root / name).write_text(
         json.dumps({"run_id": pilot["run_id"], "wall_seconds": elapsed,
                     "chains": summary}, indent=2, sort_keys=True) + "\n",

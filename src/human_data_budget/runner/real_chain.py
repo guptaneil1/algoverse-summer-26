@@ -22,6 +22,7 @@ recursion is named for.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -222,7 +223,17 @@ def run_real_chain(
                 train_file = Path(assembled["corpus_path"])
                 human_tokens = assembled["human_token_count"]
 
-            # 2. Train.
+            # 2. Train. A generation being run owns its output directory. An
+            #    interrupted attempt leaves `model/` populated, and upstream
+            #    `train.py` refuses a non-empty `--output_dir` rather than writing
+            #    into it, so a resumed chain died on the first generation it
+            #    retried -- FAILURE_LOG.md F-026. Discarding those weights loses
+            #    nothing: every generation trains from `model.identifier`, never
+            #    from its predecessor's checkpoint, so no later step reads them.
+            stale_model_dir = gen_dir / "model"
+            if stale_model_dir.exists():
+                shutil.rmtree(stale_model_dir)
+
             trained = real_train_step(
                 {
                     "upstream_dir": config["upstream_dir"],

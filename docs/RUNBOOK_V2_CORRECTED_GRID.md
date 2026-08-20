@@ -332,7 +332,8 @@ including a null or a harmful one.
 
 | Symptom | What to do |
 |---|---|
-| A shard disappears from `status.sh` | Re-run the Step 19 block. Completed chains are skipped; you lose one chain, not the run |
+| A shard disappears from `status.sh` | Re-run the Step 19 block. Completed chains are skipped, and interrupted ones resume -- but only since F-026. Before that fix a resumed chain died instantly on the generation it was interrupted in. Confirm `git log -1` on the pod includes it |
 | `failed` count above 0 | `grep -h FAILED /workspace/v2_shard*.log` and send it to me |
 | Memory near 24000 MiB | Kill and use the safe fallback launch |
-| Disk filling | Run the prune command in Step 20 |
+| Disk filling | Run the prune command in Step 20. Note it only touches chains that already have a `chain_result.json`, so an in-flight chain's checkpoints are never removed |
+| Chains fail instantly with `Output directory ... already exists and is not empty` | F-026. The pod's checkout predates the fix. `git pull` it, or delete `upstream/*/model` for every chain lacking a `chain_result.json` -- and nothing else under `upstream/<g>/`, which holds the decoded corpus the next generation trains on |

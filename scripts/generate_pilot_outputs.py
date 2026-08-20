@@ -485,6 +485,19 @@ def write_figure(by_arm: dict[str, list[dict]], out: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    # The "(underspent)" tag on joint was hardcoded for the run that underspent, and
+    # would have gone on labelling a matched arm as unmatched -- the same shape as the
+    # hardcoded contrast refusal this file used to carry. Derived from the chains: an arm
+    # is flagged only when its own realised spend falls short of the highest by more than
+    # the guard permits.
+    spends = {arm: st.mean(c["consumed_human_tokens"] for c in chains)
+              for arm, chains in by_arm.items()}
+    spending = [v for v in spends.values() if v]
+    ceiling = max(spending) if spending else 0.0
+    permitted = THRESHOLD_RELATIVE * SPREAD_MARGIN_BELOW_THRESHOLD
+    underspent = {arm for arm, value in spends.items()
+                  if value and ceiling and (ceiling - value) / ceiling > permitted}
+
     figure, axis = plt.subplots(figsize=(7.0, 4.4))
     colours = plt.get_cmap("viridis")([0.05, 0.3, 0.5, 0.7, 0.92])
 
@@ -497,7 +510,7 @@ def write_figure(by_arm: dict[str, list[dict]], out: Path) -> None:
         mean = [st.mean(s[g] for s in series) for g in generations]
         low = [min(s[g] for s in series) for g in generations]
         high = [max(s[g] for s in series) for g in generations]
-        label = ARM_LABEL[arm] + (" (underspent)" if arm == "joint" else "")
+        label = ARM_LABEL[arm] + (" (underspent)" if arm in underspent else "")
         axis.plot(list(generations), mean, color=colour, label=label, linewidth=1.9)
         # Min-max band rather than a confidence interval: five seeds is too few for the
         # latter to mean much, and the observed range is the honest summary.

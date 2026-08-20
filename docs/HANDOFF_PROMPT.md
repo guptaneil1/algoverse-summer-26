@@ -109,10 +109,12 @@ F-026a carries the note. If you think it should revert, the conclusion does not 
 
 ## State of everything else
 
-809 tests pass, ruff and repository audit clean, documents pinned against drift by
-`tests/analysis/test_document_coherence.py`. One test fails on this machine only —
-`test_run_chain_guard.py::test_a_config_with_no_freeze_status_still_launches`, a bash
-subprocess that cannot import the package. It predates this work and is environmental.
+**817 tests pass, 0 fail**, ruff and repository audit clean, documents pinned against drift
+by `tests/analysis/test_document_coherence.py`. `bash scripts/build_submission.sh` builds the
+archive. **Activate the venv before running any of these**: several tests and the submission
+build shell out to bare `python`, so without `.venv/Scripts` (or `.venv/bin`) on `PATH` they
+pick up the system interpreter, which has no `human_data_budget` installed, and you will see
+one failure and 58 collection errors that are entirely an artifact of the shell.
 Decisions P-001–P-012 are accepted by me as project owner (not team-ratified, recorded as
 such); P-012 is a spend decision I made directly, with its ordering clause the assistant's.
 All six U-items closed.

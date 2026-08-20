@@ -22,7 +22,7 @@ practice, not because Gate A is finished.
 | | Check | Verify with | State |
 |---|---|---|---|
 | ☑ | Lint passes | `ruff check .` | passing |
-| ☑ | Unit and contract tests pass | `pytest -q` | **578 passing, 15 skipped** (2026-08-17) |
+| ☑ | Unit and contract tests pass | `pytest -q` | **817 passing, 14 skipped, 0 failing** (2026-08-20, venv active) |
 | ☑ | Repository audit passes | `make audit` | passing |
 | ☑ | Toy smoke chain runs | `make smoke` | passing |
 | ☑ | Upstream positive control is pinned | `docs/evidence/upstream_pin.md` | commit `feb8511…` |
@@ -128,9 +128,9 @@ has no computation defined anywhere, and C-002 rests on both.
 | | Check | Verify with |
 |---|---|---|
 | ☐ | Paper builds cleanly from a clean checkout | `paper-build` CI job |
-| ☐ | Submission archive builds | `make submission` |
+| ☑ | Submission archive builds. `bash scripts/build_submission.sh` runs the audit, ruff and the full suite, then emits `dist/human-data-budget-submission.zip` (3.3 MB) with its SHA-256. Run it with the venv on `PATH` — it shells out to bare `python` | `make submission` |
 | ☑ | No secrets: scanned 2026-08-19, the only hits are documentation prose about *not* committing credentials. Largest tracked asset is `base_train.jsonl` at 5.8 MB |
-| ☐ | Every headline value traces to a frozen artifact | claim-to-evidence audit |
+| ☑ | Every headline value traces to a frozen artifact, and the trace is now enforced rather than asserted: `tests/analysis/test_headline_values_trace_to_artifacts.py` checks that every \Pilot macro cited in a section is defined, that the macros file names the run the provenance record names, that the run exists with 25 chain results, and that the paper actually cites the primary-contrast macros. Verified by citing a macro that does not exist | claim-to-evidence audit, now a test |
 | ◐ | Outline rewritten again for the corrected grid (2026-08-20): the status slide now leads with the **null**, slide 5 becomes where the effect actually is, the defects slide is split into loud/cheap and silent/expensive rather than one list, and the design-change slide records what displacement bought. Slides themselves not built |
 | ☐ | Final tag created | `submission-final-YYYY-MM-DD` |
 

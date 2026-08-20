@@ -203,9 +203,13 @@ chains.
 
 ## Tests
 
-809 passed, 14 skipped (from 788). Ruff and repository audit clean. One test fails on the
-author's machine only — a bash subprocess that cannot import the package; it predates this
-work and is environmental.
+**817 passed, 14 skipped, 0 failed** (from 788). Ruff and repository audit clean, and
+`bash scripts/build_submission.sh` builds the archive with its SHA-256.
+
+Run these with the venv active. Several tests and the submission script shell out to bare
+`python`; without `.venv/Scripts` on `PATH` they pick up the system interpreter, which has no
+`human_data_budget` installed, and produce one failure and 58 collection errors that say
+nothing about the repository.
 
 New guards worth knowing about:
 - `test_budget_matching.py` — both fairness axes, 30 tests

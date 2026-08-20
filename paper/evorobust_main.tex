@@ -1,0 +1,237 @@
+% =====================================================================
+% EVOROBUST SUBMISSION -- NeurIPS 2026 workshop.
+%
+% HARD LIMIT: 4 content pages INCLUDING figures and tables. References
+% and supplementary are unlimited. Camera-ready may extend to 5.
+% Deadline 29 Aug 2026, 11:59pm AoE.
+%
+% Framing note. EvoRobust's scope is self-evolving systems, diverse
+% failure modes, and robustness under adaptive search. Recursive training
+% is a self-evolving system; tail-mode loss is a diversity failure; this
+% paper measures which intervention policy keeps that failure bounded
+% under a fixed resource constraint. The framing below makes that link
+% explicit. It is a genuine connection, not a stretch -- but the fit is
+% narrower than for AXIOM, and docs/WORKSHOP_SUBMISSION_GUIDE.md records
+% that assessment.
+%
+% EVERY RESULT NUMBER is a macro from tables/pilot_macros.tex, generated
+% from the chain artifacts. This file cannot disagree with paper/main.tex.
+% =====================================================================
+
+\documentclass{article}
+\IfFileExists{neurips_2026.sty}{%
+  \usepackage[final]{neurips_2026}%
+}{%
+  \usepackage[letterpaper,textwidth=5.5in,textheight=9in,centering]{geometry}%
+  \PackageWarningNoLine{evorobust}{neurips_2026.sty not found -- using a text block
+    of the same dimensions. Page count is representative; add the real style file
+    before submitting}%
+}
+
+\usepackage{amsmath,amssymb,booktabs,graphicx,hyperref}
+\graphicspath{{../results/figures/}{./}}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\input{tables/pilot_macros}
+
+\title{Bounding a Self-Consuming Failure Mode on a Budget:\\
+Where Scarce Human Data Should Go in Recursive Training}
+
+\author{Anonymous Submission}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A model trained on its own outputs is a self-evolving system with a known failure mode:
+across generations the learned distribution drifts and its low-probability regions thin
+out. Human-origin data bounds that failure, but it is finite. We ask where a \emph{fixed
+lifetime budget} of human-origin optimizer tokens should go --- \emph{when} in the chain,
+and \emph{which} degraded regions --- and answer it with \PilotChains{} independently
+seeded chains matched on both lifetime human tokens and total optimizer tokens. The
+preregistered contrast is a \textbf{null}: adapting both axes jointly does not improve on
+adapting only the distributional one (\PilotPrimaryMean{}, $95\%$~CI
+$[\PilotPrimaryLow, \PilotPrimaryHigh]$), with the interval lying entirely inside the
+frozen equivalence region rather than merely spanning zero. The secondary contrasts locate
+the effect: spending at all is worth \PilotRandNonePct\% against a control trained on
+\emph{identical} data volume, targeting degraded modes a further \PilotSelRandPct\%, and
+\emph{when} to spend \PilotSchedRandPct\% with an interval containing zero. Diversity-aware
+targeting is what bounds the failure; scheduling is not, on the primary outcome. Three of
+seven predeclared comparators, including a non-deployable oracle, were not implemented, so
+the remaining headroom is unmeasured.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+When a generative model is trained on text earlier models produced, the training loop
+becomes self-consuming. Controlled studies show that some versions of the loop distort the
+learned distribution, raise held-out error, and lose low-probability events
+\cite{shumailov2024collapse,alemohammad2024mad,dohmatob2024tails}; others stay bounded, and
+what separates them is the data workflow rather than synthetic data as such
+\cite{gerstgrasser2024inevitable,kazdan2025collapse}. The failure is therefore a property
+of the system's update rule, and the question is which interventions keep it bounded.
+
+Retaining human-origin data is the most reliable known intervention
+\cite{gerstgrasser2024inevitable,seddik2024synthetic}. But it is a finite resource:
+expensive to license, curate and withhold from evaluation, and repeated optimizer exposure
+to a small archive is not free. Give a chain one fixed lifetime stock of human-origin
+\emph{optimizer-consumed} tokens and two decisions appear that the unconstrained setting
+never forces --- \textbf{when} within the chain to spend, and \textbf{which} degraded
+regions of the distribution to spend on. Prior work motivates each separately, through
+schedules and learned mixtures \cite{xie2023doremi,liu2025regmix,zhao2026regmixd} and
+through targeted or importance-weighted selection
+\cite{xie2023dsir,ash2020badge,liu2021jtt}, but does not compare them, or their
+combination, with both the lifetime human quantity and the total optimization exposure held
+fixed. Appendix~\ref{app:related} develops the positioning.
+
+\begin{figure}[t]
+\centering
+\input{figures/pipeline}
+\caption{\textbf{The budgeted allocation problem.} A chain repeats
+train\,$\rightarrow$\,generate\,$\rightarrow$\,allocate\,$\rightarrow$\,evaluate for a
+frozen horizon; the dotted edge is the recursion. Shaded boxes are frozen before any run,
+dashed boxes are immutable artifacts. \textbf{The lifetime budget $B$ couples every
+decision:} spending early leaves less for later generations, and spending on one monitored
+mode leaves less for the others --- which is what makes \emph{when} and \emph{where} one
+joint choice rather than two.}
+\label{fig:pipeline}
+\end{figure}
+
+\textbf{Contributions.} We formalise allocation of a fixed human-token stock as a joint
+decision over recursive time and monitored modes under exact matching of both budgets
+(Section~\ref{sec:problem}); decompose it into treatment families isolating each axis; and
+execute the comparison on \PilotChains{} chains, reporting a preregistered null with an
+interval inside the equivalence region alongside three admissible secondary contrasts
+(Section~\ref{sec:results}). We also report what the design cannot support, rather than
+leaving the gaps to inference (Section~\ref{sec:discussion}).
+
+\section{Problem and policies}
+\label{sec:problem}
+
+Over generations $g=0,\dots,G-1$ each model trains on the previous generation's decoded
+corpus plus human examples bought by a policy, restarting optimization from the same
+pretrained base so that what varies is the training distribution rather than accumulated
+weights. With $b_{g,m}$ the human tokens from monitored mode $m$ consumed at generation
+$g$, every policy satisfies $\sum_{g}\sum_{m} b_{g,m}=B$, counted per optimizer
+presentation.
+
+\textbf{Both budgets are matched.} Rescued human examples \emph{displace} synthetic records
+rather than being appended, so each generation's training volume is fixed regardless of what
+a policy buys. This is load-bearing: under additive assembly the no-rescue control trains on
+strictly less data than every spending arm, and ``spending helps'' cannot then be separated
+from ``more data helps''.
+
+\textbf{Policies see only lagged state.} Allocation may use the generation index, remaining
+budget, eligible candidates, the previous generation's monitoring statistics, and its own
+history. Final-test data never influences prompting, selection, thresholds or stopping.
+\emph{Fresh-random} follows a frozen schedule without mode targeting. \emph{Schedule-only}
+varies timing but distributes each generation's spend neutrally across modes.
+\emph{Selection-only} fixes timing but ranks candidates by their mode's lagged
+under-coverage. \emph{Joint} adapts both. A \emph{no-rescue} control spends nothing.
+Appendix~\ref{sec:method} gives the rules.
+
+\textbf{Outcome.} With $L_g^{\pi}$ the held-out human NLL at generation $g$, regret is taken
+against the chain's own generation-0 value, $r_g^{\pi}=L_g^{\pi}-L_0^{\pi}$, and the
+chain-level outcome is the trapezoid area
+$A^{\pi}=\sum_{g=1}^{G-1}\tfrac12(r_{g-1}^{\pi}+r_g^{\pi})$. The reference is within-chain,
+so a paired contrast inherits no variance from a shared baseline. A frozen tail-retention
+measure on a disjoint partition is confirmatory. One complete seeded chain is one
+experimental unit; generations within a chain are repeated observations.
+
+\section{Results}
+\label{sec:results}
+
+GPT-2 on WikiText-103, horizon \PilotHorizon{}, the frozen seed set
+$\{101,202,303,404,505\}$, and a \PilotCeiling{}-token lifetime budget per spending arm give
+\PilotChains{} chains. Appendix~\ref{app:config} gives the executed configuration.
+
+\textbf{Both fairness axes hold.} Realised human spend across spending arms spans
+\PilotMatchedLow{}--\PilotMatchedHigh{} tokens, a \PilotHumanSpreadPct\% spread against
+\PilotSpreadPermittedPct\% permitted; realised total optimizer tokens are \emph{identical}
+across all five arms (\PilotTotalSpreadExactPct\%). All \PilotChains{} chains completed and
+none certifies invalid, so the comparison is admissible.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Targeting bounds the failure; scheduling does not.} All arms are matched on
+both budget axes, so every row is comparable. AUC regret is the area under the
+generation-wise held-out NLL-regret curve against each chain's own generation~0; tail
+retention is the confirmatory outcome at the final generation. Bold marks the best value per
+column, with both arms bolded where they tie at displayed precision --- selection-only and
+joint are indistinguishable on both outcomes.}
+\label{tab:results}
+{\small\input{tables/primary_results}}
+\end{table}
+
+\textbf{The primary contrast is a null.} The strongest eligible non-joint baseline is
+\PilotPrimaryBaseline{}. Joint minus that baseline is \PilotPrimaryMean{}, $95\%$ Student
+$t$ interval on four degrees of freedom $[\PilotPrimaryLow, \PilotPrimaryHigh]$, or
+\PilotPrimaryPct\% relative, against a frozen equivalence region of
+$\pm\PilotThresholdUnits{}$. The interval lies entirely inside that region, reaching at most
+\PilotPrimaryReach{} from zero. This is the stronger form of a null: it excludes every
+difference the preregistration calls meaningful, on a design powered to that threshold at
+roughly three chains per arm and run with \PilotSeeds{}. Joint allocation is \emph{not}
+shown to be worse --- the interval covers zero.
+
+\textbf{Where the bound actually comes from.} Because all arms are matched, the secondary
+contrasts stand on the same footing. Spending at all is worth \PilotRandNonePct\%,
+CI $[\PilotRandNoneLow, \PilotRandNoneHigh]$, against a control trained on identical data
+volume --- so the gain is attributable to the data's \emph{origin}, not its quantity.
+Targeting degraded modes is worth a further \PilotSelRandPct\%,
+CI $[\PilotSelRandLow, \PilotSelRandHigh]$. Scheduling gives \PilotSchedRandPct\%,
+CI $[\PilotSchedRandLow, \PilotSchedRandHigh]$, an interval containing zero and inside the
+equivalence region. The primary null follows: targeting accounts for most of the achievable
+improvement, scheduling for none detectable, and combining them lands where targeting alone
+lands.
+
+\textbf{The confirmatory outcome agrees, with one exception we report.} On the primary
+contrast tail retention agrees more tightly still (\PilotTailPrimaryMean{},
+CI $[\PilotTailPrimaryLow,\allowbreak\ \PilotTailPrimaryHigh]$). On the \emph{timing}
+contrast it disagrees: \PilotTailSchedRandMean{},
+CI $[\PilotTailSchedRandLow,\allowbreak\ \PilotTailSchedRandHigh]$, excluding zero at
+\PilotTailSchedRandPct\% of the fresh-random level. We do not select the more favourable
+metric; the primary conclusion follows the primary outcome, and timing shows no detectable
+effect on chain-level regret alongside a small, practically minor effect on tail retention.
+Between-chain coefficients of variation run \PilotCVLow\%--\PilotCVHigh\% against the
+\PilotThresholdPct\% threshold.
+
+\section{Discussion}
+\label{sec:discussion}
+
+For this self-consuming loop at this operating point, the intervention that bounds the
+failure is \emph{diversity-aware targeting} of a finite human budget, not the schedule on
+which it is spent. Adding temporal adaptation to distributional targeting buys nothing
+detectable on the primary outcome.
+
+Four limits bound that. \textbf{One operating point:} GPT-2, WikiText-103, horizon
+\PilotHorizon{}, one budget, one assembly rule. \textbf{Missing comparators:} three of seven
+predeclared comparators were not implemented --- accumulation or fixed-fraction mixing,
+detector-based selection, and oracle mode information as a non-deployable upper bound. The
+absent oracle is the consequential one: an equivalence between two policies says nothing
+about how much of the achievable gain either captures, and a reader should not infer that
+targeting sits near a ceiling. \textbf{An unarchived trace:} the retained artifacts record
+how much each policy spent but not when or on which modes, so whether the joint policy
+reached its total by a different route than selection-only cannot be determined --- an
+equivalence between policies that allocated differently means something other than one
+between policies that converged. \textbf{An unreviewed threshold:} the equivalence bound has
+been checked against measured anchors and never externally reviewed; under the alternative
+denominator it is $\pm\PilotThresholdUnitsAlt{}$ and the verdict is unchanged.
+
+What would move this forward is not more chains --- variance is already below what the
+threshold requires --- but the comparators that were not built, an oracle upper bound above
+all, and operating points beyond the single one measured here.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+% ------------------------------------------------------------------
+% Supplementary. Unlimited at this venue. Reuses the full paper's
+% sections verbatim so the two documents cannot drift apart.
+% ------------------------------------------------------------------
+\input{sections/10_appendix}
+\input{sections/05_method}
+\input{sections/03_related_work}
+
+\end{document}

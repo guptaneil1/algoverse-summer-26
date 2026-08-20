@@ -157,12 +157,13 @@ def main() -> int:
     args = parser.parse_args()
 
     global OUT
-    OUT = args.out or (DEFAULT_OUT if args.main == "main.tex"
+    OUT = (ROOT / args.out if args.out else None) or (DEFAULT_OUT if args.main == "main.tex"
                        else DEFAULT_OUT.with_name("human-data-budget-workshop-bundled.tex"))
     bundle = build(args.main)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(bundle, encoding="utf-8")
-    print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.0f} KB)")
+    shown = OUT.relative_to(ROOT) if OUT.is_relative_to(ROOT) else OUT
+    print(f"wrote {shown} ({OUT.stat().st_size / 1024:.0f} KB)")
     return check(bundle) if args.check else 0
 
 

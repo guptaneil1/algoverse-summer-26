@@ -20,7 +20,7 @@
 
 \documentclass{article}
 \IfFileExists{neurips_2026.sty}{%
-  \usepackage[final]{neurips_2026}%
+  \usepackage{neurips_2026}%
 }{%
   \usepackage[letterpaper,textwidth=5.5in,textheight=9in,centering]{geometry}%
   \PackageWarningNoLine{evorobust}{neurips_2026.sty not found -- using a text block
@@ -28,6 +28,9 @@
     before submitting}%
 }
 
+% T1 so the accented author names in the bibliography (Kovac, Jeremy, Remy) render
+% and hyphenate correctly on any TeX distribution, not only ones defaulting to UTF-8.
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,booktabs,graphicx,hyperref}
 \graphicspath{{../results/figures/}{./}}
 \usepackage{tikz}
@@ -52,7 +55,7 @@ and \emph{which} degraded regions --- and answer it with \PilotChains{} independ
 seeded chains matched on both lifetime human tokens and total optimizer tokens. The
 preregistered contrast is a \textbf{null}: adapting both axes jointly does not improve on
 adapting only the distributional one (\PilotPrimaryMean{}, $95\%$~CI
-$[\PilotPrimaryLow, \PilotPrimaryHigh]$), with the interval lying entirely inside the
+$[\PilotPrimaryLow,\allowbreak\ \PilotPrimaryHigh]$), with the interval lying entirely inside the
 frozen equivalence region rather than merely spanning zero. The secondary contrasts locate
 the effect: spending at all is worth \PilotRandNonePct\% against a control trained on
 \emph{identical} data volume, targeting degraded modes a further \PilotSelRandPct\%, and
@@ -167,7 +170,7 @@ joint are indistinguishable on both outcomes.}
 
 \textbf{The primary contrast is a null.} The strongest eligible non-joint baseline is
 \PilotPrimaryBaseline{}. Joint minus that baseline is \PilotPrimaryMean{}, $95\%$ Student
-$t$ interval on four degrees of freedom $[\PilotPrimaryLow, \PilotPrimaryHigh]$, or
+$t$ interval on four degrees of freedom $[\PilotPrimaryLow,\allowbreak\ \PilotPrimaryHigh]$, or
 \PilotPrimaryPct\% relative, against a frozen equivalence region of
 $\pm\PilotThresholdUnits{}$. The interval lies entirely inside that region, reaching at most
 \PilotPrimaryReach{} from zero. This is the stronger form of a null: it excludes every
@@ -177,11 +180,11 @@ shown to be worse --- the interval covers zero.
 
 \textbf{Where the bound actually comes from.} Because all arms are matched, the secondary
 contrasts stand on the same footing. Spending at all is worth \PilotRandNonePct\%,
-CI $[\PilotRandNoneLow, \PilotRandNoneHigh]$, against a control trained on identical data
+CI $[\PilotRandNoneLow,\allowbreak\ \PilotRandNoneHigh]$, against a control trained on identical data
 volume --- so the gain is attributable to the data's \emph{origin}, not its quantity.
 Targeting degraded modes is worth a further \PilotSelRandPct\%,
-CI $[\PilotSelRandLow, \PilotSelRandHigh]$. Scheduling gives \PilotSchedRandPct\%,
-CI $[\PilotSchedRandLow, \PilotSchedRandHigh]$, an interval containing zero and inside the
+CI $[\PilotSelRandLow,\allowbreak\ \PilotSelRandHigh]$. Scheduling gives \PilotSchedRandPct\%,
+CI $[\PilotSchedRandLow,\allowbreak\ \PilotSchedRandHigh]$, an interval containing zero and inside the
 equivalence region. The primary null follows: targeting accounts for most of the achievable
 improvement, scheduling for none detectable, and combining them lands where targeting alone
 lands.

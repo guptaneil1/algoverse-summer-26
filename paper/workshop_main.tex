@@ -17,12 +17,14 @@
 % file and paper/main.tex therefore cannot disagree about a number.
 % =====================================================================
 
-% The venue style file. Drop neurips_2026.sty beside this file and it is
+% The venue style file, loaded WITHOUT [final]: the default is the anonymous
+% submission form. [final] is camera-ready and prints author names.
+% Drop neurips_2026.sty beside this file and it is
 % used automatically; without it we fall back to a geometry that matches
 % the NeurIPS text block (5.5in x 9in), so local page counts are honest.
 \documentclass{article}
 \IfFileExists{neurips_2026.sty}{%
-  \usepackage[final]{neurips_2026}%
+  \usepackage{neurips_2026}%
 }{%
   \usepackage[letterpaper,textwidth=5.5in,textheight=9in,centering]{geometry}%
   \PackageWarningNoLine{workshop}{neurips_2026.sty not found -- using a text
@@ -30,6 +32,9 @@
     style file before submitting}%
 }
 
+% T1 so the accented author names in the bibliography (Kovac, Jeremy, Remy) render
+% and hyphenate correctly on any TeX distribution, not only ones defaulting to UTF-8.
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,booktabs,graphicx,hyperref}
 \graphicspath{{../results/figures/}{./}}
 \usepackage{tikz}
@@ -57,7 +62,7 @@ selection-only and joint time-and-mode allocation across \PilotChains{} independ
 seeded chains, matched on both lifetime human tokens and total optimizer tokens.
 Under those matched budgets the preregistered primary contrast is a \textbf{null}: joint
 allocation does not improve on the strongest implemented non-joint baseline
-(\PilotPrimaryMean{}, $95\%$ CI $[\PilotPrimaryLow, \PilotPrimaryHigh]$), and the interval
+(\PilotPrimaryMean{}, $95\%$ CI $[\PilotPrimaryLow,\allowbreak\ \PilotPrimaryHigh]$), and the interval
 lies entirely inside the frozen practical-equivalence region rather than merely spanning
 zero. The secondary contrasts locate the effect that does exist: spending a human budget at
 all is worth \PilotRandNonePct\% against a control trained on \emph{identical} data volume,
@@ -201,7 +206,7 @@ they tie at displayed precision.}
 The strongest eligible non-joint baseline is \PilotPrimaryBaseline{}. Across \PilotChains{}
 chains at matched budgets we did not detect a difference between joint allocation and that
 baseline: paired mean \PilotPrimaryMean{}, $95\%$ Student $t$ interval on four degrees of
-freedom $[\PilotPrimaryLow, \PilotPrimaryHigh]$, or \PilotPrimaryPct\% relative. The frozen
+freedom $[\PilotPrimaryLow,\allowbreak\ \PilotPrimaryHigh]$, or \PilotPrimaryPct\% relative. The frozen
 practical-equivalence region is $\pm\PilotThresholdUnits{}$, and the interval lies entirely
 inside it, reaching at most \PilotPrimaryReach{} from zero.
 
@@ -217,14 +222,14 @@ same footing as the primary one.
 
 \begin{itemize}\itemsep2pt
 \item \textbf{Spending at all helps.} Fresh random against the no-rescue control improves the
-      outcome by \PilotRandNonePct\%, CI $[\PilotRandNoneLow, \PilotRandNoneHigh]$, clearing
+      outcome by \PilotRandNonePct\%, CI $[\PilotRandNoneLow,\allowbreak\ \PilotRandNoneHigh]$, clearing
       the practical threshold. Under displacement this arm trains on exactly as much data as
       the control, so the gain is attributable to the data's \emph{origin}, not its quantity.
 \item \textbf{Which examples you buy matters more.} Selection-only against fresh random
-      improves it by \PilotSelRandPct\%, CI $[\PilotSelRandLow, \PilotSelRandHigh]$, at
+      improves it by \PilotSelRandPct\%, CI $[\PilotSelRandLow,\allowbreak\ \PilotSelRandHigh]$, at
       identical total volume.
 \item \textbf{When you spend does not.} Schedule-only against fresh random gives
-      \PilotSchedRandPct\%, CI $[\PilotSchedRandLow, \PilotSchedRandHigh]$, an interval
+      \PilotSchedRandPct\%, CI $[\PilotSchedRandLow,\allowbreak\ \PilotSchedRandHigh]$, an interval
       containing zero and lying inside the equivalence region.
 \end{itemize}
 

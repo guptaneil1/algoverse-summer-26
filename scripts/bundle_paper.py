@@ -88,9 +88,13 @@ def inline(text: str, seen: tuple[str, ...] = ()) -> str:
 def build(source: str) -> str:
     text = inline((PAPER / source).read_text(encoding="utf-8"))
 
-    # The image lives outside paper/ in the repo. In a flat bundle it sits alongside.
+    # The bundle is flat: every asset sits beside the .tex. Any path that reaches out of
+    # the directory resolves in the repository and nowhere else, so both the direct
+    # include and the graphicspath are rewritten to the current directory.
     text = text.replace("{../results/figures/pilot_nll_by_generation}",
                         "{pilot_nll_by_generation}")
+    text = text.replace("\\graphicspath{{../results/figures/}{./}}",
+                        "\\graphicspath{{./}}")
 
     bib = (PAPER / "references.bib").read_text(encoding="utf-8").rstrip()
     text = text.replace(

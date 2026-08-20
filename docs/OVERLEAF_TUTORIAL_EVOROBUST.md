@@ -10,13 +10,22 @@ style file required · anonymised.
 
 ## What you are uploading
 
+**Two files.**
+
 | File | Where it comes from | Goes where |
 |---|---|---|
 | `evorobust-submission.tex` | `dist/evorobust-submission.tex` | project root |
-| `pilot_nll_by_generation.png` | `results/figures/` | **project root**, not a folder |
 | `neurips_2026.sty` | the EvoRobust CFP page | project root |
 
-Three files. No `.bib` — the bibliography is embedded in the `.tex`.
+**No `.bib`** — the bibliography is embedded in the `.tex`.
+**No image file.** Every figure in this version is vector TikZ drawn inside the document.
+The NLL trajectory plot, which is a PNG, was moved to supplementary and then out of this
+version entirely, because EvoRobust counts figures against the four-page limit and Table 1
+already carries that result.
+
+`python scripts/preflight_overleaf.py dist/evorobust-submission.tex` prints this list from
+the document itself. It is generated rather than remembered, because an earlier draft of
+this tutorial told you to upload a figure the file never references.
 
 ---
 
@@ -34,22 +43,19 @@ In the file tree, right-click Overleaf's `main.tex` → **Delete**.
 Do this **before** uploading. If two `.tex` files both look like main documents, Overleaf
 compiles the wrong one and you get a one-page "Hello World".
 
-## Step 3 — Upload the submission and the figure
+## Step 3 — Upload the submission
 
 Click the **upload icon** (a page with an up-arrow, top-left above the file tree) → **Select
-from your computer** → choose both:
+from your computer** → choose `evorobust-submission.tex`.
 
-- `evorobust-submission.tex`
-- `pilot_nll_by_generation.png`
+That is the only content file. It contains the whole paper, the bibliography and every
+figure; nothing else needs to accompany it except the style file in the next step.
 
-**The PNG must sit at the top level of the file tree**, at the same indentation as the
-`.tex`. Do not create a `figures/` folder. The document calls
-`\includegraphics{pilot_nll_by_generation}` with no path, and a folder makes the figure
-vanish with only a warning.
-
-> Note: the EvoRobust version does not currently place that figure in the main text — it is
-> referenced from the supplementary. Upload it anyway; without it the compile emits a
-> missing-file warning.
+> If you are instead uploading the **8-page version** for NewInML or CL4FMAgents, that one
+> *does* use a PNG. Upload `pilot_nll_by_generation.png` alongside it, **at the top level of
+> the file tree** — not in a `figures/` folder. That document calls
+> `\includegraphics{pilot_nll_by_generation}` with no path, so a folder makes the figure
+> vanish with only a warning.
 
 ## Step 4 — Get the venue style file
 
@@ -59,11 +65,13 @@ Open the EvoRobust CFP page and download the **NeurIPS 2026 style file**
 **You do not edit anything to activate it.** The document opens with:
 
 ```latex
-\IfFileExists{neurips_2026.sty}{\usepackage[final]{neurips_2026}}{ ...fallback... }
+\IfFileExists{neurips_2026.sty}{\usepackage{neurips_2026}}{ ...fallback... }
 ```
 
-so the real style is used the moment the file exists. Without it you get a text block of the
-same dimensions — which is why the page counts quoted here are meaningful — but **the
+so the real style is used the moment the file exists. It is loaded **without** the `[final]`
+option on purpose: the default is the anonymous submission form, while `[final]` is the
+camera-ready option and prints author names. Without the style file you get a text block
+of the same dimensions — which is why the page counts quoted here are meaningful — but **the
 fallback is not the venue format and must not be submitted.**
 
 If the CFP offers an Overleaf template link instead of a file, open that template, copy
@@ -96,7 +104,8 @@ Work through these in the compiled PDF, not in the editor.
 3. **Search for `[?]`.** Zero.
 4. **Search for `TODO`, `PENDING`, `PLACEHOLDER`.** Zero.
 5. **Table 1 renders** with bold values and the ↓/↑ direction markers in the header.
-6. **Figure 1** (the pipeline diagram) renders as boxes and arrows, not a grey rectangle.
+6. **Figure 1** (the pipeline diagram) renders as boxes and arrows. It is drawn in TikZ,
+   so it cannot be a missing-image box — if it looks wrong, the style file is interfering.
 7. **No author name anywhere**, including the PDF properties (Overleaf takes them from
    `\author`, which reads `Anonymous Submission`).
 
@@ -113,7 +122,7 @@ Keep the Overleaf project — camera-ready may extend to 5 pages and you will wa
 |---|---|---|
 | "File `figures/pipeline.tex' not found" | You uploaded a non-bundled `.tex` | Use `dist/evorobust-submission.tex`; it has everything inlined |
 | Compile produces no PDF, "Emergency stop" | A missing input file | Read the first `!` line in the Logs. Only the first matters; the rest cascade |
-| Figure is a grey box | PNG is in a folder, or missing | Move it to the project root |
+| Figure is a grey box | Only possible in the 8-page version; PNG is in a folder or missing | Move it to the project root |
 | Citations stay `[?]` | BibTeX did not run | Recompile again; check Menu → Compiler settings |
 | Page count too high | Style file missing, so the fallback geometry is in use | Upload `neurips_2026.sty` |
 | Overleaf compiles "Hello World" | Placeholder `main.tex` still present | Delete it, then Set as Main File |

@@ -1,5 +1,8 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
+% T1 so the accented author names in the bibliography (Kovac, Jeremy, Remy) render
+% and hyphenate correctly on any TeX distribution, not only ones defaulting to UTF-8.
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,booktabs,graphicx,hyperref}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}

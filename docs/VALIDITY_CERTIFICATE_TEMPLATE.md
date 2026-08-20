@@ -38,7 +38,7 @@ python scripts/validate_run.py <run_dir> --json
 
 | Check | Result |
 |---|---|
-| Exit code (0 valid, 2 limitation, 1 invalid) | |
+| Exit code (**0 valid / 1 valid_with_limitation / 2 invalid / 3 usage** — FAILURE_LOG.md F-024; this row stated the inverted mapping until 2026-08-20) | |
 | Blocking failures reported | |
 | Limitations reported | |
 

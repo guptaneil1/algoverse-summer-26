@@ -77,6 +77,15 @@ results/aggregates/*
 # small validated aggregates, generated tables/figures, and documentation."
 !results/aggregates/*.json
 
+# Validity certificates and their evidence packs ARE tracked. The certificate template
+# designates results/certificates/ as their home, and a certificate that lives outside the
+# repository cannot be audited against the artifacts it certifies. They are documentation
+# by results/README.md's own rule.
+!results/certificates/
+results/certificates/*
+!results/certificates/*.md
+!results/certificates/*.json
+
 # Chain results from executed runs ARE tracked. They are ~4 KB each and are what every
 # analysis actually reads. run_manifest.json is deliberately NOT tracked: each carries
 # 28,351 provenance records at ~6.5 MB, 162 MB for a 25-chain grid. The manifests stay

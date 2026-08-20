@@ -97,6 +97,58 @@ tests passing remains weak evidence on its own.
 This is the honest shape of the abstract: a third of it could be written this week, and the
 remainder is correctly gated.
 
+## Audit against the rewritten abstract, 2026-08-20
+
+The corrected grid executed with both fairness axes holding, the abstract was rewritten
+against it, and every sentence is re-checked here. The 2026-08-19 audit above is retained
+unedited: it licensed the abstract that existed then, and that abstract was correct for
+the run it described.
+
+| ID | Sentence (abbreviated) | Licensing artifact | Status |
+|---|---|---|---|
+| S22 | We execute 25 chains over 5 seeds and 10 generations under a rule where rescued examples displace synthetic records. | `results/runs/primary_pilot_v2_2026-08-20/`, 25 tracked `chain_result.json` + `ARTIFACT_HASHES.json`; `corpus_record_budget: "match_synthetic"` in the frozen config; `DECISIONS.md` P-011 | **WRITABLE — verified** |
+| S23 | The fairness constraint holds by construction: human spend varies 0.0381%, totals identical. | `run_pilot --check-only` exit 0; `budget_axes` recomputes both from the chains and reproduces the guard's figures; generated into `pilot_macros.tex` | **WRITABLE — verified** |
+| S24 | The primary contrast is a null: joint does not improve on the strongest non-joint baseline. | Paired contrast over 25 validated chains, +0.01026 CI [-0.00916, +0.02968]; `docs/runs/primary_pilot_v2_2026-08-20_results.md`; `CLAIMS.md` C-002 falsification clause | **WRITABLE — verified.** Satisfies the standing rule for S10: states direction *and* interval, and uses the tie template because the interval lies inside the equivalence region |
+| S25 | The interval lies entirely inside the equivalence region rather than merely spanning zero. | `PilotPrimaryReach` 0.0297 against `PilotThresholdUnits` 0.0507; verdict unchanged under the alternative denominator (`PilotThresholdUnitsAlt` 0.0459), both generated | **WRITABLE — verified** |
+| S26 | Spending human tokens at all is worth 4.04% against a control trained on identical data volume. | `PilotRandNonePct` and interval macros; the "identical data volume" clause is licensed by the measured 0.0000% total spread, not assumed | **WRITABLE — verified** |
+| S27 | Targeting under-covered modes is worth a further 9.59%. | `PilotSelRandPct` and interval macros; matched on both axes, so unlike the 2026-08-18 run this is not the confounded comparison S17 declined | **WRITABLE — verified** |
+| S28 | Timing changes the primary outcome by 0.41%, an interval containing zero. | `PilotSchedRandPct`, `PilotSchedRandLow/High`; matched on both axes | **WRITABLE — verified**, and it must be paired with S30 |
+| S29 | At this operating point the allocation question decomposes: which modes matters, timing does not, and combining them equals targeting alone. | S26-S28 plus the primary contrast. A summary of four measured contrasts, no new claim | **WRITABLE — verified.** "At this operating point" is required, not decorative |
+| S30 | On the confirmatory tail-retention outcome, timing shows a small effect whose interval excludes zero. | `PilotTailSchedRandMean/Low/High`, +0.00766 CI [+0.00563, +0.00968] | **WRITABLE — verified, and REQUIRED wherever S28 appears.** The two preregistered outcomes disagree on this contrast; reporting only the null would be selecting the metric |
+| S31 | Between-chain variance is small enough that the frozen seed set exceeds what the threshold requires. | CVs 0.32-1.09% recomputed from the new chains; `powered_design_sizing_2026-08-19.md` sizing unchanged and now reproduced on an independent grid | **WRITABLE — verified** |
+| S32 | Three of seven predeclared comparators, including a non-deployable oracle upper bound, were not implemented, so headroom is unknown. | `CLAIMS.md` C-002 required-comparison list, items 5-7; absence is checkable in `policies/` | **WRITABLE — verified, and REQUIRED wherever the null is stated.** Without it the null reads as "nothing helps beyond selection", which the run cannot support |
+
+### Re-scored after the corrected grid
+
+- **S10** (what the joint policy did) — was CONDITIONAL, then resolved to *not established*. **Now resolved to a null**, stated with direction and interval per the standing rule. S24 and S25 are the sentences that carry it.
+- **S15** (this run satisfies neither axis) — **retired.** True of the 2026-08-18 run and false of the 2026-08-20 one. It survives as a statement about the earlier grid and must not be written unqualified.
+- **S16** (we report the contrast as invalid) — **retired** for the same reason. The contrast is no longer invalid; it is computed and null.
+- **S17** (we decline the more favourable secondary comparison) — **retired as written.** The comparison it declined, `selection_only` vs `random`, is now matched on both axes and is reported as S27. Declining it once was correct; declining it now would be discarding valid evidence. The conduct claim it made is history, not a present-tense virtue.
+- **S18** (one comparison survives both constraints) — **retired.** All of them now do.
+- **S20** (we make no claim about allocation policy) — **retired, and this is the most important retirement in this audit.** The paper now makes claims about allocation policy: a null on the primary contrast and three measured secondary effects. Any sentence still asserting that no claim is made would be false. Checked: no such sentence remains in `01_abstract.tex`, `07_results.tex`, `08_limitations.tex` or `09_conclusion.tex`.
+- **S21** (contribution is design, apparatus, record of checks) — **still WRITABLE and still not a novelty claim**, but no longer the whole contribution. The empirical result stands alongside it.
+- **S11** (monitoring-omission stress test) — unchanged. Still CONDITIONAL, still correctly absent. C-003 remains untested.
+- **S12** (contribution relative to prior work) — unchanged. Still **BLOCKED on external novelty review**. The empirical result does not license a novelty claim and none is made.
+
+### Result
+
+Every sentence in the rewritten abstract maps to a licensing artifact that exists and has
+been read.
+
+**Two pairings are mandatory rather than stylistic**, because each exists to stop a true
+sentence from carrying a false implication.
+
+1. **S28 must either appear with S30, or be explicitly scoped to the primary outcome.**
+   Writing that timing changes the outcome by 0.41% with an interval containing zero,
+   without either qualification, implies timing does nothing --- and the confirmatory
+   outcome says otherwise. Checked: the abstract and §7 scope it ("changes the primary
+   outcome by"), §7 additionally reports S30 in full, and the conclusion carries S30
+   explicitly because its summary sentence was otherwise unqualified.
+2. **Any statement of the null must appear with S32.** Without the missing comparators the
+   null reads as "nothing beats selection-only", which the run cannot support: the oracle
+   upper bound that would bound the headroom was never implemented. Checked: present in
+   the abstract, §7 "Scope of these results", §8, and the conclusion.
+
 ## Banned-wording cross-check
 
 Every sentence above was checked against the `CLAUDE.md` hard-rule-5 banned list — "first," "optimal,"

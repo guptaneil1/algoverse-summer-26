@@ -1,0 +1,21 @@
+{
+  "_not_covered_here": "Fixture figures from scripts/generate_figures.py are covered by results/figures/figure_provenance.json and are marked scientific_evidence: false. method_hyperparameters.tex and positive_control.tex come from scripts/generate_method_tables.py and the positive-control artifacts, not from the pilot run named below.",
+  "_purpose": "SHA-256 of every paper table and figure generated from real chain artifacts. Regenerate with scripts/generate_pilot_outputs.py and re-record with this script; verify with --check.",
+  "_scientific_evidence": true,
+  "files": {
+    "paper/tables/pilot_macros.tex": {
+      "bytes": 3173,
+      "sha256": "bf2a2216a15773356c2835e4c995381ba83ccf2f329c15a8f2f24cc48cfd09d6"
+    },
+    "paper/tables/primary_results.tex": {
+      "bytes": 1144,
+      "sha256": "8b6cfe14a1fbec81f5b85ea8826eeee143bed381e75d955756b9e0fd83b5d532"
+    },
+    "results/figures/pilot_nll_by_generation.png": {
+      "bytes": 119088,
+      "sha256": "a1eb38abc518ad0f9a72319db629ff282f45275f0397e2614acec234adf33916"
+    }
+  },
+  "generator": "scripts/generate_pilot_outputs.py",
+  "run_dir": "results/runs/primary_pilot_v2_2026-08-20"
+}

@@ -31,8 +31,15 @@ Targeting under-covered modes is worth a further \PilotSelRandPct\% at identical
 matched human spend. Scheduling \emph{when} within the chain to spend changes the primary
 outcome by \PilotSchedRandPct\%, an interval containing zero, and adding scheduling to
 targeting is equivalent to targeting alone. At this operating point the allocation question
-decomposes cleanly, and only one half of it carries signal: which under-covered modes a
-finite human budget is spent on, not when it is spent.
+decomposes, and the primary outcome carries signal on one half of it: which under-covered
+modes a finite human budget is spent on rather than when it is spent. The decomposition is
+not perfectly clean. On the confirmatory tail-retention outcome the timing contrast is
+\PilotTailSchedRandMean{}, $95\%$ CI
+$[\PilotTailSchedRandLow, \PilotTailSchedRandHigh]$, an interval excluding zero at
+\PilotTailSchedRandPct\% of the fresh-random level. Timing therefore does something small
+that one preregistered outcome detects and the other does not, and the summary sentence a
+reader should carry away is about the primary outcome specifically, not about timing in
+general.
 
 Three limits bound that statement. It holds at one budget, one horizon, one corpus and one
 model. Three of the seven predeclared comparators were never implemented, so ``strongest

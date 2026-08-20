@@ -231,24 +231,42 @@ def write_table(by_arm: dict[str, list[dict]], out: Path, run_dir: Path) -> None
             "% The primary contrast is absent deliberately: this run fails budget matching",
             "% (FAILURE_LOG.md F-020, F-021), so the preregistered comparison is invalid.",
         ]
+    # Direction markers and a bolded best cell: a reader should not have to work out
+    # which way is good, and the value people quote should be visually findable.
     lines += [
         r"\begin{tabular}{lrrrrr}",
         r"\toprule",
-        r"Policy & Chains & Human tokens & AUC regret & SD & Tail retention \\",
+        r"Policy & Chains & Human tokens & AUC regret $\downarrow$ & SD & "
+        r"Tail retention $\uparrow$ \\",
         r"\midrule",
     ]
-    for arm in ARM_ORDER:
-        chains = by_arm.get(arm)
-        if not chains:
-            continue
+    present = [a for a in ARM_ORDER if by_arm.get(a)]
+
+    def _best(score, better):
+        """Every arm tied at displayed precision, not an arbitrary winner among them.
+
+        Bolding one of two arms that print the same value asserts a difference the
+        paper reports as absent -- overclaiming through formatting rather than prose.
+        """
+        values = {a: score(a) for a in present}
+        target = better(values.values())
+        return {a for a, v in values.items() if f"{v:.4f}" == f"{target:.4f}"}
+
+    best_auc = _best(lambda a: st.mean(auc_regret(c) for c in by_arm[a]), min)
+    best_tail = _best(
+        lambda a: st.mean(final_tail_retention(c) for c in by_arm[a]), max)
+    for arm in present:
+        chains = by_arm[arm]
         areas = [auc_regret(c) for c in chains]
         spend = st.mean(c["consumed_human_tokens"] for c in chains)
         mean, sd = st.mean(areas), st.stdev(areas)
         tail = st.mean(final_tail_retention(c) for c in chains)
         marker = "" if admissible else (r"$^{\dagger}$" if arm == "joint" else "")
+        auc_cell = (rf"\textbf{{{mean:.4f}}}" if arm in best_auc else f"{mean:.4f}")
+        tail_cell = (rf"\textbf{{{tail:.4f}}}" if arm in best_tail else f"{tail:.4f}")
         lines.append(
             f"{ARM_LABEL[arm]}{marker} & {len(chains)} & {spend:,.0f} & "
-            f"{mean:.4f} & {sd:.4f} & {tail:.4f} \\\\"
+            f"{auc_cell} & {sd:.4f} & {tail_cell} \\\\"
         )
     lines += [r"\bottomrule", r"\end{tabular}", ""]
 

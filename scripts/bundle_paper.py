@@ -31,7 +31,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
-OUT = ROOT / "dist" / "human-data-budget-paper-bundled.tex"
+DEFAULT_OUT = ROOT / "dist" / "human-data-budget-paper-bundled.tex"
 FIGURE = ROOT / "results/figures/pilot_nll_by_generation.png"
 
 HEADER = """% =====================================================================
@@ -56,7 +56,10 @@ HEADER = """% ==================================================================
 
 """
 
-INPUT_RE = re.compile(r"^([ \t]*)\\input\{([^}]*)\}[ \t]*$", re.M)
+# Matches \input anywhere, not only alone on a line. The workshop file wraps one in
+# {\small ...}; a line-anchored pattern skipped it and produced a bundle with no results
+# table, which --check caught before it shipped. Group 1 is leading indentation, if any.
+INPUT_RE = re.compile(r"([ \t]*)\\input\{([^}]*)\}")
 
 
 def resolve(target: str) -> Path:
@@ -82,8 +85,8 @@ def inline(text: str, seen: tuple[str, ...] = ()) -> str:
     return INPUT_RE.sub(repl, text)
 
 
-def build() -> str:
-    text = inline((PAPER / "main.tex").read_text(encoding="utf-8"))
+def build(source: str) -> str:
+    text = inline((PAPER / source).read_text(encoding="utf-8"))
 
     # The image lives outside paper/ in the repo. In a flat bundle it sits alongside.
     text = text.replace("{../results/figures/pilot_nll_by_generation}",
@@ -147,9 +150,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true",
                         help="compile the bundle in a scratch dir and report")
+    parser.add_argument("--main", default="main.tex",
+                        help="which top-level .tex to bundle (main.tex or workshop_main.tex)")
+    parser.add_argument("--out", type=Path, default=None,
+                        help="output path; defaults next to the standard bundle")
     args = parser.parse_args()
 
-    bundle = build()
+    global OUT
+    OUT = args.out or (DEFAULT_OUT if args.main == "main.tex"
+                       else DEFAULT_OUT.with_name("human-data-budget-workshop-bundled.tex"))
+    bundle = build(args.main)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(bundle, encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.0f} KB)")

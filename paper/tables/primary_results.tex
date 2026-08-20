@@ -4,13 +4,13 @@
 % table. Strongest eligible non-joint baseline: selection_only.
 \begin{tabular}{lrrrrr}
 \toprule
-Policy & Chains & Human tokens & AUC regret & SD & Tail retention \\
+Policy & Chains & Human tokens & AUC regret $\downarrow$ & SD & Tail retention $\uparrow$ \\
 \midrule
 No rescue (control) & 5 & 0 & 2.6431 & 0.0140 & 0.8676 \\
 Fresh random & 5 & 749,869 & 2.5364 & 0.0080 & 0.8769 \\
 Schedule-only & 5 & 749,878 & 2.5261 & 0.0194 & 0.8846 \\
-Selection-only & 5 & 749,827 & 2.2931 & 0.0250 & 0.9024 \\
-Joint time-and-mode & 5 & 749,827 & 2.3034 & 0.0221 & 0.9024 \\
+Selection-only & 5 & 749,827 & \textbf{2.2931} & 0.0250 & \textbf{0.9024} \\
+Joint time-and-mode & 5 & 749,827 & 2.3034 & 0.0221 & \textbf{0.9024} \\
 \bottomrule
 \end{tabular}
 

@@ -90,6 +90,13 @@ results/runs/**
 !results/runs/**/aggregate.json
 !results/runs/**/ARTIFACT_HASHES.json
 !results/runs/**/README.md
+# validation.json is the per-chain certification record, ~64 KB. F-021 happened because
+# it was written on the pod and never read, and the aggregate exit code was interpreted
+# in its place. Tracking it makes "0 chains invalid" checkable from a clone.
+!results/runs/**/validation.json
+# The frozen generation-0 reference that tail retention is measured against. ~360 bytes
+# per chain, 9 KB for a grid, and the confirmatory metric is not recomputable without it.
+!results/runs/**/reference_mode_scores.json
 
 !results/figures/
 results/figures/*

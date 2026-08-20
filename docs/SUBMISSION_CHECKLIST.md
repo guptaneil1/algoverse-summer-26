@@ -84,13 +84,13 @@ has no computation defined anywhere, and C-002 rests on both.
 
 | | Check | Verify with |
 |---|---|---|
-| ☑ | Preflight budget equality passed | `preflight_budget.py` → PASSED. **Realised** equality failed on both axes: F-020, F-021 |
-| ☑ | All 25 chains emitted schema-valid artifacts | `validate_run.py` over the retained run |
-| ☐ | **10 chains classify `invalid`.** No *claim* rests on them, and §7 reports them as excluded — but the descriptive table lists all 25. Confirm that is acceptable, or regenerate it over the 15 | validator exit code |
+| ☑ | Preflight budget equality passed | `preflight_budget.py` → PASSED, and **realised** equality now holds on both axes: human 0.0381%, total 0.0000%, against 0.2000% permitted. `run_pilot --check-only` exits 0 (F-026a) |
+| ☑ | All 25 chains emitted schema-valid artifacts | `validate_run.py` over `results/runs/primary_pilot_v2_2026-08-20/` |
+| ☑ | **No chain classifies `invalid`.** 25 `valid_with_limitation`, 0 `invalid`, read from the per-chain report in `validation.json` rather than an aggregate exit code — the error F-021 recorded. The table lists all 25 and every one is admissible | `pilot/validation.json`, tracked |
 | ☑ | Both limitations stated in §7 | `LIMIT_NEAR_DUPLICATE_NOT_CHECKED`, `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE` |
-| ☑ | All 25 retained, including the 10 invalid | `results/runs/primary_pilot_2026-08-18/` |
+| ☑ | All 25 retained | `results/runs/primary_pilot_v2_2026-08-20/`. The superseded 2026-08-18 grid is retained too, with its 10 invalid chains, and neither run's artifacts were edited |
 | ☐ | Validity certificate issued per headline result, by someone who did not operate the run | `docs/VALIDITY_CERTIFICATE_TEMPLATE.md` |
-| ◐ | **Automatable half done.** `scripts/reproduce_pilot_table.py` recomputes every published value from `chain_result.json` with arithmetic written independently of the generator; all reproduce, and `test_published_values_reproduce.py` runs it in CI. The human half -- a person other than the analysis author running it -- still stands | Neil |
+| ◐ | **Automatable half done.** `scripts/reproduce_pilot_table.py` recomputes every published value from `chain_result.json` with arithmetic written independently of the generator; all reproduce for **both** the 2026-08-20 grid and the superseded 2026-08-18 one, and `test_published_values_reproduce.py` runs it in CI. The human half -- a person other than the analysis author running it -- still stands | Neil |
 | ☐ | Results freeze tagged | `week-3-results-freeze-YYYY-MM-DD` |
 
 ## Gate E — Analysis and writing

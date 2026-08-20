@@ -5,10 +5,16 @@ The executed primary pilot. 25 chains, 4× RTX 4090, 2026-08-18 21:40 → 2026-0
 
 ## What is here, and what is not
 
-**Tracked in git** (~160 KB): the 25 `chain_result.json` files, the four shard
-summaries, `aggregate.json`, and `ARTIFACT_HASHES.json`. Every number in the results
-document is computed from these and nothing else, so the analysis is reproducible from
-a clone.
+**Tracked in git** (~230 KB): the 25 `chain_result.json` files, the four shard
+summaries, `aggregate.json`, `validation.json`, and `ARTIFACT_HASHES.json`. Every number
+in the results document is computed from these and nothing else, so the analysis is
+reproducible from a clone.
+
+`validation.json` was added to tracking on 2026-08-20 and is **not in the hash ledger
+below**, because it was produced during the F-021 analysis rather than by the run. It is
+tracked because it is the direct evidence for this run's certification split --- 10
+`invalid`, 15 `valid_with_limitation` --- and F-021 happened precisely because that
+per-chain report existed and an aggregate exit code was read instead of it.
 
 **Not tracked** (~162 MB): the 25 `run_manifest.json` files. Each carries 28,351
 partition provenance records at roughly 6.5 MB. They are the provenance evidence, not

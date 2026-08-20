@@ -7,37 +7,51 @@ budget-matched treatment families, and complete recursive chains as experimental
 allocation rule, hyperparameters, seed set, outcomes, and interpretation language were
 frozen before any primary execution, using interfaces, fixtures, and synthetic results.
 
-The pilot ran to completion, and the preregistered fairness constraint rejected it. Equal
-lifetime human-origin spend failed on one arm; equal total optimizer tokens failed across
-arms, on an axis the launcher had never asserted. \textbf{We report the primary contrast as
-not established.} We did not repair it, reweight it, or promote the secondary comparison
-that would have supported the paper's hypothesis --- and that comparison was available,
-sizeable, and tempting. Declining it is the substantive claim this work can make about its
-own conduct.
-
-What the work does establish is narrower and worth stating plainly. The pipeline reproduces
-a published recursive-training result on real assets, across two independent executions on
-different hardware and dependency stacks. The apparatus runs the full recursive allocation
-loop end to end and emits certifiable artifacts. One budget-matched comparison survives: at
-this budget and horizon, when a fixed human budget is spent does not detectably change the
-outcome, an interval containing zero and lying inside the practical equivalence region.
-Between-chain variance is small enough --- coefficients of variation from \PilotCVLow\% to
-\PilotCVHigh\% against a \PilotThresholdPct\% threshold --- that the frozen seed set is
-already powered at the preregistered effect size. That inverts the assumption the pilot was
-commissioned to test: for this design, chain count is not the binding constraint on a
-powered experiment, and the constraint lies elsewhere.
-
-It lies in the design. Measurement showed that adding human data to a fixed synthetic
+An earlier execution of this grid was rejected by its own fairness constraint: equal
+lifetime human-origin spend failed on one arm, and equal total optimizer tokens failed
+across arms on an axis the launcher had never asserted. That rejection was informative
+about the design rather than about allocation. Adding human data to a fixed synthetic
 corpus makes total training volume depend on how much a policy spends, so allocation
-strategy and data quantity cannot be separated --- including in the comparison against a
-control that spends nothing. We therefore specify that rescued human examples \emph{displace}
-synthetic records rather than being appended to them, which makes the total-token condition
-hold by construction rather than by measurement. That specification is untested; no chain
-has yet run under it.
+strategy and data quantity could not be separated --- including in the comparison against a
+control that spends nothing. Specifying that rescued human examples \emph{displace}
+synthetic records rather than being appended to them makes the total-token condition hold
+by construction, and the corrected grid confirms it: total optimizer tokens are identical
+across all five arms, and human spend varies by \PilotHumanSpreadPct\%.
 
-The remaining obstacle is neither compute nor a design freeze. The estimand, contrast, seed
-set, and interpretation templates are fixed; the defects the pilot exposed are closed and
-pinned by regression tests; and a powered run is affordable at the measured cost. What
-remains is to validate the displacement specification on a single chain and then execute
-the grid with both fairness axes asserted. Until that happens, the hypotheses that motivated
-this work stay untested, and this paper claims nothing about them.
+Under those matched budgets, the preregistered primary contrast is a null. Joint
+time-and-mode allocation does not improve on the strongest non-joint baseline
+(\PilotPrimaryMean{}, $95\%$ CI $[\PilotPrimaryLow, \PilotPrimaryHigh]$), and the interval
+lies wholly inside the frozen practical equivalence region rather than merely containing
+zero. \textbf{The hypothesis that motivated this work is not supported}, at a precision
+sufficient to say so rather than to plead insufficient power.
+
+The secondary contrasts say where the effect that does exist lives. Spending a human budget
+at all is worth \PilotRandNonePct\% against a control trained on identical data volume.
+Targeting under-covered modes is worth a further \PilotSelRandPct\% at identical volume and
+matched human spend. Scheduling \emph{when} within the chain to spend changes the primary
+outcome by \PilotSchedRandPct\%, an interval containing zero, and adding scheduling to
+targeting is equivalent to targeting alone. At this operating point the allocation question
+decomposes cleanly, and only one half of it carries signal: which under-covered modes a
+finite human budget is spent on, not when it is spent.
+
+Three limits bound that statement. It holds at one budget, one horizon, one corpus and one
+model. Three of the seven predeclared comparators were never implemented, so ``strongest
+baseline'' means strongest among four; the absent one that matters most is a non-deployable
+oracle upper bound, without which the headroom above every policy measured here is unknown,
+and an equivalence between two policies says nothing about how far either sits from what is
+achievable. And the practical equivalence threshold on which the null rests is a project
+decision, checked against measured anchors and never externally reviewed.
+
+The apparatus contribution stands alongside the empirical one. The pipeline reproduces a
+published recursive-training result on real assets across two independent executions on
+different hardware and dependency stacks; the full recursive allocation loop runs end to end
+and emits certifiable artifacts; and between-chain variance is small enough ---
+coefficients of variation from \PilotCVLow\% to \PilotCVHigh\% against a
+\PilotThresholdPct\% threshold --- that the frozen seed set exceeds what the preregistered
+effect size requires. For this design chain count is not the binding constraint on a powered
+experiment, which inverts the assumption the pilot was commissioned to test.
+
+What would move the question forward is not more chains. It is the comparators that were
+not built --- an oracle mode-information upper bound above all, which would convert an
+equivalence between two policies into a statement about how much of the achievable gain
+either captures --- and operating points beyond the single one measured here.

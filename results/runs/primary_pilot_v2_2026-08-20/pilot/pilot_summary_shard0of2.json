@@ -1,0 +1,244 @@
+{
+  "chains": [
+    {
+      "arm": "no_rescue",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/no_rescue/seed101/stdout_stderr.log",
+      "seed": 101,
+      "status": "failed"
+    },
+    {
+      "arm": "no_rescue",
+      "consumed_human_tokens": 0,
+      "consumed_total_tokens": 16678912,
+      "seed": 303,
+      "status": "complete"
+    },
+    {
+      "arm": "no_rescue",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/no_rescue/seed505/stdout_stderr.log",
+      "seed": 505,
+      "status": "failed"
+    },
+    {
+      "arm": "random",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/random/seed202/stdout_stderr.log",
+      "seed": 202,
+      "status": "failed"
+    },
+    {
+      "arm": "random",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/random/seed404/stdout_stderr.log",
+      "seed": 404,
+      "status": "failed"
+    },
+    {
+      "arm": "schedule_only",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/schedule_only/seed101/stdout_stderr.log",
+      "seed": 101,
+      "status": "failed"
+    },
+    {
+      "arm": "schedule_only",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/schedule_only/seed303/stdout_stderr.log",
+      "seed": 303,
+      "status": "failed"
+    },
+    {
+      "arm": "schedule_only",
+      "consumed_human_tokens": 749882,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1776195667961105,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2963450213467773,
+          "tail_retention": 0.9630543422294053
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.366785731007675,
+          "tail_retention": 0.9430048027262685
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4203613440506766,
+          "tail_retention": 0.9267549128354852
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4679892781973662,
+          "tail_retention": 0.9140192302004888
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.5126085892271077,
+          "tail_retention": 0.9027658324613389
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.536409357895823,
+          "tail_retention": 0.8967788688814515
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.5655720033291036,
+          "tail_retention": 0.8890538399950662
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.593174800387567,
+          "tail_retention": 0.883102312269385
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.604258354769294,
+          "tail_retention": 0.8803762869146738
+        }
+      ],
+      "seed": 505,
+      "status": "complete"
+    },
+    {
+      "arm": "selection_only",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/selection_only/seed202/stdout_stderr.log",
+      "seed": 202,
+      "status": "failed"
+    },
+    {
+      "arm": "selection_only",
+      "consumed_human_tokens": 749827,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.178099379567484,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2908582315364074,
+          "tail_retention": 0.9654233108755897
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.356647054991999,
+          "tail_retention": 0.946927354520123
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4045658437550963,
+          "tail_retention": 0.9328597284021423
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.442950785836595,
+          "tail_retention": 0.9230875052657139
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.4740234295371617,
+          "tail_retention": 0.9156144164059201
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5035653648699956,
+          "tail_retention": 0.9089041625424407
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.5299837494394164,
+          "tail_retention": 0.9024878808325286
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.555885345797405,
+          "tail_retention": 0.8964682863774044
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.54658084478708,
+          "tail_retention": 0.9013003155447192
+        }
+      ],
+      "seed": 404,
+      "status": "complete"
+    },
+    {
+      "arm": "joint",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/joint/seed101/stdout_stderr.log",
+      "seed": 101,
+      "status": "failed"
+    },
+    {
+      "arm": "joint",
+      "consumed_human_tokens": 749827,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.180622731387343,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2871079695590244,
+          "tail_retention": 0.9669727366066841
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.3545124688493764,
+          "tail_retention": 0.9482273412473397
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4025649019105715,
+          "tail_retention": 0.9352549695154075
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4421847607835945,
+          "tail_retention": 0.9248490686061696
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.476380254517796,
+          "tail_retention": 0.9158788987474151
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.505646711475151,
+          "tail_retention": 0.9093430650142271
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.528835894341416,
+          "tail_retention": 0.9044747509408707
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5520515217939703,
+          "tail_retention": 0.897884850439268
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.54798692677119,
+          "tail_retention": 0.9021668957990113
+        }
+      ],
+      "seed": 303,
+      "status": "complete"
+    },
+    {
+      "arm": "joint",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/joint/seed505/stdout_stderr.log",
+      "seed": 505,
+      "status": "failed"
+    }
+  ],
+  "run_id": "primary_pilot_v2_2026-08-19",
+  "wall_seconds": 9270.548437366262
+}

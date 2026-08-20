@@ -1,8 +1,10 @@
 # Current Project Status
 
-**Last truthful update:** August 19, 2026 — pilot executed, analysed, and its primary
-contrast recorded as NOT ESTABLISHED. Variance estimate delivered.
-**Previous update:** August 17, 2026
+**Last truthful update:** August 20, 2026 — the corrected grid completed under both
+fairness axes and the primary contrast is a **valid null**. C-002 tested and not supported.
+**Previous update:** August 19, 2026 — pilot executed, analysed, primary contrast recorded
+as NOT ESTABLISHED. Variance estimate delivered.
+**Update before that:** August 17, 2026
 **Update before that:** August 15, 2026 — upstream positive-control commit pinned.
 **Original deadline:** August 15, 2026 — **not met; see §Schedule reality**
 **Current week by calendar:** Week 4 (August 8–14 plan). **Current week by evidence:** Week 2,
@@ -15,6 +17,51 @@ environment freeze in `PROTOCOL.md` §2 is recorded from measured host values, r
 seven conditional xfails. Evidence: `docs/positive_control/observed_table.md`,
 `docs/positive_control/measurements_2026-08-17_rtx4090/`, `COMPUTE.md`, and `FAILURE_LOG.md`
 F-006 through F-009.
+
+> **Corrected grid completed, 2026-08-20. The primary contrast is a valid null.**
+> 25 of 25 chains on 2× RTX 4090, run in four seed-block phases (`DECISIONS.md` P-012),
+> zero chain failures. Full record: `docs/runs/primary_pilot_v2_2026-08-20_results.md`.
+>
+> **Both fairness axes hold.** Human spread across spending arms **0.0381%** against
+> 0.2000% permitted; total optimizer tokens **identical at 16,678,912 for every chain in
+> every arm**, a 0.0000% spread. `run_pilot --check-only` exits 0. The previous grid failed
+> both — 10.1070% (F-020) and 2.2564% (F-021). P-011's displacement rule, accepted
+> unvalidated, is now validated on 25 chains.
+>
+> **Certification: 25 `valid_with_limitation`, 0 `invalid`**, read from the per-chain
+> report in `validation.json` rather than an aggregate exit code — the specific error F-021
+> recorded. The two limitations are the standing `LIMIT_NEAR_DUPLICATE_NOT_CHECKED` and
+> `LIMIT_TOKEN_LEDGER_NOT_RECOMPUTABLE`.
+>
+> **C-002 is tested and NOT SUPPORTED.** Joint minus the strongest eligible non-joint
+> baseline (`selection_only`) is **+0.01026, 95% CI [-0.00916, +0.02968]**, +0.45%
+> relative, against a practical equivalence region of ±0.05073. The interval lies *wholly
+> inside* that region, so this is equivalence at the preregistered threshold rather than
+> insufficient power — the design is powered to three chains per arm and ran five. It is
+> **not** evidence that joint is worse: the interval covers zero. Confirmatory tail
+> retention agrees at +0.00003, CI [-0.00100, +0.00105].
+>
+> **Three admissible secondary contrasts locate the effect.** All arms are matched on both
+> axes, so unlike the previous grid these stand on the same footing as the primary. Spending
+> a human budget at all is worth **4.04%** against a control trained on identical data
+> volume; targeting under-covered modes a further **9.59%**; scheduling when to spend
+> **0.41%**, an interval containing zero. Which modes the budget targets matters; when it is
+> spent does not, on the primary outcome. On the confirmatory outcome timing shows a small
+> effect whose interval excludes zero, and that disagreement is reported.
+>
+> **Cost:** 5.96 h across launches in which every chain finished, 9.56 h counting the
+> attempts F-025 and F-026 ended; roughly $18 and $29 at the observed $3/hour. Throughput
+> 5.07 min/generation. Wall time for a phased grid is the **sum of per-launch maxima**, not
+> the max over shard summaries — a single max returns 3.35 h, which is one phase.
+>
+> **Two infrastructure defects cost time and no science.** F-025 (launcher unpinned from its
+> own GPU) and F-026 (resume re-ran the generation it was interrupted in, into a directory
+> upstream refuses to overwrite). Both stopped chains from starting; neither corrupted a
+> chain that finished.
+>
+> **Variance reproduced.** CVs 0.32%–1.09% against a 2% threshold, on an independent grid
+> under a changed assembly rule, against 0.41%–1.08% before. `joint`'s variance is no longer
+> qualified: it spent its budget as designed.
 
 > **Pilot executed and analysed, 2026-08-19.** The 25-chain primary pilot ran to
 > completion on 4× RTX 4090. The longest shard ran **6.75 h**; the grid was observed

@@ -1,0 +1,124 @@
+{
+  "chains": [
+    {
+      "arm": "random",
+      "consumed_human_tokens": 749873,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.180153298175809,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2947051464461534,
+          "tail_retention": 0.9642731261141751
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.3642949113640532,
+          "tail_retention": 0.9440772258167358
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4160658506031374,
+          "tail_retention": 0.9292916073499969
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4614408708287465,
+          "tail_retention": 0.9172189493394347
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.499818984776327,
+          "tail_retention": 0.9075973321426565
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.540689913058545,
+          "tail_retention": 0.898514480101708
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.5719651871075913,
+          "tail_retention": 0.8903519999013276
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.601528578308464,
+          "tail_retention": 0.8829801615974239
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.6196325173972093,
+          "tail_retention": 0.8782639662825611
+        }
+      ],
+      "seed": 303,
+      "status": "complete"
+    },
+    {
+      "arm": "selection_only",
+      "consumed_human_tokens": 749827,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1801354136407882,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.2902024400366416,
+          "tail_retention": 0.9656815542740584
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.355270503194054,
+          "tail_retention": 0.9470992513371862
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.403818384059799,
+          "tail_retention": 0.934403975062065
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4443025771885702,
+          "tail_retention": 0.9241769467314334
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.4766256174384886,
+          "tail_retention": 0.9162909444253781
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5046036393675086,
+          "tail_retention": 0.9102361778681449
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.529703481416646,
+          "tail_retention": 0.9040069987293726
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5519150029112136,
+          "tail_retention": 0.8974216368233329
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.5457554647367293,
+          "tail_retention": 0.9021905358132623
+        }
+      ],
+      "seed": 303,
+      "status": "complete"
+    }
+  ],
+  "run_id": "primary_pilot_v2_2026-08-19",
+  "wall_seconds": 3592.6899798642844
+}

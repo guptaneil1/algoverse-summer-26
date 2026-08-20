@@ -8,7 +8,7 @@ No claim in this file is a result unless its status is explicitly `SUPPORTED BY 
 |---|---|---|---|---|
 | C-000 | Fact about this repository | No Human Data Budget experiment has been run or verified in this repository | Repository audit | Verified |
 | C-001 | Literature-grounded motivation | Recursive training on generated data can degrade model fit, diversity, or tail coverage in studied settings, while the outcome depends strongly on the data workflow and source distribution | Audited primary literature | Supported with scope qualifiers |
-| C-002 | Hypothesis | At equal lifetime human-token budget and total optimizer-token budget, joint allocation across time and under-covered modes reduces chain-level regret relative to the strongest schedule-only and selection-only baselines | Powered recursive-chain experiment | **Untested. One attempt, 2026-08-18, did not test it:** the 25-chain grid executed and every chain certified, but realised human spend differed 10.1% across arms, so this contract's own falsification clause -- "not supported if budget equality fails" -- applies. That is a failed precondition, not evidence about the hypothesis. Cause `FAILURE_LOG.md` F-020, fixed; re-run required. Sizing: `docs/decisions/powered_design_sizing_2026-08-19.md` |
+| C-002 | Hypothesis | At equal lifetime human-token budget and total optimizer-token budget, joint allocation across time and under-covered modes reduces chain-level regret relative to the strongest schedule-only and selection-only baselines | Powered recursive-chain experiment | **Tested 2026-08-20 and NOT SUPPORTED.** The corrected 25-chain grid holds on both axes the contract names -- human spread 0.0381%, total optimizer tokens identical across all five arms, against 0.2000% permitted -- so the falsification clause's precondition is met and the contrast is evidence rather than a failed precondition. Paired joint minus strongest eligible non-joint baseline (`selection_only`): **+0.01026, 95% CI [-0.00916, +0.02968]**, +0.45% relative, against a practical equivalence region of +/-0.05073. The interval lies **wholly inside** that region, so the clause "not supported if the interval includes the practically equivalent or harmful region" applies directly. This is equivalence at the preregistered threshold, not absence of evidence: the design is powered to three chains per arm and ran five. **Not evidence that joint is worse** -- the interval covers zero. Confirmatory tail retention agrees: +0.00003, CI [-0.00100, +0.00105]. Four of seven required comparators ran; 5-7 remain unimplemented, so "strongest" means strongest among four and the missing oracle bound leaves the headroom unmeasured. Record: `docs/runs/primary_pilot_v2_2026-08-20_results.md` |
 | C-003 | Hypothesis | The advantage of targeted allocation decreases or reverses when the monitoring reference omits globally important modes | Predeclared monitoring-bias intervention | Untested |
 | C-004 | Provisional novelty claim | The exact joint problem of allocating one fixed lifetime stock of human-origin optimizer tokens across recursive generations and monitored human-distribution modes **under matched non-joint baselines** is distinguishable from the closest audited work | Saturated search, external expert review, and continuing 2026 search | **Internally audited 2026-08-19; external review outstanding.** The contract's stop rule was applied on record against all 23 primary-source entries in `closest_work.csv` and is **not triggered**: no entry jointly allocates a fixed lifetime human-origin budget across recursive generations and monitored modes. Audit: `docs/evidence/c004_novelty_audit_2026-08-19.md`. Still deliberately narrow, still not externally reviewed, and the search has a date horizon that a later submission must refresh |
 | C-005 | Proposed mechanism | Under-covered modes with high projected future regret may have greater marginal value for human anchors | Theory or mechanism intervention plus experiment | Untested |
@@ -92,6 +92,27 @@ This project formulates a result-free experimental question about **resource all
 
 ### Allowed wording now
 
+Updated 2026-08-20, when the contrast was computed under matched budgets and returned a
+null.
+
+> At a fixed lifetime human-token budget and matched total optimizer tokens, on GPT-2 over
+> WikiText-103 across ten generations and five seeds, joint time-and-mode allocation was
+> practically equivalent to the strongest implemented non-joint baseline. Targeted
+> selection accounted for a substantial improvement over unselective spending; scheduling
+> did not detectably change the primary outcome.
+
+Every clause is load-bearing. Dropping the operating point generalises beyond one model and
+one corpus. Dropping "implemented" hides that three of seven predeclared comparators,
+including the oracle upper bound, never ran. Writing "no better than" in place of
+"practically equivalent to" asserts a direction the interval does not support.
+
+**Not permitted:** that joint allocation is worse than selection-only -- the interval
+covers zero; that selection-only sits near a ceiling -- unmeasured, comparator 7 absent;
+that timing never matters -- the confirmatory tail-retention outcome shows a small effect
+whose interval excludes zero, and it is reported.
+
+The previous wording, which stood until the contrast was computed:
+
 > The project will test whether joint allocation improves human-rescue efficiency under a fixed lifetime budget.
 
 ### Required comparison
@@ -110,7 +131,46 @@ At the same total number of human-origin optimizer-consumed tokens and total opt
 
 C-002 is not supported if the powered interval for the joint-versus-strongest-eligible-non-joint contrast includes the frozen practically equivalent or harmful region, if budget equality fails, if leakage occurs, or if the conclusion depends on post-hoc exclusions.
 
-### Status against this contract, 2026-08-19
+### Status against this contract, 2026-08-20
+
+**Superseded the 2026-08-19 entry below, which is retained for the record.**
+
+The comparison has now been made under the conditions this contract requires. Of the seven
+required comparators, four ran (no rescue, fresh random, schedule-only, selection-only);
+comparators 5-7 are not implemented, and the absence of the oracle upper bound (7) is
+deliberate and bounds what any result can claim.
+
+**Budget equality holds.** Realised human spend across spending arms varies by 0.0381%
+against 0.2000% permitted, and realised total optimizer tokens are identical at 16,678,912
+for every chain in every arm. Displacement (`DECISIONS.md` P-011) makes the second hold by
+construction. The falsification clause's preconditions are therefore satisfied and the
+contrast is admissible.
+
+**C-002 is not supported.** Joint minus the strongest eligible non-joint baseline
+(`selection_only`) is +0.01026, 95% CI [-0.00916, +0.02968], +0.45% relative, against a
+practical equivalence region of +/-0.05073. The clause reads "not supported if the powered
+interval ... includes the frozen practically equivalent or harmful region"; this interval
+lies **wholly inside** the equivalent region, reaching at most 0.0297 from zero. The
+confirmatory tail-retention outcome agrees at +0.00003, CI [-0.00100, +0.00105].
+
+**What that does and does not mean.** It is a null at the preregistered threshold, reached
+with a design powered to detect that threshold at three chains per arm, run at five -- so
+it is equivalence rather than insufficient power. It is **not** evidence that joint
+allocation is worse than selection-only: the interval covers zero. And because comparators
+5-7 never ran, it is equivalence between two policies whose distance from the achievable
+ceiling is unmeasured.
+
+**What the run establishes beyond C-002.** Three secondary contrasts, all matched on both
+axes and therefore admissible on the same footing as the primary one: spending a human
+budget at all is worth 4.04% against a control trained on identical data volume; targeting
+under-covered modes is worth a further 9.59%; and scheduling when to spend changes the
+primary outcome by 0.41%, an interval containing zero. `PREREGISTRATION.md` still forbids
+promoting a secondary contrast into the primary analysis, and none is promoted -- the
+primary analysis exists and returned a null. Record:
+`docs/runs/primary_pilot_v2_2026-08-20_results.md`.
+
+### Status against this contract, 2026-08-19 (superseded)
+
 
 The comparison was attempted once. Of the seven required comparators, four ran (no rescue,
 fresh random, schedule-only, selection-only); comparators 5-7 are not implemented, and the

@@ -1,0 +1,42 @@
+{
+  "chains": [
+    {
+      "arm": "no_rescue",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/no_rescue/seed202/stdout_stderr.log",
+      "seed": 202,
+      "status": "failed"
+    },
+    {
+      "arm": "random",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/random/seed101/stdout_stderr.log",
+      "seed": 101,
+      "status": "failed"
+    },
+    {
+      "arm": "random",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/random/seed505/stdout_stderr.log",
+      "seed": 505,
+      "status": "failed"
+    },
+    {
+      "arm": "schedule_only",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/schedule_only/seed404/stdout_stderr.log",
+      "seed": 404,
+      "status": "failed"
+    },
+    {
+      "arm": "selection_only",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/selection_only/seed303/stdout_stderr.log",
+      "seed": 303,
+      "status": "failed"
+    },
+    {
+      "arm": "joint",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/v2/joint/seed202/stdout_stderr.log",
+      "seed": 202,
+      "status": "failed"
+    }
+  ],
+  "run_id": "primary_pilot_v2_2026-08-19",
+  "wall_seconds": 3677.8939726278186
+}

@@ -10,17 +10,23 @@ seed set, outcomes, and interpretation language before execution. The pipeline i
 against a published positive control, reproducing its arm ordering and degradation
 direction across two independent executions.
 
-We then execute the pilot: \PilotChains{} chains over \PilotSeeds{} preregistered seeds and
-\PilotHorizon{} generations. The preregistered fairness constraint requires equal lifetime
-human-origin tokens \emph{and} equal total optimizer tokens; this run satisfies neither,
-with one policy under-spending by \PilotJointShortfallPct\% and realised totals spanning
-\PilotTotalSpreadPct\% across arms. We report the primary contrast as invalid rather than
-repairing or reweighting it, and we decline the secondary comparison that would have read
-more favourably. One comparison survives both constraints and is a null: at this budget and
-horizon, \emph{when} the budget is spent does not detectably change the outcome.
-Between-chain variance proves small enough that the frozen seed set is already powered at
-the preregistered threshold, inverting the assumption that chain count would bind. We make
-no claim about allocation policy. The contribution is the design, an apparatus validated on
-real models, and a record of checks that caught what they were built to catch --- including
-the one that invalidated our own primary result before it was read.
+We execute \PilotChains{} chains over \PilotSeeds{} preregistered seeds and \PilotHorizon{}
+generations under a corpus-assembly rule in which rescued human examples displace synthetic
+records rather than being appended to them, so that the preregistered fairness constraint
+--- equal lifetime human-origin tokens \emph{and} equal total optimizer tokens --- holds by
+construction: human spend varies by \PilotHumanSpreadPct\% across arms and total optimizer
+tokens are identical. Under those matched budgets the preregistered primary contrast is a
+null. Joint time-and-mode allocation does not improve on the strongest non-joint baseline
+(\PilotPrimaryMean{}, $95\%$ CI $[\PilotPrimaryLow, \PilotPrimaryHigh]$), and the interval
+lies entirely inside the frozen practical equivalence region rather than merely spanning
+zero. The secondary contrasts locate why: spending human tokens at all is worth
+\PilotRandNonePct\% against a control trained on identical data volume, targeting
+under-covered modes is worth a further \PilotSelRandPct\%, and \emph{when} within the chain
+the budget is spent changes the primary outcome by \PilotSchedRandPct\% --- an interval
+containing zero. At this operating point the allocation question decomposes: which modes the
+budget targets matters, timing does not, and combining the two is equivalent to targeting
+alone. Between-chain variance is small enough that the frozen seed set exceeds what the
+preregistered threshold requires. Three of seven predeclared comparators, including a
+non-deployable oracle upper bound, were not implemented, so how much headroom remains above
+any of these policies is unknown.
 \end{abstract}

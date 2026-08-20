@@ -3,148 +3,173 @@
 
 \subsection{What was executed}
 
-The pilot grid completed: five policies crossed with the \PilotSeeds{} preregistered
+The corrected grid completed: five policies crossed with the \PilotSeeds{} preregistered
 seeds, \PilotChains{} independently seeded chains, each run to the frozen horizon of
-\PilotHorizon{} generations, in \PilotWallHours{} hours of wall time on four
-accelerators. Every chain completed and none failed.
+\PilotHorizon{} generations, on two accelerators. Every chain completed and none failed.
+Wall time was \PilotWallHoursClean{} hours across the launches in which every chain
+finished, and \PilotWallHoursIncludingFailed{} hours counting two earlier attempts that
+infrastructure defects ended; both figures are read from the shard summaries rather than
+from elapsed clock time.
 
-Certification is mixed, and the split is informative. Fifteen chains classify
-\texttt{valid\_with\_limitation}; ten classify \texttt{invalid} on budget grounds --- the
-five joint chains on both budget axes, and the five selection-only chains on total
-optimizer tokens alone. The limitations recorded on the remaining fifteen are that the
-realised token ledger was compared against the frozen budget rather than recomputed from
-batch records, and that near-duplicate coverage was not rescanned at validation time;
-neither is blocking. The budget failures are, and the subsections below treat them as
-such.
+All \PilotChains{} chains classify \texttt{valid\_with\_limitation} and none classifies
+\texttt{invalid}. The recorded limitations are that the realised token ledger was compared
+against the frozen budget rather than recomputed from batch records, and that
+near-duplicate coverage was not rescanned at validation time. Both are standing properties
+of the apparatus rather than of this run, and neither is blocking.
 
-\subsection{The primary comparison is not established}
+\subsection{Both fairness axes hold}
 
-The preregistered primary contrast is the paired chain-level difference between the joint
-policy and the strongest eligible non-joint baseline. \textbf{This run does not support
-it}, and the reason is a violation of the fairness constraint rather than an absence of
-signal.
+The fairness constraint has two axes: matched lifetime human-origin tokens \emph{and}
+matched total optimizer tokens. A previous execution of this design failed both, and no
+comparison from it was reportable. Under the corpus-assembly rule adopted for this run, in
+which rescued human examples displace synthetic records rather than being appended to
+them, both axes hold by construction.
 
-Realised lifetime human-origin spend was not matched across arms. Four of the five
-policies consumed between \PilotMatchedLow{} and \PilotMatchedHigh{} optimizer tokens
-against a \PilotCeiling{} ceiling, a spread of \PilotMatchedSpreadPct\% and within one
-indivisible candidate. The joint policy consumed \PilotJointSpend{} at every seed --- a
-shortfall of \PilotJointShortfall{} tokens, or \PilotJointShortfallPct\%, where the
-largest single candidate in the frozen pool costs a small fraction of that.
-Indivisibility does not explain a gap of this size.
+Realised lifetime human-origin spend across the spending arms ranges from
+\PilotMatchedLow{} to \PilotMatchedHigh{} optimizer tokens against a \PilotCeiling{}
+ceiling, a spread of \PilotHumanSpreadPct\% against \PilotSpreadPermittedPct\% permitted.
+Realised total optimizer tokens are identical across all five arms, a spread of
+\PilotTotalSpreadExactPct\%. The control arm consumed exactly zero human tokens by
+construction. The comparison is therefore admissible, and what follows is a result rather
+than a precondition failure.
 
-The cause is an implementation defect in terminal budget reconciliation, found after the
-run and recorded in the project's failure log. The reconciliation raised the joint
-policy's per-generation spending cap at the final spending generation but left its
-feasibility floor near zero, so its urgency rule rather than the reconciliation determined
-the spend; at low monitored urgency that rule declines to spend at all. The other three
-spending policies are governed by their allowance alone and were unaffected.
+That the totals are identical rather than merely close is a property of the assembly rule,
+not a coincidence: displacing one synthetic record per rescued human example holds each
+generation's training volume fixed regardless of what a policy buys. It also removes a
+confound the additive rule carried, in which the control trained on strictly less data than
+every spending arm, so that ``spending helps'' could not be separated from ``more data
+helps''.
 
-A comparison in which one arm received a tenth less human data cannot separate the effect
-of allocation strategy from the effect of data quantity. Following the preregistered
-disposition for a violated fairness constraint, the contrast is reported as invalid rather
-than repaired, reweighted, or reported with a caveat. \textbf{We make no claim about the
-joint policy relative to any baseline.} The defect is fixed and pinned by regression test;
-establishing the contrast requires re-running the grid, which was outside the compute
-budget available for this work.
+\subsection{The primary comparison: a null}
+
+The preregistered primary contrast is the paired chain-level difference in held-out human
+NLL-regret AUC between the joint policy and the strongest eligible non-joint baseline, with
+lower values favouring joint. The strongest eligible non-joint baseline in this run is
+\PilotPrimaryBaseline{}, identified by lowest mean regret among the four non-joint arms;
+the selection rule is preregistered, the arm it selects is read from the outcome.
+
+At matched budgets across \PilotChains{} chains, we did not detect a difference between
+joint allocation and the strongest non-joint baseline: paired mean difference
+\PilotPrimaryMean{}, $95\%$ CI $[\PilotPrimaryLow, \PilotPrimaryHigh]$, or
+\PilotPrimaryPct\% relative. The frozen practical equivalence region is
+$\pm\PilotThresholdUnits{}$ in outcome units, and the interval lies entirely inside it,
+reaching at most \PilotPrimaryReach{} from zero.
+
+\textbf{We report this as a null result, not as a trend.} It is moreover the stronger form
+of a null: the interval does not merely include zero, it excludes every difference the
+preregistration calls practically meaningful. The design is powered to detect effects at
+the preregistered threshold with roughly three chains per arm, and it ran with
+\PilotSeeds{}. The claim that joint allocation improves on the strongest non-joint baseline
+is \textbf{not supported}. Joint allocation is not shown to be worse either; the finding is
+practical equivalence to selection-only.
+
+The verdict does not depend on how the equivalence region's denominator is read. Taken
+against the strongest baseline rather than against fresh random it is
+$\pm\PilotThresholdUnitsAlt{}$, and the interval lies inside that too. Both figures are
+emitted by the analysis pipeline so the choice can be checked rather than trusted.
 
 \begin{table}[h]
 \centering
-\caption{Per-arm descriptive results from the executed pilot, generated by the analysis
-pipeline from immutable chain artifacts. AUC regret is the area under the generation-wise
-held-out human NLL-regret curve, measured against each chain's own generation-0 value. SD
-is between-chain standard deviation. The joint row is descriptive only: its realised spend
-violates the fairness constraint.}
-\label{tab:pilot-descriptives}
+\caption{Per-arm results from the corrected grid, generated by the analysis pipeline from
+immutable chain artifacts. AUC regret is the area under the generation-wise held-out human
+NLL-regret curve, measured against each chain's own generation-0 value; lower is better. SD
+is between-chain standard deviation. Tail retention is the confirmatory outcome at the
+final generation; higher is better. Every arm is matched on both budget axes, so every row
+is comparable to every other.}
+\label{tab:pilot-results}
 \input{tables/primary_results}
 \end{table}
 
-\subsection{Between-chain variance}
+\subsection{What does move the outcome}
 
-The pilot's stated purpose was to estimate between-chain variance so that a powered study
-can be sized; the project's compute gate blocks that study until the estimate exists. This
-quantity is measured \emph{within} arms and is therefore unaffected by the cross-arm
-budget gaps.
-
-Between-chain variation is substantially smaller than the design assumed. Coefficients of
-variation on the primary outcome range from \PilotCVLow\% to \PilotCVHigh\% across the
-five arms, against a preregistered practical effect threshold of \PilotThresholdPct\%. The
-paired difference between the joint policy and the best-performing baseline has a standard
-deviation of \PilotPairedSD{} in outcome units, where the practical threshold corresponds
-to \PilotThresholdUnits{} in those units --- several times larger than the noise it must
-be distinguished from.
-
-The consequence is that the frozen seed set already provides roughly $80\%$ power to
-detect an effect at the preregistered threshold. Chain count is therefore not the binding
-constraint on a powered experiment, which inverts the planning assumption this pilot was
-commissioned to test. We report this as the pilot's substantive deliverable.
-
-One caveat bounds it: the joint policy's own variance was measured on chains that
-underspent, so whether a correctly spending joint policy exhibits comparable variance is
-not established here. The four other arms spent as designed and their variance estimates
-carry no such qualification.
-
-\subsection{Secondary comparisons, and a second constraint}
-
-The fairness constraint has two axes: matched lifetime human-origin tokens \emph{and}
-matched total optimizer tokens. Only the first was asserted before or during the run.
-Excluding the joint policy, the remaining chains satisfy that first axis at a
-\PilotMatchedSpreadPct\% spread --- but realised \emph{totals} span \PilotTotalSpreadPct\% across arms,
-above the practical threshold. Applying both axes pairwise leaves exactly one matched
-contrast.
+Because all five arms are matched on both axes, the secondary contrasts are admissible on
+the same footing as the primary one. Three of them are informative, and together they
+locate where the primary null comes from.
 
 \begin{itemize}
-\item \textbf{Schedule-only against fresh random} is matched on both axes (human
-      \PilotSchedRandHumanPct\%, total \PilotSchedRandTotalPct\%). It does \emph{not} differ
-      detectably:
+\item \textbf{Spending human tokens at all helps.} Fresh random against the no-rescue
+      control improves the outcome by \PilotRandNonePct\%, $95\%$ CI
+      $[\PilotRandNoneLow, \PilotRandNoneHigh]$, clearing the practical threshold. Under
+      the displacing assembly rule this arm trains on exactly as much data as the control,
+      so the improvement is attributable to the human origin of part of that data rather
+      than to its quantity.
+
+\item \textbf{Which examples are bought matters, and matters more.} Selection-only against
+      fresh random improves the outcome by \PilotSelRandPct\%, $95\%$ CI
+      $[\PilotSelRandLow, \PilotSelRandHigh]$, with identical total training volume
+      (\PilotSelRandTotalPct\% difference). Targeting under-covered modes is worth roughly
+      twice again what unselective spending is worth.
+
+\item \textbf{When the budget is spent does not.} Schedule-only against fresh random gives
       \PilotSchedRandPct\%, $95\%$ CI $[\PilotSchedRandLow, \PilotSchedRandHigh]$, an
-      interval containing zero and lying inside the practical equivalence region.
-      \textbf{At this budget and horizon, when the budget is spent does not detectably
-      change the outcome.} This is the one comparison the run supports, and it is a null.
-
-\item \textbf{Selection-only against fresh random} shows a \PilotSelRandPct\% advantage,
-      $95\%$ CI $[\PilotSelRandLow, \PilotSelRandHigh]$, but arrives with
-      \PilotSelRandTotalPct\% more
-      total training tokens in the same direction as the effect. At roughly five times the
-      confound it is suggestive; it is not budget-matched, and we do not report it as a
-      result. Separating selection from training volume requires a run in which totals are
-      matched by construction.
-
-\item \textbf{Spending against not spending} improves the outcome by
-      \PilotRandNonePct\%, $95\%$ CI $[\PilotRandNoneLow, \PilotRandNoneHigh]$, measured
-      against a control that by construction spends no human tokens and is therefore not
-      budget-matched to anything.
+      interval containing zero and lying inside the practical equivalence region, at
+      matched human spend (\PilotSchedRandHumanPct\%) and matched totals
+      (\PilotSchedRandTotalPct\%). This replicates the one clean contrast available from
+      the earlier execution, now with both axes holding rather than one.
 \end{itemize}
 
-That the total-token axis went unasserted is a finding about the apparatus rather than
-about allocation, and we report it as one: a guard that checks one of two named conditions
-reports success for the one it checks. It is recorded in the project's failure log, and
-the check now asserts both axes.
+The primary null follows from these. Selection accounts for most of the achievable
+improvement, scheduling accounts for none that we can detect on the primary outcome, and
+the joint policy that combines them lands where selection alone lands. At this operating
+point the allocation question decomposes: \emph{which} under-covered modes a fixed human
+budget is spent on changes the outcome, and \emph{when} within the chain it is spent does
+not.
 
-\paragraph{These are secondary and cannot substitute for the primary analysis.} The
-preregistration states that there is one central budget, horizon, primary outcome and
-primary contrast, and that other comparisons are secondary or exploratory and cannot
-replace a failed primary analysis. The primary contrast requires the joint policy and is
-not established. Promoting any comparison above into a confirmatory finding would be
-exactly the substitution the preregistration was written to prevent, and we do not make
-it.
+\subsection{The confirmatory outcome}
 
-Four further limits apply. The comparisons hold at one budget, one horizon, one corpus and
-one model. The seeds were frozen for a different contrast. Selection-only is measured
-against random selection rather than against a strong alternative selection rule. And no
-oracle upper bound was implemented, so the headroom remaining above any of these policies
-is unknown.
+The preregistration names a frozen tail-retention metric as confirmatory. On the primary
+contrast it agrees, and more tightly: joint minus the strongest baseline is
+\PilotTailPrimaryMean{}, $95\%$ CI $[\PilotTailPrimaryLow, \PilotTailPrimaryHigh]$.
+
+On one secondary contrast it disagrees. Schedule-only against fresh random is
+\PilotTailSchedRandMean{}, $95\%$ CI $[\PilotTailSchedRandLow, \PilotTailSchedRandHigh]$
+--- an interval excluding zero, where the primary outcome shows none. The effect is
+\PilotTailSchedRandPct\% of the fresh-random level, below the relative bar the
+preregistration fixes for the primary outcome, though that bar was set for that outcome and
+its transfer to this one is not something the preregistration settles. We do not select the
+more favourable metric: the primary conclusion follows the primary outcome, and the honest
+summary is that timing shows no detectable effect on chain-level regret and a small,
+statistically distinguishable, practically minor effect on tail retention. It is reported
+because it was measured.
+
+\subsection{Between-chain variance}
+
+Coefficients of variation on the primary outcome range from \PilotCVLow\% to \PilotCVHigh\%
+across the five arms, against a preregistered practical effect threshold of
+\PilotThresholdPct\%. The paired difference between the joint policy and the strongest
+baseline has a standard deviation of \PilotPairedSD{} in outcome units, where the practical
+threshold corresponds to \PilotThresholdUnits{} in those units.
+
+This reproduces, on an independent grid run under a changed corpus-assembly rule, the
+variance estimate obtained from the earlier execution. Chain count is not the binding
+constraint on a powered study at this threshold: the frozen seed set exceeds what the
+preregistered effect size requires. Unlike the earlier estimate, the joint policy's
+variance here was measured on chains that spent their budget as designed, so the
+qualification that previously attached to that arm no longer applies.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{../results/figures/pilot_nll_by_generation}
 \caption{Held-out human NLL against generation for each allocation policy, mean over the
 frozen seed set with a min--max band. Every policy that spends its budget ends below the
-no-rescue control. Two trajectories are shown for completeness and are not
-budget-matched: joint consumed \PilotJointShortfallPct\% fewer human tokens than the other
-spending arms, and selection-only consumed \PilotSelRandTotalPct\% more total
-optimizer tokens.}
+no-rescue control. All five arms consumed identical total optimizer tokens and the four
+spending arms consumed matched human budgets, so the separation between trajectories is not
+attributable to differences in training volume.}
 \label{fig:pilot-nll}
 \end{figure}
+
+\subsection{Scope of these results}
+
+Four limits bound every comparison above. They hold at one budget, one horizon, one corpus
+and one model, and nothing here speaks to larger models, longer chains, or different budget
+ratios. Three of the seven comparators the claim contract names were not implemented ---
+accumulation or fixed-fraction mixing, detector-based or importance-resampling selection,
+and oracle mode information as a non-deployable upper bound --- so ``strongest eligible
+baseline'' means strongest among those that exist. The absent oracle in particular means
+the headroom remaining above any of these policies is unknown, and an equivalence between
+two policies says nothing about how far either is from what is achievable. Finally, the
+practical equivalence threshold on which the primary null rests is a project decision that
+has been checked against measured anchors but never externally reviewed.
 
 \subsection{Positive control}
 
@@ -160,7 +185,5 @@ difference adopted as an internal engineering tolerance. It is not proof of exac
 replication, and no downstream claim rests on it.
 
 This establishes that the pipeline reproduces a known result on real assets. Together with
-the executed pilot it also establishes that the apparatus runs the full recursive
-allocation loop end to end on real models and produces certifiable artifacts. Neither
-establishes anything about allocation policy, which is the question this paper poses and
-does not answer.
+the executed grid it establishes that the apparatus runs the full recursive allocation loop
+end to end on real models under matched budgets and produces certifiable artifacts.

@@ -1,0 +1,79 @@
+{
+  "chains": [
+    {
+      "arm": "no_rescue",
+      "consumed_human_tokens": 0,
+      "consumed_total_tokens": 16678912,
+      "seed": 303,
+      "status": "complete"
+    },
+    {
+      "arm": "schedule_only",
+      "consumed_human_tokens": 749890,
+      "consumed_total_tokens": 16678912,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.1801565271067758,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 3.295538270356837,
+          "tail_retention": 0.9636946877946194
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.3691064524790546,
+          "tail_retention": 0.9418455186306729
+        },
+        {
+          "generation": 3,
+          "human_nll": 3.4281744372821366,
+          "tail_retention": 0.9254718719333387
+        },
+        {
+          "generation": 4,
+          "human_nll": 3.4735332172988524,
+          "tail_retention": 0.9131769205697285
+        },
+        {
+          "generation": 5,
+          "human_nll": 3.514448028783431,
+          "tail_retention": 0.9027814520336828
+        },
+        {
+          "generation": 6,
+          "human_nll": 3.5426453154303243,
+          "tail_retention": 0.896218653050096
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.568076415537855,
+          "tail_retention": 0.8896172194248922
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.5871847591910266,
+          "tail_retention": 0.8850176469915483
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.5890879731200056,
+          "tail_retention": 0.8861888875444311
+        }
+      ],
+      "seed": 303,
+      "status": "complete"
+    },
+    {
+      "arm": "joint",
+      "consumed_human_tokens": 749827,
+      "consumed_total_tokens": 16678912,
+      "seed": 303,
+      "status": "complete"
+    }
+  ],
+  "run_id": "primary_pilot_v2_2026-08-19",
+  "wall_seconds": 2741.5844049826264
+}

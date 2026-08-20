@@ -53,6 +53,208 @@
   },
   "baseline_note": "lower mean AUC regret of the two eligible arms, read from primary outcomes because this run carries no validation-only screening chains",
   "ceiling": 750000,
+  "chains": [
+    {
+      "arm": "no_rescue",
+      "auc": 2.6531640636944234,
+      "human": 0,
+      "seed": 101,
+      "tail_final": 0.8680725258770008,
+      "total": 16678912
+    },
+    {
+      "arm": "no_rescue",
+      "auc": 2.6198527993676883,
+      "human": 0,
+      "seed": 202,
+      "tail_final": 0.8677677506770263,
+      "total": 16678912
+    },
+    {
+      "arm": "no_rescue",
+      "auc": 2.6541200123965476,
+      "human": 0,
+      "seed": 303,
+      "tail_final": 0.8672097471359544,
+      "total": 16678912
+    },
+    {
+      "arm": "no_rescue",
+      "auc": 2.641156963390693,
+      "human": 0,
+      "seed": 404,
+      "tail_final": 0.8684376882353998,
+      "total": 16678912
+    },
+    {
+      "arm": "no_rescue",
+      "auc": 2.6473852128976336,
+      "human": 0,
+      "seed": 505,
+      "tail_final": 0.866546515596554,
+      "total": 16678912
+    },
+    {
+      "arm": "random",
+      "auc": 2.545414533820404,
+      "human": 749757,
+      "seed": 101,
+      "tail_final": 0.8791423587066176,
+      "total": 16678912
+    },
+    {
+      "arm": "random",
+      "auc": 2.5269634010429405,
+      "human": 749915,
+      "seed": 202,
+      "tail_final": 0.8784137402357118,
+      "total": 16678912
+    },
+    {
+      "arm": "random",
+      "auc": 2.5290226666972444,
+      "human": 749873,
+      "seed": 303,
+      "tail_final": 0.8782639662825611,
+      "total": 16678912
+    },
+    {
+      "arm": "random",
+      "auc": 2.5402442588731513,
+      "human": 749830,
+      "seed": 404,
+      "tail_final": 0.8744725087446877,
+      "total": 16678912
+    },
+    {
+      "arm": "random",
+      "auc": 2.5405512740700686,
+      "human": 749970,
+      "seed": 505,
+      "tail_final": 0.8743316384172743,
+      "total": 16678912
+    },
+    {
+      "arm": "schedule_only",
+      "auc": 2.5128178824806087,
+      "human": 749913,
+      "seed": 101,
+      "tail_final": 0.8856204042410315,
+      "total": 16678912
+    },
+    {
+      "arm": "schedule_only",
+      "auc": 2.507918549081662,
+      "human": 749709,
+      "seed": 202,
+      "tail_final": 0.886021916781203,
+      "total": 16678912
+    },
+    {
+      "arm": "schedule_only",
+      "auc": 2.541920402511926,
+      "human": 749890,
+      "seed": 303,
+      "tail_final": 0.8861888875444311,
+      "total": 16678912
+    },
+    {
+      "arm": "schedule_only",
+      "auc": 2.516311008480742,
+      "human": 749995,
+      "seed": 404,
+      "tail_final": 0.8846956498964883,
+      "total": 16678912
+    },
+    {
+      "arm": "schedule_only",
+      "auc": 2.551608985059805,
+      "human": 749882,
+      "seed": 505,
+      "tail_final": 0.8803762869146738,
+      "total": 16678912
+    },
+    {
+      "arm": "selection_only",
+      "auc": 2.299898408117126,
+      "human": 749827,
+      "seed": 101,
+      "tail_final": 0.9029244146038684,
+      "total": 16678912
+    },
+    {
+      "arm": "selection_only",
+      "auc": 2.2508767204508615,
+      "human": 749827,
+      "seed": 202,
+      "tail_final": 0.9023908900457905,
+      "total": 16678912
+    },
+    {
+      "arm": "selection_only",
+      "auc": 2.2981683620345867,
+      "human": 749827,
+      "seed": 303,
+      "tail_final": 0.9021905358132623,
+      "total": 16678912
+    },
+    {
+      "arm": "selection_only",
+      "auc": 2.3179255018340017,
+      "human": 749827,
+      "seed": 404,
+      "tail_final": 0.9013003155447192,
+      "total": 16678912
+    },
+    {
+      "arm": "selection_only",
+      "auc": 2.298838190027724,
+      "human": 749827,
+      "seed": 505,
+      "tail_final": 0.9030685990235245,
+      "total": 16678912
+    },
+    {
+      "arm": "joint",
+      "auc": 2.3267899266272227,
+      "human": 749827,
+      "seed": 101,
+      "tail_final": 0.9027193982941843,
+      "total": 16678912
+    },
+    {
+      "arm": "joint",
+      "auc": 2.273278555773631,
+      "human": 749827,
+      "seed": 202,
+      "tail_final": 0.9038308553870577,
+      "total": 16678912
+    },
+    {
+      "arm": "joint",
+      "auc": 2.2879847298240774,
+      "human": 749827,
+      "seed": 303,
+      "tail_final": 0.9021668957990113,
+      "total": 16678912
+    },
+    {
+      "arm": "joint",
+      "auc": 2.31687633616428,
+      "human": 749827,
+      "seed": 404,
+      "tail_final": 0.9009156295227789,
+      "total": 16678912
+    },
+    {
+      "arm": "joint",
+      "auc": 2.3120889821708874,
+      "human": 749827,
+      "seed": 505,
+      "tail_final": 0.9023871612924835,
+      "total": 16678912
+    }
+  ],
   "comparable_arms": [
     "joint",
     "random",

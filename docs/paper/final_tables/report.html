@@ -1,4 +1,161 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 740" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" role="img" aria-label="Recursive-training trajectories by allocation policy">
+<title>Where the Human Tokens Go</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;500&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #fbfbf9;
+  --panel: #f3f4f0;
+  --rule: #e2e4de;
+  --ink: #101413;
+  --ink-2: #4b5450;
+  --ink-3: #77817c;
+  --accent: #0f7a55;
+  --accent-soft: rgba(15, 122, 85, 0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #14171a;
+    --panel: #1c2023;
+    --rule: #2b3136;
+    --ink: #f1f4f2;
+    --ink-2: #b9c2bd;
+    --ink-3: #8b948f;
+    --accent: #4fc496;
+    --accent-soft: rgba(79, 196, 150, 0.14);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #14171a;
+  --panel: #1c2023;
+  --rule: #2b3136;
+  --ink: #f1f4f2;
+  --ink-2: #b9c2bd;
+  --ink-3: #8b948f;
+  --accent: #4fc496;
+  --accent-soft: rgba(79, 196, 150, 0.14);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 56px 28px 96px; }
+header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3);
+}
+h1 {
+  font-family: Newsreader, ui-serif, Georgia, serif;
+  font-weight: 500; font-size: clamp(30px, 4vw, 46px); line-height: 1.1; margin: 0;
+  text-wrap: balance;
+}
+h2 {
+  font-family: Newsreader, ui-serif, Georgia, serif;
+  font-weight: 500; font-size: 27px; margin: 56px 0 6px; text-wrap: balance;
+}
+p { max-width: 68ch; color: var(--ink-2); margin: 10px 0; }
+.lede { font-size: 19px; color: var(--ink); }
+.verdict {
+  border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+  background: var(--accent-soft); border-radius: 3px;
+  padding: 20px 24px; margin: 28px 0 8px; display: grid; gap: 6px;
+}
+.verdict strong { font-size: 19px; }
+.verdict .num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 15px;
+  color: var(--ink-2);
+}
+figure { margin: 22px 0 0; }
+.figbox {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 14px; overflow-x: auto;
+}
+.figbox svg { display: block; width: 100%; height: auto; min-width: 720px; }
+figcaption { color: var(--ink-3); font-size: 14px; margin-top: 10px; max-width: 80ch; }
+.tablebox { overflow-x: auto; margin-top: 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 640px; }
+caption { text-align: left; color: var(--ink-3); font-size: 14px; padding-bottom: 10px; }
+th, td { padding: 9px 12px; border-bottom: 1px solid var(--rule); text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 500; border-bottom: 1px solid var(--ink-3);
+}
+td.num, th.num { font-variant-numeric: tabular-nums;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 14px; }
+tr.primary td { background: var(--accent-soft); font-weight: 600; color: var(--ink); }
+.tag {
+  display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; border: 1px solid var(--rule);
+  color: var(--ink-2);
+}
+.tag.ok { border-color: var(--accent); color: var(--accent); }
+footer {
+  margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--rule);
+  color: var(--ink-3); font-size: 14px;
+}
+code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.92em; }
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">primary_pilot_v2_2026-08-19 · 25 chains · generated, not typed</div>
+  <h1>Which examples you buy matters. When you buy them does not.</h1>
+  <p class="lede">Under a fixed lifetime budget of human-origin optimizer tokens, five
+  allocation policies were run to ten generations across five seeds each, with both
+  budget axes matched by construction.</p>
+</header>
+
+<div class="verdict">
+  <strong>The preregistered primary contrast is practically equivalent.</strong>
+  <span class="num">Joint − Selection = +0.0103, 95% CI [-0.0092, +0.0297], +0.45% relative, against an equivalence region of ±0.0507</span>
+  <span>The interval lies wholly inside the equivalence region, so this is the strong
+  form of the negative: adding timing to mode selection buys nothing measurable here,
+  and the data are precise enough to say so.</span>
+</div>
+
+<h2>Fair comparison first</h2>
+<p>Every contrast below is admissible only because realised spend matched on both axes
+that <code>PROTOCOL.md</code> §4 names. Human spend lands within
+26,902 optimizer tokens of the ceiling — one indivisible
+rescue candidate — and total optimizer tokens are identical across all five arms, which
+P-011's displacement rule enforces by construction.</p>
+<div class="tablebox"><table>
+<caption>Table 1 — Realised budget, in optimizer tokens actually consumed.
+Permitted spread 0.20% on each axis;
+<span class="tag ok">both axes hold</span></caption>
+<thead><tr><th>Policy</th><th class="num">Chains</th><th class="num">Human tokens</th>
+<th class="num">% of ceiling</th><th class="num">Total tokens</th></tr></thead>
+<tbody><tr><td>No rescue (control)</td><td class="num">5</td><td class="num">0</td><td class="num">0.00</td><td class="num">16,678,912</td></tr><tr><td>Fresh random</td><td class="num">5</td><td class="num">749,869</td><td class="num">99.98</td><td class="num">16,678,912</td></tr><tr><td>Schedule-only</td><td class="num">5</td><td class="num">749,878</td><td class="num">99.98</td><td class="num">16,678,912</td></tr><tr><td>Selection-only</td><td class="num">5</td><td class="num">749,827</td><td class="num">99.98</td><td class="num">16,678,912</td></tr><tr><td>Joint time-and-mode</td><td class="num">5</td><td class="num">749,827</td><td class="num">99.98</td><td class="num">16,678,912</td></tr></tbody></table></div>
+
+<h2>What each policy achieved</h2>
+<div class="tablebox"><table>
+<caption>Table 2 — NLL-regret AUC (nats × generations, lower better) and end-of-horizon
+tail retention (ratio, higher better), mean over five seeds with between-chain
+SD.</caption>
+<thead><tr><th>Policy</th><th class="num">Chains</th><th class="num">AUC ↓</th>
+<th class="num">SD</th><th class="num">CV %</th><th class="num">Tail ↑</th>
+<th class="num">SD</th></tr></thead>
+<tbody><tr><td>No rescue (control)</td><td class="num">5</td><td class="num">2.6431</td><td class="num">0.0140</td><td class="num">0.53</td><td class="num">0.8676</td><td class="num">0.0007</td></tr><tr><td>Fresh random</td><td class="num">5</td><td class="num">2.5364</td><td class="num">0.0080</td><td class="num">0.32</td><td class="num">0.8769</td><td class="num">0.0023</td></tr><tr><td>Schedule-only</td><td class="num">5</td><td class="num">2.5261</td><td class="num">0.0194</td><td class="num">0.77</td><td class="num">0.8846</td><td class="num">0.0024</td></tr><tr><td>Selection-only</td><td class="num">5</td><td class="num">2.2931</td><td class="num">0.0250</td><td class="num">1.09</td><td class="num">0.9024</td><td class="num">0.0007</td></tr><tr><td>Joint time-and-mode</td><td class="num">5</td><td class="num">2.3034</td><td class="num">0.0221</td><td class="num">0.96</td><td class="num">0.9024</td><td class="num">0.0010</td></tr></tbody></table></div>
+
+<h2>The comparisons</h2>
+<div class="tablebox"><table>
+<caption>Table 3 — Paired-by-seed differences with 95% intervals. Verdicts are the four
+preregistered labels, read against ±0.0507 AUC units.</caption>
+<thead><tr><th>Contrast</th><th class="num">Δ AUC ↓</th><th class="num">95% CI</th>
+<th class="num">Relative %</th><th class="num">Verdict</th></tr></thead>
+<tbody><tr class="primary"><td>Joint − Selection (primary)</td><td class="num">+0.0103</td><td class="num">[-0.0092, +0.0297]</td><td class="num">+0.45</td><td class="num">negligible</td></tr><tr><td>Joint − Schedule</td><td class="num">-0.2227</td><td class="num">[-0.2583, -0.1871]</td><td class="num">-8.82</td><td class="num">beneficial</td></tr><tr><td>Schedule − Random</td><td class="num">-0.0103</td><td class="num">[-0.0363, +0.0157]</td><td class="num">-0.41</td><td class="num">negligible</td></tr><tr><td>Selection − Random</td><td class="num">-0.2433</td><td class="num">[-0.2687, -0.2179]</td><td class="num">-9.59</td><td class="num">beneficial</td></tr><tr><td>Random − Control</td><td class="num">-0.1067</td><td class="num">[-0.1214, -0.0920]</td><td class="num">-4.04</td><td class="num">beneficial</td></tr></tbody></table></div>
+
+<figure><div class="figbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 740" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" role="img" aria-label="Recursive-training trajectories by allocation policy">
 <rect width="1060" height="740" fill="#fcfcfb"/>
 <line x1="62.0" y1="30.0" x2="86.0" y2="30.0" stroke="#52514e" stroke-width="2.5" stroke-dasharray="7 4" stroke-linecap="round"/>
 <text x="94.0" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">No rescue (control) — reference</text>
@@ -177,3 +334,68 @@
 <text x="62.0" y="706.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Panels a–c: mean over the five frozen seeds, with a ±1 SD band.</text>
 <text x="62.0" y="722.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Between-chain SD is under 1.1% of the mean, so those bands sit inside the stroke at this scale. Panel d plots all 25 chains.</text>
 </svg>
+</div><figcaption><strong>Figure 1.</strong> Trajectories over the ten-generation horizon. Panel b is the primary outcome's integrand; panel d is every chain.</figcaption></figure><figure><div class="figbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 486" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" role="img" aria-label="Paired contrasts against the practical equivalence region">
+<rect width="1140" height="486" fill="#fcfcfb"/>
+<text x="44.0" y="40.0" text-anchor="start" fill="#0b0b0b" font-size="14" font-weight="600">Paired difference in NLL-regret AUC, with 95% intervals</text>
+<text x="44.0" y="62.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Each row is one policy minus another, paired by seed over five chains. Negative favours the first policy.</text>
+<text x="44.0" y="80.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">The shaded band is the preregistered practical-equivalence region, ±0.0507 AUC units. An interval lying wholly inside it means the two policies are equivalent at this operating point.</text>
+<rect x="756.5" y="124.0" width="92.9" height="244.0" fill="#1baf7a" fill-opacity="0.12" stroke="#1baf7a" stroke-opacity="0.35"/>
+<text x="803.0" y="114.0" text-anchor="middle" fill="#0f7a55" font-size="11" font-weight="600">practical equivalence</text>
+<line x1="803.0" y1="124.0" x2="803.0" y2="368.0" stroke="#52514e" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="44.0" y="104.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="600">Contrast</text>
+<text x="470.0" y="104.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="600">Difference  [95% interval]</text>
+<text x="44.0" y="154.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="700">Joint − Selection (primary)</text>
+<text x="470.0" y="154.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">+0.0103  [-0.0092, +0.0297]</text>
+<line x1="794.6" y1="150.0" x2="830.2" y2="150.0" stroke="#eda100" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="794.6" y1="144.0" x2="794.6" y2="156.0" stroke="#eda100" stroke-width="2"/>
+<line x1="830.2" y1="144.0" x2="830.2" y2="156.0" stroke="#eda100" stroke-width="2"/>
+<circle cx="812.4" cy="150.0" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>Joint − Selection: +0.0103</title></circle>
+<text x="44.0" y="202.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="normal">Joint − Schedule</text>
+<text x="470.0" y="202.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">-0.2227  [-0.2583, -0.1871]</text>
+<line x1="566.5" y1="198.0" x2="631.6" y2="198.0" stroke="#eda100" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="566.5" y1="192.0" x2="566.5" y2="204.0" stroke="#eda100" stroke-width="2"/>
+<line x1="631.6" y1="192.0" x2="631.6" y2="204.0" stroke="#eda100" stroke-width="2"/>
+<circle cx="599.0" cy="198.0" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>Joint − Schedule: -0.2227</title></circle>
+<text x="44.0" y="250.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="normal">Schedule − Random</text>
+<text x="470.0" y="250.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">-0.0103  [-0.0363, +0.0157]</text>
+<line x1="769.7" y1="246.0" x2="817.4" y2="246.0" stroke="#eb6834" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="769.7" y1="240.0" x2="769.7" y2="252.0" stroke="#eb6834" stroke-width="2"/>
+<line x1="817.4" y1="240.0" x2="817.4" y2="252.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="793.5" cy="246.0" r="5.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>Schedule − Random: -0.0103</title></circle>
+<text x="44.0" y="298.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="normal">Selection − Random</text>
+<text x="470.0" y="298.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">-0.2433  [-0.2687, -0.2179]</text>
+<line x1="556.9" y1="294.0" x2="603.5" y2="294.0" stroke="#1baf7a" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="556.9" y1="288.0" x2="556.9" y2="300.0" stroke="#1baf7a" stroke-width="2"/>
+<line x1="603.5" y1="288.0" x2="603.5" y2="300.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="580.2" cy="294.0" r="5.5" fill="#1baf7a" stroke="#fcfcfb" stroke-width="2"><title>Selection − Random: -0.2433</title></circle>
+<text x="44.0" y="346.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="normal">Random − Control</text>
+<text x="470.0" y="346.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">-0.1067  [-0.1214, -0.0920]</text>
+<line x1="691.8" y1="342.0" x2="718.8" y2="342.0" stroke="#2a78d6" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="691.8" y1="336.0" x2="691.8" y2="348.0" stroke="#2a78d6" stroke-width="2"/>
+<line x1="718.8" y1="336.0" x2="718.8" y2="348.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="705.3" cy="342.0" r="5.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Random − Control: -0.1067</title></circle>
+<line x1="520.0" y1="390.0" x2="1086.0" y2="390.0" stroke="#e5e4e0"/>
+<line x1="528.3" y1="390.0" x2="528.3" y2="395.0" stroke="#e5e4e0"/>
+<text x="528.3" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">-0.30</text>
+<line x1="619.8" y1="390.0" x2="619.8" y2="395.0" stroke="#e5e4e0"/>
+<text x="619.8" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">-0.20</text>
+<line x1="711.4" y1="390.0" x2="711.4" y2="395.0" stroke="#e5e4e0"/>
+<text x="711.4" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">-0.10</text>
+<line x1="803.0" y1="390.0" x2="803.0" y2="395.0" stroke="#e5e4e0"/>
+<text x="803.0" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">0.00</text>
+<line x1="894.6" y1="390.0" x2="894.6" y2="395.0" stroke="#e5e4e0"/>
+<text x="894.6" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">+0.10</text>
+<line x1="986.2" y1="390.0" x2="986.2" y2="395.0" stroke="#e5e4e0"/>
+<text x="986.2" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">+0.20</text>
+<line x1="1077.7" y1="390.0" x2="1077.7" y2="395.0" stroke="#e5e4e0"/>
+<text x="1077.7" y="410.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">+0.30</text>
+<text x="803.0" y="434.0" text-anchor="middle" fill="#52514e" font-size="12" font-weight="normal">Difference in NLL-regret AUC (nats × generations)</text>
+</svg>
+</div><figcaption><strong>Figure 2.</strong> Each contrast as an interval against the practical-equivalence band. Inside the band means equivalent, not merely undecided.</figcaption></figure>
+
+<footer>Every number on this page is computed from the run's
+<code>chain_result.json</code> artifacts by <code>scripts/generate_final_tables.py</code>
+and rendered by <code>scripts/render_result_figures.py</code>. Source:
+<code>results/runs/primary_pilot_v2_2026-08-20</code>. Whether any of it may be quoted in the manuscript is
+<code>PROTOCOL.md</code> §5's question, not this page's.</footer>
+</div>

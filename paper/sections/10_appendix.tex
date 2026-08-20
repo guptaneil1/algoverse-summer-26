@@ -22,9 +22,15 @@ early reduces what remains for later generations.}
 \section{Data Appendix}
 \label{app:data}
 
-\textbf{RESULT\_PENDING.} The primary domain is not yet frozen
-(\texttt{DECISIONS.md} U-002). This appendix records what will be reported once it
-is, and is structured so that filling it requires no reorganisation.
+The domain is frozen and was executed. The corpus is WikiText-103, subsampled to
+the first 400 \texttt{base\_train} articles, tokenized with the GPT-2 tokenizer at
+revision \texttt{607a30d7} into blocks of 512 tokens. Each generation's decode
+emits roughly 3{,}280 records, and the assembled training corpus holds exactly that
+many in every generation after the first, because rescued human examples displace
+synthetic records one for one rather than being appended.
+
+The released artifacts carry the following, and this appendix indexes them rather
+than restating values that would then exist in two places:
 
 \begin{itemize}
   \item Dataset identifier, revision hash, and licence, with the licence audit
@@ -47,10 +53,15 @@ rather than asserted.
 \section{Evaluation Appendix}
 \label{app:evaluation}
 
-\textbf{RESULT\_PENDING.} The primary tail-retention definition is not yet frozen
-(U-004). Two candidates are implemented and audited for determinism,
-independence from the policy's selection signal, sensitivity to tail degradation,
-discriminant validity against non-tail modes, and split-half reliability.
+The tail-retention definition is frozen: the ratio-based metric, selected over
+\texttt{nll\_gap} on reliability and independence grounds and recorded as D-022.
+Both candidates were implemented and audited for determinism, independence from the
+policy's selection signal, sensitivity to tail degradation, discriminant validity
+against non-tail modes, and split-half reliability; the frozen choice is the one
+reported throughout this paper. Mode scores are a monotone-decreasing transform of
+mean held-out negative log-likelihood rather than raw likelihood, and the
+generation-0 value is snapshotted as the reference every later generation is
+measured against.
 
 Held-out human negative log-likelihood is computed from target-token log
 probabilities on the frozen test partition. Regret is aggregated across the
@@ -64,16 +75,22 @@ convention.
 \section{Statistics Appendix}
 \label{app:statistics}
 
-\textbf{RESULT\_PENDING.} Uncertainty is computed across independent chains.
-Multiple generations within one chain are repeated observations and do not
-increase the effective sample size.
+Uncertainty is computed across independent chains. Multiple generations within one
+chain are repeated observations and do not increase the effective sample size.
 
 The primary contrast is the joint policy against the strongest eligible non-joint
 baseline, paired by chain seed. Paired differences are summarised by their mean
-with a bootstrap interval resampled over complete chains. The smallest
-scientifically meaningful effect is frozen before outcomes are opened (U-006),
-and the interpretation that follows is selected mechanically from precommitted
-templates covering favourable, null, harmful, and uncertain outcomes.
+with a two-sided $95\%$ Student $t$ interval on four degrees of freedom, the frozen
+seed set being five chains per arm. The smallest scientifically meaningful effect
+was frozen before outcomes were opened (U-006) at $2\%$ relative, taken against the
+fresh-random arm's mean regret, and the interpretation that follows is selected
+mechanically from precommitted templates covering favourable, null, harmful, and
+uncertain outcomes.
+
+Which arm satisfies ``strongest eligible non-joint baseline'' is read from the
+outcome rather than fixed in advance; the selection rule is what was preregistered.
+This is the conservative direction, since it compares the joint policy against the
+best baseline available to it rather than a convenient one.
 
 \section{Reproducibility Appendix}
 \label{app:reproducibility}
@@ -91,14 +108,25 @@ immutable artifact. No number is entered by hand.
     classifies each run as valid, valid with limitation, or invalid; blocking
     failures include budget-equality violations, identity mismatches, and
     impossible token accounting.
-  \item \textbf{Budget matching.} Every policy in a comparison consumes identical
-    lifetime human-origin optimizer tokens and identical total optimizer tokens.
-    Equality is checked before launch from configuration and again after the run
-    from emitted artifacts.
-  \item \textbf{Token accounting.} Counts derive from tokenized batches actually
-    consumed by the optimizer. Repeated presentation of an example costs its
-    tokens once per presentation; gradient accumulation counts every micro-batch;
-    resume neither double-counts nor drops the batch spanning a checkpoint.
+  \item \textbf{Budget matching.} Total optimizer tokens are identical across every
+    policy in a comparison, by construction: rescued human examples displace
+    synthetic records rather than being appended, so each generation's training
+    volume is fixed regardless of what a policy buys. Lifetime human-origin tokens
+    are matched as a common ceiling reached up to indivisibility rather than as
+    exact equality, since candidates are indivisible and a policy cannot spend a
+    fraction of one; the realised spread is reported in Section~\ref{sec:results}
+    and is an order of magnitude below the practical effect threshold. Both axes
+    are checked before launch from configuration and again after the run from
+    emitted artifacts.
+  \item \textbf{Token accounting.} Counts are denominated in tokens consumed by the
+    optimizer rather than in documents. Repeated presentation of an example costs
+    its tokens once per presentation; gradient accumulation counts every
+    micro-batch; resume neither double-counts nor drops the batch spanning a
+    checkpoint. These properties are asserted by the accounting tests on fixtures.
+    On the executed run they are \emph{not} recomputed from realised batch records,
+    which were not retained: the declared ledger is checked against the frozen
+    budget instead. Every chain carries this as a recorded limitation rather than
+    as a silent assumption.
   \item \textbf{Determinism.} Seeds propagate through sampling, generation,
     initialisation, dropout, and evaluation. Checkpoints carry content digests so
     silent corruption cannot survive a resume.
@@ -110,7 +138,14 @@ immutable artifact. No number is entered by hand.
 \section{Limitations of Scope}
 \label{app:scope}
 
-\textbf{RESULT\_PENDING.} The planned study covers one licensed domain, one
-124M--160M screening model, and one horizon. It cannot establish behaviour at
-larger scales, in other domains, or for other model families. Any claim beyond
-the tested configuration is future work and is marked as such.
+The executed study covers one licensed domain, one 124M-parameter screening model,
+and one horizon of ten generations. It cannot establish behaviour at larger scales,
+in other domains, or for other model families. Any claim beyond the tested
+configuration is future work and is marked as such.
+
+Three of the seven comparators the claim contract names were not implemented:
+accumulation or fixed-fraction mixing, detector-based or importance-resampling
+selection, and oracle mode information as a non-deployable upper bound. The absent
+oracle bounds every result reported here, because an equivalence between two
+policies carries no information about how much of the achievable gain either
+captures.

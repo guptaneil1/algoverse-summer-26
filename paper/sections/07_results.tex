@@ -50,8 +50,9 @@ the selection rule is preregistered, the arm it selects is read from the outcome
 
 At matched budgets across \PilotChains{} chains, we did not detect a difference between
 joint allocation and the strongest non-joint baseline: paired mean difference
-\PilotPrimaryMean{}, $95\%$ CI $[\PilotPrimaryLow, \PilotPrimaryHigh]$, or
-\PilotPrimaryPct\% relative. The frozen practical equivalence region is
+\PilotPrimaryMean{}, $95\%$ Student $t$ interval on four degrees of freedom
+$[\PilotPrimaryLow, \PilotPrimaryHigh]$, or \PilotPrimaryPct\% relative. Every interval
+reported in this section is of that form, paired by seed over complete chains. The frozen practical equivalence region is
 $\pm\PilotThresholdUnits{}$ in outcome units, and the interval lies entirely inside it,
 reaching at most \PilotPrimaryReach{} from zero.
 
@@ -82,9 +83,10 @@ is comparable to every other.}
 
 \subsection{What does move the outcome}
 
-Because all five arms are matched on both axes, the secondary contrasts are admissible on
-the same footing as the primary one. Three of them are informative, and together they
-locate where the primary null comes from.
+Table~\ref{tab:pilot-results} gives the per-arm figures the contrasts below are computed
+from. Because all five arms are matched on both axes, the secondary contrasts are
+admissible on the same footing as the primary one. Three of them are informative, and
+together they locate where the primary null comes from.
 
 \begin{itemize}
 \item \textbf{Spending human tokens at all helps.} Fresh random against the no-rescue
@@ -131,6 +133,14 @@ more favourable metric: the primary conclusion follows the primary outcome, and 
 summary is that timing shows no detectable effect on chain-level regret and a small,
 statistically distinguishable, practically minor effect on tail retention. It is reported
 because it was measured.
+
+\subsection{Trajectories}
+
+Figure~\ref{fig:pilot-nll} plots held-out human NLL against generation for each policy.
+Two features carry the section's findings in visual form: every arm that spends its budget
+ends below the no-rescue control, and the selection-only and joint trajectories lie on top
+of one another for the whole horizon, which is the primary null rather than a plotting
+artefact.
 
 \subsection{Between-chain variance}
 

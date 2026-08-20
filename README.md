@@ -1,8 +1,13 @@
 # The Human Data Budget
 
-> **Deadline:** August 15, 2026
-> **Current phase:** four-week implementation and focused pilot
-> **Scientific status:** no validated novel result yet
+> **Original deadline:** August 15, 2026 — not met; see [STATUS.md](docs/STATUS.md)
+> **Current phase:** the grid has executed and the paper is written against it
+> **Scientific status:** one validated primary result, and it is a **null**. Under matched
+> budgets, joint time-and-mode allocation is practically equivalent to the strongest
+> implemented non-joint baseline. Targeted selection accounts for a substantial improvement;
+> scheduling does not detectably change the primary outcome. Three of seven predeclared
+> comparators were never implemented, including a non-deployable oracle upper bound, so how
+> much headroom remains above any of these policies is unknown.
 
 Language models may increasingly be trained on text produced by earlier language models. Across repeated generations, errors can accumulate and underrepresented parts of human language can disappear. This project asks:
 
@@ -58,7 +63,17 @@ See [ROADMAP.md](docs/ROADMAP.md) and the files in [`docs/weekly/`](docs/weekly/
 
 ## Current status
 
-The starting archive contained research-governance documents but no experiment code or results. This scaffold adds the collaboration structure, interfaces, fixtures, tests, and CI needed for four parallel workstreams. The included Python package is a tested contract skeleton, not a completed model-training implementation. See [STATUS.md](docs/STATUS.md) for the current truth.
+The starting archive contained research-governance documents but no experiment code or results. The package is now a working recursive-training apparatus: it runs the full allocation loop on real models, emits certifiable artifacts, and has executed the preregistered grid twice.
+
+**The result.** 25 chains, five policies x five frozen seeds, horizon 10, GPT-2 on WikiText-103. Both budget conditions of `PROTOCOL.md` §4 hold — human spend varies 0.0381% across arms and total optimizer tokens are identical — so the preregistered contrast is admissible. It is a null: joint minus the strongest eligible non-joint baseline is +0.01026, 95% CI [-0.00916, +0.02968], with the interval lying wholly inside the frozen practical equivalence region. `CLAIMS.md` C-002 is tested and **not supported**. It is not evidence that joint allocation is worse; the interval covers zero.
+
+Record: [`docs/runs/primary_pilot_v2_2026-08-20_results.md`](docs/runs/primary_pilot_v2_2026-08-20_results.md). Artifacts: `results/runs/primary_pilot_v2_2026-08-20/`, frozen at tag `results-freeze-2026-08-20`.
+
+**An earlier grid is retained and superseded.** It was rejected by its own fairness check on both axes (`FAILURE_LOG.md` F-020, F-021) and ten of its chains certify `invalid`. Its artifacts and numbers stay in the repository because the failure log cites them.
+
+**Not certified.** No validity certificate has been issued — the template requires a certifier who did not operate the run. `results/certificates/` holds an unsigned evidence pack and the batch verdicts.
+
+See [STATUS.md](docs/STATUS.md) for the current truth.
 
 ## Quickstart
 

@@ -226,3 +226,36 @@ For each paper experiment, report:
 ## Compute gate
 
 The powered experiment may begin only when observed pilot variance and measured runtime imply a feasible design. If compute is insufficient, narrow the research claim or strengthen the theory-led path; do not replace powered independent chains with a larger unpowered condition grid.
+
+### Status, 2026-08-20: released, and the gate's premise turned out to be wrong
+
+Both inputs the gate names now exist, twice over, and the second measurement is the one to
+use because it comes from a grid whose budget conditions actually held.
+
+| Input | Measured | Source |
+|---|---|---|
+| Between-chain variance | CVs **0.32%-1.09%** on the primary outcome, against a 2% practical threshold | 25 chains, `primary_pilot_v2_2026-08-20`. Grid 1 gave 0.41%-1.08%; an independent grid under a changed corpus-assembly rule reproduces it |
+| Runtime | **5.07 min per generation**, 2x RTX 4090. **5.96 h** for a 25-chain grid when the infrastructure holds; 9.56 h including two launches that infrastructure defects ended | `wall_seconds` in the shard summaries |
+| Cost | roughly **$18** clean, **$29** including the failed launches, at an observed $3/hour | as above; the rate was observed on one pod and is quoted by no contract |
+
+**The gate assumed chain count would be the binding constraint, and it is not.**
+`docs/decisions/powered_design_sizing_2026-08-19.md` sizes **three chains per arm** at the
+preregistered 2% threshold with 80% power, using the conservative paired SD. The frozen
+five-seed set already exceeds that. Doubling seeds does not buy a detectable effect where
+one was not found; it buys a narrower interval around a null that is already inside the
+equivalence region.
+
+**What binds instead is baseline coverage.** Three of the seven comparators `CLAIMS.md`
+C-002 names were never implemented, and one of them --- oracle mode information as a
+non-deployable upper bound --- is what would convert an equivalence between two policies into
+a statement about how much of the achievable gain either captures. That is engineering time,
+not GPU time. A powered re-run at more seeds would spend money on the constraint that is not
+binding.
+
+**Wall-time accounting note.** A grid assembled from several sequential launches costs the
+**sum of per-launch maxima**, not the maximum over all shard summaries: shards inside one
+launch are concurrent, launches are not. Taking a single max over the 2026-08-20 run returns
+3.35 h, which is one phase of four. `wall_hours` in `scripts/generate_pilot_outputs.py`
+computes all three figures and its docstring records why. `FAILURE_LOG.md` F-020a is the
+related error in the other direction --- a wall time inferred from when an operator noticed
+rather than read from an artifact.

@@ -17,8 +17,12 @@ seed set $101, 202, 303, 404, 505$.
 
 \subsection{Fairness constraint}
 
-Every policy in a budget-matched comparison consumes an identical lifetime count of
-human-origin optimizer tokens and an identical total optimizer-token count. A comparison is
+Every policy in a budget-matched comparison consumes an identical total optimizer-token
+count, which the corpus-assembly rule enforces by construction, and a lifetime count of
+human-origin optimizer tokens matched as a common ceiling reached up to indivisibility
+rather than as exact equality. Candidates are indivisible, so a policy cannot spend a
+fraction of one; the realised spread is reported in Section~\ref{sec:results} and is an
+order of magnitude below the practical effect threshold. A comparison is
 invalid, and is reported as such rather than repaired, when it has mismatched paired seed
 sets, unequal lifetime human-token budgets, unequal total optimizer-token budgets,
 nonfinite policy scores, data leakage, or config and manifest hash mismatches. Poor or
@@ -27,68 +31,4 @@ harmful measured performance is not grounds for exclusion.
 Token counts are taken from tokenized batches actually consumed by the optimizer, never
 from character or document estimates, and padding is treated consistently and documented.
 
-\subsection{Data separation}
-
-Each example receives a stable content hash before splitting. Five partitions are held
-disjoint: base human training data, per-generation rescue candidates, generation prompts,
-validation data, and final human test data. No final test example may influence prompting,
-selection, threshold tuning, early stopping, or hyperparameter choice.
-
-\subsection{Positive control}
-
-Before any treatment comparison, the pipeline is validated against a published result:
-Drayson et al.'s recursive-training study, at upstream commit
-\texttt{feb8511479a2e2dc868e1caf3f63cb99f1fcc746}, GPT-2 on WikiText-2 over eleven
-generations, with the paper's importance-sampling mitigation disabled so that the
-unmitigated baseline is what is measured.
-
-Both arms complete every planned generation. Per-generation perplexity and the resulting
-degradation ratios are given in Table~\ref{tab:positive-control}, generated from the
-committed run artifacts. The fully synthetic arm ($\alpha=0$) degrades substantially; the
-human-mixed arm ($\alpha=1$) is close to flat. The synthetic arm lies above the mixed arm at
-every subsequent generation and the two never re-cross, so the expected ordering and
-degradation direction are recovered.
-
-\begin{table}[h]
-\centering
-\caption{Positive-control perplexity by generation, both arms, generated from the committed
-per-arm result artifacts.}
-\label{tab:positive-control}
-\input{tables/positive_control}
-\end{table}
-
-Two independent executions were performed, on different accelerators and different
-dependency stacks. Every reported quantity agrees between them to well under one per cent,
-including the case where the two arms computed their shared baseline generation separately.
-The per-execution values and their differences are recorded in the evidence package rather
-than restated here.
-
-Agreement with the published values is assessed against a five per cent relative difference.
-This is an internal engineering tolerance, adopted because the source provides no suitable
-uncertainty for the endpoint, and it must not be read as proof of exact replication. All
-deviations from the upstream configuration are enumerated in the accompanying evidence
-record.
-
-Stage A uses WikiText-2, the upstream default. The pilot design targets a larger corpus
-from the same family; the two stages therefore use different corpus sizes, recorded as a
-deviation before execution rather than after.
-
-\subsection{Executed configuration}
-
-The pilot configuration was frozen before any chain ran, and every scientific value in it
-traces to written evidence recorded at freeze time: the retraining regime, the corpus
-subsample, the lifetime and per-generation budgets, the ordered seed set, the horizon, the
-outcome definitions, the contrast, and the exclusion rules. Two further reference
-configurations remain unfrozen and the runner continues to refuse them.
-
-The executed grid is the five treatment families of Section~\ref{sec:method} crossed with
-the five preregistered seeds: twenty-five chains at horizon ten, GPT-2 at a pinned
-revision, WikiText-103 subsampled to four hundred articles from the frozen base-training
-partition, a lifetime budget of $750{,}000$ human-origin optimizer tokens per chain, and
-generation prompts drawn from a partition held disjoint from training data. Execution took
-\PilotWallHours{} hours across four accelerators.
-
-Budget matching is asserted after execution rather than assumed, over the whole grid rather
-than per shard, and a violation is a non-zero exit rather than a warning. That assertion is
-what determines the status of the primary comparison in Section~\ref{sec:results}, and it
-did not pass.
+The executed configuration, the data-separation regime, and the positive-control reproduction are specified in Appendices~\ref{app:config},~\ref{app:separation} and~\ref{app:positive-control}.

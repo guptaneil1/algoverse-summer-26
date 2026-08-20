@@ -3,21 +3,94 @@
 \section{Experimental Apparatus}
 \label{app:apparatus}
 
-Figure~\ref{fig:pipeline} shows the recursive procedure. One \emph{chain} is one
-independently seeded traversal of the loop for the full horizon $G$. Chains, not
-generations, are the experimental units: generations within a chain are repeated
+Figure~\ref{fig:pipeline} in Section~\ref{sec:intro} shows the recursive procedure. One
+\emph{chain} is one independently seeded traversal of the loop for the full horizon $G$.
+Chains, not generations, are the experimental units: generations within a chain are repeated
 observations of the same trajectory and are not independent samples.
 
-\begin{figure}[h]
+\section{Positive Control}
+\label{app:positive-control}
+
+Before any treatment comparison, the pipeline is validated against a published result:
+Drayson et al.'s recursive-training study, at upstream commit
+\texttt{feb8511479a2e2dc868e1caf3f63cb99f1fcc746}, GPT-2 on WikiText-2 over eleven
+generations, with the paper's importance-sampling mitigation disabled so that the
+unmitigated baseline is what is measured.
+
+Both arms complete every planned generation. Per-generation perplexity and the resulting
+degradation ratios are given in Table~\ref{tab:positive-control}, generated from the
+committed run artifacts. The fully synthetic arm ($\alpha=0$) degrades substantially; the
+human-mixed arm ($\alpha=1$) is close to flat. The synthetic arm lies above the mixed arm at
+every subsequent generation and the two never re-cross, so the expected ordering and
+degradation direction are recovered.
+
+\begin{table}[h]
 \centering
-\input{figures/pipeline}
-\caption{Recursive train--generate--allocate--evaluate pipeline. Shaded boxes are
-frozen before any run. Dashed boxes are immutable artifacts. The dotted edge is
-the recursion: generation $g$'s allocation enters generation $g{+}1$'s training
-mixture. The lifetime budget constrains every allocation jointly, so spending
-early reduces what remains for later generations.}
-\label{fig:pipeline}
-\end{figure}
+\caption{Positive-control perplexity by generation, both arms, generated from the committed
+per-arm result artifacts.}
+\label{tab:positive-control}
+\input{tables/positive_control}
+\end{table}
+
+Two independent executions were performed, on different accelerators and different
+dependency stacks. Every reported quantity agrees between them to well under one per cent,
+including the case where the two arms computed their shared baseline generation separately.
+The per-execution values and their differences are recorded in the evidence package rather
+than restated here.
+
+Agreement with the published values is assessed against a five per cent relative difference.
+This is an internal engineering tolerance, adopted because the source provides no suitable
+uncertainty for the endpoint, and it must not be read as proof of exact replication. All
+deviations from the upstream configuration are enumerated in the accompanying evidence
+record.
+
+Stage A uses WikiText-2, the upstream default. The pilot design targets a larger corpus
+from the same family; the two stages therefore use different corpus sizes, recorded as a
+deviation before execution rather than after.
+
+The published positive control reproduces qualitatively. Both arms complete every planned
+generation; the expected arm ordering and degradation direction are recovered; a clean
+rerun on independent hardware reaches the same conclusion, with every reported quantity
+agreeing to well under one per cent across the two executions; all deviations are
+enumerated; and the reported table is regenerated from saved metrics by the same command
+that produced them, with every recorded artifact hash verified.
+
+Agreement with the published endpoint is assessed against a five per cent relative
+difference adopted as an internal engineering tolerance. It is not proof of exact
+replication, and no downstream claim rests on it.
+
+This establishes that the pipeline reproduces a known result on real assets. Together with
+the executed grid it establishes that the apparatus runs the full recursive allocation loop
+end to end on real models under matched budgets and produces certifiable artifacts.
+
+\section{Executed Configuration}
+\label{app:config}
+
+The pilot configuration was frozen before any chain ran, and every scientific value in it
+traces to written evidence recorded at freeze time: the retraining regime, the corpus
+subsample, the lifetime and per-generation budgets, the ordered seed set, the horizon, the
+outcome definitions, the contrast, and the exclusion rules. Two further reference
+configurations remain unfrozen and the runner continues to refuse them.
+
+The executed grid is the five treatment families of Section~\ref{sec:method} crossed with
+the five preregistered seeds: twenty-five chains at horizon ten, GPT-2 at a pinned
+revision, WikiText-103 subsampled to four hundred articles from the frozen base-training
+partition, a lifetime budget of $750{,}000$ human-origin optimizer tokens per chain, and
+generation prompts drawn from a partition held disjoint from training data. Execution took
+\PilotWallHours{} hours across four accelerators.
+
+Budget matching is asserted after execution rather than assumed, over the whole grid rather
+than per shard, and a violation is a non-zero exit rather than a warning. That assertion is
+what determines the status of the primary comparison in Section~\ref{sec:results}, and it
+did not pass.
+
+\section{Data Separation}
+\label{app:separation}
+
+Each example receives a stable content hash before splitting. Five partitions are held
+disjoint: base human training data, per-generation rescue candidates, generation prompts,
+validation data, and final human test data. No final test example may influence prompting,
+selection, threshold tuning, early stopping, or hyperparameter choice.
 
 \section{Data Appendix}
 \label{app:data}

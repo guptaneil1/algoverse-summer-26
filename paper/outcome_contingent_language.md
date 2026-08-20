@@ -12,6 +12,25 @@ The primary contrast is C-002: joint versus the strongest eligible non-joint
 baseline, at matched lifetime human-origin and total optimizer tokens, on
 chain-level regret. `n` is always the number of independently seeded chains.
 
+## Which templates the evidence selected, 2026-08-20
+
+Recorded here so a reader of this file knows which sentences are in force and which
+remain hypothetical. The templates below are unedited — the point of writing them in
+advance is lost if they are revised once the numbers are known.
+
+| Template | Applies? |
+|---|---|
+| **2. Null** | **Yes, to the primary contrast.** The interval lies inside the frozen practically equivalent region, so this is the governing template for `07_results.tex` and the abstract |
+| **5. Mixed across metrics** | **Yes, to the *timing* contrast.** The primary outcome shows no detectable effect and the confirmatory tail-retention outcome shows a small one whose interval excludes zero. Per this template the primary conclusion follows the primary outcome and the disagreement is reported, not resolved in the convenient direction |
+| **8. `valid_with_limitation`** | **Yes.** All 25 chains, on two standing grounds |
+| 1. Favourable | No |
+| 3. Harmful | No |
+| 4. Uncertain or underpowered | **No, and the distinction matters.** The design is sized for three chains per arm at the preregistered threshold and ran five. The interval is inside the equivalence region rather than merely wide. Template 2 applies, not this one |
+| 6. Reduced seed set | No. All 25 chains completed |
+| 7. Excluded chain | No. `aggregate.json` records 25 included, 0 excluded |
+| **9. No primary result at all** | **No longer.** It governed the 2026-08-18 grid, which no chain-level contrast survived. There is now a primary result |
+| 10. Positive control mismatch | No |
+
 ---
 
 ## 1. Favourable

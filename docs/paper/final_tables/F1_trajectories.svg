@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 776" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" role="img" aria-label="Recursive-training trajectories by allocation policy">
+<rect width="1060" height="776" fill="#fcfcfb"/>
+<line x1="62.0" y1="30.0" x2="86.0" y2="30.0" stroke="#52514e" stroke-width="2.5" stroke-dasharray="7 4" stroke-linecap="round"/>
+<text x="94.0" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">No rescue (control) — reference</text>
+<line x1="318.6" y1="30.0" x2="342.6" y2="30.0" stroke="#2a78d6" stroke-width="2.5" stroke-linecap="round"/>
+<text x="350.6" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">Fresh random</text>
+<line x1="449.8" y1="30.0" x2="473.8" y2="30.0" stroke="#eb6834" stroke-width="2.5" stroke-linecap="round"/>
+<text x="481.8" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">Schedule-only</text>
+<line x1="587.6" y1="30.0" x2="611.6" y2="30.0" stroke="#1baf7a" stroke-width="2.5" stroke-linecap="round"/>
+<text x="619.6" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">Selection-only</text>
+<line x1="732.0" y1="30.0" x2="756.0" y2="30.0" stroke="#eda100" stroke-width="2.5" stroke-linecap="round"/>
+<text x="764.0" y="34.0" text-anchor="start" fill="#52514e" font-size="12" font-weight="normal">Joint time-and-mode</text>
+<text x="62.0" y="94.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="600">a. Held-out human NLL (nats) ↓</text>
+<line x1="62.0" y1="302.0" x2="441.0" y2="302.0" stroke="#e5e4e0"/>
+<text x="53.0" y="306.0" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">3.20</text>
+<line x1="62.0" y1="264.4" x2="441.0" y2="264.4" stroke="#e5e4e0"/>
+<text x="53.0" y="268.4" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">3.30</text>
+<line x1="62.0" y1="226.9" x2="441.0" y2="226.9" stroke="#e5e4e0"/>
+<text x="53.0" y="230.9" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">3.40</text>
+<line x1="62.0" y1="189.4" x2="441.0" y2="189.4" stroke="#e5e4e0"/>
+<text x="53.0" y="193.4" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">3.50</text>
+<line x1="62.0" y1="151.9" x2="441.0" y2="151.9" stroke="#e5e4e0"/>
+<text x="53.0" y="155.9" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">3.60</text>
+<line x1="62.0" y1="114.4" x2="441.0" y2="114.4" stroke="#e5e4e0"/>
+<text x="53.0" y="118.4" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">3.70</text>
+<text x="62.0" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">0</text>
+<text x="104.1" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">1</text>
+<text x="146.2" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">2</text>
+<text x="188.3" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">3</text>
+<text x="230.4" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">4</text>
+<text x="272.6" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">5</text>
+<text x="314.7" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">6</text>
+<text x="356.8" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">7</text>
+<text x="398.9" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">8</text>
+<text x="441.0" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">9</text>
+<text x="251.5" y="370.0" text-anchor="middle" fill="#52514e" font-size="12" font-weight="normal">Generation</text>
+<polygon points="62.0,309.5 104.1,265.0 146.2,238.1 188.3,217.6 230.4,199.9 272.6,183.6 314.7,169.2 356.8,154.7 398.9,142.0 441.0,129.7 441.0,132.2 398.9,144.6 356.8,157.8 314.7,170.9 272.6,185.6 230.4,200.9 188.3,218.5 146.2,239.3 104.1,266.5 62.0,310.3" fill="#52514e" fill-opacity="0.12"/>
+<polyline points="62.0,309.9 104.1,265.8 146.2,238.7 188.3,218.0 230.4,200.4 272.6,184.6 314.7,170.1 356.8,156.3 398.9,143.3 441.0,130.9" fill="none" stroke="#52514e" stroke-width="2" stroke-dasharray="7 4" stroke-linejoin="round"><title>No rescue (control)</title></polyline>
+<polygon points="62.0,309.5 104.1,265.8 146.2,239.6 188.3,219.9 230.4,203.7 272.6,188.6 314.7,174.6 356.8,161.0 398.9,150.4 441.0,142.0 441.0,146.9 398.9,151.6 356.8,163.6 314.7,176.5 272.6,189.9 230.4,205.1 188.3,221.8 146.2,241.4 104.1,267.3 62.0,310.3" fill="#2a78d6" fill-opacity="0.12"/>
+<polyline points="62.0,309.9 104.1,266.5 146.2,240.5 188.3,220.9 230.4,204.4 272.6,189.2 314.7,175.5 356.8,162.3 398.9,151.0 441.0,144.4" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"><title>Fresh random</title></polyline>
+<polygon points="62.0,309.5 104.1,265.3 146.2,238.6 188.3,216.8 230.4,199.7 272.6,184.1 314.7,174.6 356.8,164.2 398.9,155.3 441.0,152.3 441.0,158.1 398.9,157.9 356.8,168.6 314.7,179.3 272.6,187.2 230.4,201.2 188.3,219.0 146.2,239.5 104.1,266.3 62.0,310.3" fill="#eb6834" fill-opacity="0.12"/>
+<polyline points="62.0,309.9 104.1,265.8 146.2,239.0 188.3,217.9 230.4,200.4 272.6,185.6 314.7,177.0 356.8,166.4 398.9,156.6 441.0,155.2" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"><title>Schedule-only</title></polyline>
+<polygon points="62.0,309.5 104.1,267.9 146.2,243.4 188.3,225.4 230.4,210.5 272.6,198.0 314.7,187.6 356.8,177.3 398.9,168.1 441.0,172.0 441.0,174.2 398.9,171.4 356.8,180.0 314.7,190.8 272.6,201.6 230.4,213.5 188.3,226.5 146.2,244.1 104.1,268.6 62.0,310.3" fill="#1baf7a" fill-opacity="0.12"/>
+<polyline points="62.0,309.9 104.1,268.3 146.2,243.8 188.3,226.0 230.4,212.0 272.6,199.8 314.7,189.2 356.8,178.6 398.9,169.8 441.0,173.1" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"><title>Selection-only</title></polyline>
+<polygon points="62.0,309.4 104.1,267.3 146.2,242.6 188.3,225.0 230.4,210.9 272.6,197.9 314.7,186.7 356.8,176.6 398.9,167.7 441.0,171.5 441.0,174.1 398.9,171.4 356.8,179.0 314.7,188.8 272.6,200.6 230.4,212.0 188.3,226.8 146.2,244.5 104.1,268.8 62.0,310.3" fill="#eda100" fill-opacity="0.12"/>
+<polyline points="62.0,309.9 104.1,268.1 146.2,243.6 188.3,225.9 230.4,211.5 272.6,199.2 314.7,187.8 356.8,177.8 398.9,169.5 441.0,172.8" fill="none" stroke="#eda100" stroke-width="2" stroke-linejoin="round"><title>Joint time-and-mode</title></polyline>
+<text x="449.0" y="134.9" text-anchor="start" fill="#52514e" font-size="11" font-weight="600">Control</text>
+<text x="449.0" y="148.9" text-anchor="start" fill="#2a78d6" font-size="11" font-weight="600">Random</text>
+<text x="449.0" y="162.9" text-anchor="start" fill="#eb6834" font-size="11" font-weight="600">Schedule</text>
+<text x="449.0" y="176.9" text-anchor="start" fill="#eda100" font-size="11" font-weight="600">Joint</text>
+<text x="449.0" y="190.9" text-anchor="start" fill="#1baf7a" font-size="11" font-weight="600">Selection</text>
+<text x="553.0" y="94.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="600">b. NLL regret vs own generation 0 ↓</text>
+<line x1="553.0" y1="309.9" x2="932.0" y2="309.9" stroke="#e5e4e0"/>
+<text x="544.0" y="313.9" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.00</text>
+<line x1="553.0" y1="272.4" x2="932.0" y2="272.4" stroke="#e5e4e0"/>
+<text x="544.0" y="276.4" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.10</text>
+<line x1="553.0" y1="234.8" x2="932.0" y2="234.8" stroke="#e5e4e0"/>
+<text x="544.0" y="238.8" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.20</text>
+<line x1="553.0" y1="197.3" x2="932.0" y2="197.3" stroke="#e5e4e0"/>
+<text x="544.0" y="201.3" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.30</text>
+<line x1="553.0" y1="159.8" x2="932.0" y2="159.8" stroke="#e5e4e0"/>
+<text x="544.0" y="163.8" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.40</text>
+<line x1="553.0" y1="122.3" x2="932.0" y2="122.3" stroke="#e5e4e0"/>
+<text x="544.0" y="126.3" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.50</text>
+<text x="553.0" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">0</text>
+<text x="595.1" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">1</text>
+<text x="637.2" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">2</text>
+<text x="679.3" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">3</text>
+<text x="721.4" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">4</text>
+<text x="763.6" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">5</text>
+<text x="805.7" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">6</text>
+<text x="847.8" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">7</text>
+<text x="889.9" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">8</text>
+<text x="932.0" y="350.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">9</text>
+<text x="742.5" y="370.0" text-anchor="middle" fill="#52514e" font-size="12" font-weight="normal">Generation</text>
+<polygon points="553.0,309.5 595.1,265.0 637.2,238.1 679.3,217.5 721.4,199.9 763.6,183.6 805.7,169.2 847.8,154.7 889.9,142.0 932.0,129.7 932.0,132.2 889.9,144.6 847.8,157.8 805.7,170.9 763.6,185.6 721.4,200.9 679.3,218.4 637.2,239.3 595.1,266.5 553.0,310.3" fill="#52514e" fill-opacity="0.12"/>
+<polyline points="553.0,309.9 595.1,265.7 637.2,238.7 679.3,218.0 721.4,200.4 763.6,184.6 805.7,170.1 847.8,156.3 889.9,143.3 932.0,130.9" fill="none" stroke="#52514e" stroke-width="2" stroke-dasharray="7 4" stroke-linejoin="round"><title>No rescue (control)</title></polyline>
+<polygon points="553.0,309.5 595.1,265.8 637.2,239.6 679.3,219.9 721.4,203.7 763.6,188.5 805.7,174.6 847.8,161.0 889.9,150.4 932.0,141.9 932.0,146.9 889.9,151.6 847.8,163.5 805.7,176.5 763.6,189.9 721.4,205.1 679.3,221.8 637.2,241.3 595.1,267.2 553.0,310.3" fill="#2a78d6" fill-opacity="0.12"/>
+<polyline points="553.0,309.9 595.1,266.5 637.2,240.5 679.3,220.8 721.4,204.4 763.6,189.2 805.7,175.5 847.8,162.3 889.9,151.0 932.0,144.4" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"><title>Fresh random</title></polyline>
+<polygon points="553.0,309.5 595.1,265.3 637.2,238.6 679.3,216.8 721.4,199.7 763.6,184.1 805.7,174.6 847.8,164.2 889.9,155.3 932.0,152.3 932.0,158.1 889.9,157.9 847.8,168.6 805.7,179.3 763.6,187.2 721.4,201.2 679.3,218.9 637.2,239.5 595.1,266.3 553.0,310.3" fill="#eb6834" fill-opacity="0.12"/>
+<polyline points="553.0,309.9 595.1,265.8 637.2,239.0 679.3,217.9 721.4,200.4 763.6,185.6 805.7,177.0 847.8,166.4 889.9,156.6 932.0,155.2" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"><title>Schedule-only</title></polyline>
+<polygon points="553.0,309.5 595.1,267.8 637.2,243.4 679.3,225.4 721.4,210.5 763.6,197.9 805.7,187.6 847.8,177.2 889.9,168.1 932.0,172.0 932.0,174.2 889.9,171.4 847.8,180.0 805.7,190.7 763.6,201.6 721.4,213.5 679.3,226.5 637.2,244.1 595.1,268.6 553.0,310.3" fill="#1baf7a" fill-opacity="0.12"/>
+<polyline points="553.0,309.9 595.1,268.2 637.2,243.7 679.3,225.9 721.4,212.0 763.6,199.8 805.7,189.2 847.8,178.6 889.9,169.7 932.0,173.1" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"><title>Selection-only</title></polyline>
+<polygon points="553.0,309.4 595.1,267.3 637.2,242.7 679.3,225.1 721.4,211.0 763.6,197.9 805.7,186.7 847.8,176.6 889.9,167.7 932.0,171.5 932.0,174.1 889.9,171.4 847.8,179.0 805.7,188.8 763.6,200.6 721.4,212.0 679.3,226.9 637.2,244.5 595.1,268.8 553.0,310.3" fill="#eda100" fill-opacity="0.12"/>
+<polyline points="553.0,309.9 595.1,268.1 637.2,243.6 679.3,226.0 721.4,211.5 763.6,199.2 805.7,187.8 847.8,177.8 889.9,169.5 932.0,172.8" fill="none" stroke="#eda100" stroke-width="2" stroke-linejoin="round"><title>Joint time-and-mode</title></polyline>
+<text x="940.0" y="134.9" text-anchor="start" fill="#52514e" font-size="11" font-weight="600">Control</text>
+<text x="940.0" y="148.9" text-anchor="start" fill="#2a78d6" font-size="11" font-weight="600">Random</text>
+<text x="940.0" y="162.9" text-anchor="start" fill="#eb6834" font-size="11" font-weight="600">Schedule</text>
+<text x="940.0" y="176.9" text-anchor="start" fill="#eda100" font-size="11" font-weight="600">Joint</text>
+<text x="940.0" y="190.9" text-anchor="start" fill="#1baf7a" font-size="11" font-weight="600">Selection</text>
+<text x="62.0" y="414.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="600">c. Tail retention (ratio) ↑</text>
+<line x1="62.0" y1="619.3" x2="441.0" y2="619.3" stroke="#e5e4e0"/>
+<text x="53.0" y="623.3" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.875</text>
+<line x1="62.0" y1="585.4" x2="441.0" y2="585.4" stroke="#e5e4e0"/>
+<text x="53.0" y="589.4" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.900</text>
+<line x1="62.0" y1="551.4" x2="441.0" y2="551.4" stroke="#e5e4e0"/>
+<text x="53.0" y="555.4" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.925</text>
+<line x1="62.0" y1="517.5" x2="441.0" y2="517.5" stroke="#e5e4e0"/>
+<text x="53.0" y="521.5" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.950</text>
+<line x1="62.0" y1="483.6" x2="441.0" y2="483.6" stroke="#e5e4e0"/>
+<text x="53.0" y="487.6" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">0.975</text>
+<line x1="62.0" y1="449.7" x2="441.0" y2="449.7" stroke="#e5e4e0"/>
+<text x="53.0" y="453.7" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">1.000</text>
+<text x="62.0" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">0</text>
+<text x="104.1" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">1</text>
+<text x="146.2" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">2</text>
+<text x="188.3" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">3</text>
+<text x="230.4" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">4</text>
+<text x="272.6" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">5</text>
+<text x="314.7" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">6</text>
+<text x="356.8" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">7</text>
+<text x="398.9" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">8</text>
+<text x="441.0" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">9</text>
+<text x="251.5" y="690.0" text-anchor="middle" fill="#52514e" font-size="12" font-weight="normal">Generation</text>
+<polygon points="62.0,449.7 104.1,498.5 146.2,527.2 188.3,548.9 230.4,566.0 272.6,579.9 314.7,594.5 356.8,607.0 398.9,617.2 441.0,628.3 441.0,630.3 398.9,619.5 356.8,608.6 314.7,596.1 272.6,583.2 230.4,567.9 188.3,550.0 146.2,529.3 104.1,501.0 62.0,449.7" fill="#52514e" fill-opacity="0.12"/>
+<polyline points="62.0,449.7 104.1,499.8 146.2,528.3 188.3,549.4 230.4,567.0 272.6,581.5 314.7,595.3 356.8,607.8 398.9,618.3 441.0,629.3" fill="none" stroke="#52514e" stroke-width="2" stroke-dasharray="7 4" stroke-linejoin="round"><title>No rescue (control)</title></polyline>
+<polygon points="62.0,449.7 104.1,497.5 146.2,525.3 188.3,544.6 230.4,561.9 272.6,575.1 314.7,587.8 356.8,599.3 398.9,609.2 441.0,613.5 441.0,619.8 398.9,612.7 356.8,603.7 314.7,590.5 272.6,577.9 230.4,562.9 188.3,547.3 146.2,527.5 104.1,500.3 62.0,449.7" fill="#2a78d6" fill-opacity="0.12"/>
+<polyline points="62.0,449.7 104.1,498.9 146.2,526.4 188.3,545.9 230.4,562.4 272.6,576.5 314.7,589.1 356.8,601.5 398.9,611.0 441.0,616.7" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"><title>Fresh random</title></polyline>
+<polygon points="62.0,449.7 104.1,498.6 146.2,526.9 188.3,548.9 230.4,566.5 272.6,578.9 314.7,585.8 356.8,595.4 398.9,604.4 441.0,603.0 441.0,609.6 398.9,607.3 356.8,599.7 314.7,590.3 272.6,582.3 230.4,567.4 188.3,550.3 146.2,528.8 104.1,501.1 62.0,449.7" fill="#eb6834" fill-opacity="0.12"/>
+<polyline points="62.0,449.7 104.1,499.8 146.2,527.8 188.3,549.6 230.4,566.9 272.6,580.6 314.7,588.1 356.8,597.6 398.9,605.9 441.0,606.3" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"><title>Schedule-only</title></polyline>
+<polygon points="62.0,449.7 104.1,495.6 146.2,520.7 188.3,538.1 230.4,549.0 272.6,559.3 314.7,569.2 356.8,579.0 398.9,587.2 441.0,581.2 441.0,583.1 398.9,590.1 356.8,582.3 314.7,572.8 272.6,564.7 230.4,553.4 188.3,540.1 146.2,521.6 104.1,496.7 62.0,449.7" fill="#1baf7a" fill-opacity="0.12"/>
+<polyline points="62.0,449.7 104.1,496.2 146.2,521.1 188.3,539.1 230.4,551.2 272.6,562.0 314.7,571.0 356.8,580.7 398.9,588.6 441.0,582.1" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"><title>Selection-only</title></polyline>
+<polygon points="62.0,449.7 104.1,495.1 146.2,520.2 188.3,537.9 230.4,551.4 272.6,561.1 314.7,571.1 356.8,579.3 398.9,586.7 441.0,580.7 441.0,583.5 398.9,590.4 356.8,583.3 314.7,575.0 272.6,564.8 230.4,553.4 188.3,539.3 146.2,522.3 104.1,497.1 62.0,449.7" fill="#eda100" fill-opacity="0.12"/>
+<polyline points="62.0,449.7 104.1,496.1 146.2,521.2 188.3,538.6 230.4,552.4 272.6,562.9 314.7,573.0 356.8,581.3 398.9,588.5 441.0,582.1" fill="none" stroke="#eda100" stroke-width="2" stroke-linejoin="round"><title>Joint time-and-mode</title></polyline>
+<text x="449.0" y="586.1" text-anchor="start" fill="#eda100" font-size="11" font-weight="600">Joint</text>
+<text x="449.0" y="600.1" text-anchor="start" fill="#1baf7a" font-size="11" font-weight="600">Selection</text>
+<text x="449.0" y="614.1" text-anchor="start" fill="#eb6834" font-size="11" font-weight="600">Schedule</text>
+<text x="449.0" y="628.1" text-anchor="start" fill="#2a78d6" font-size="11" font-weight="600">Random</text>
+<text x="449.0" y="642.1" text-anchor="start" fill="#52514e" font-size="11" font-weight="600">Control</text>
+<text x="553.0" y="414.0" text-anchor="start" fill="#0b0b0b" font-size="12" font-weight="600">d. NLL-regret AUC, every chain ↓</text>
+<line x1="553.0" y1="608.3" x2="932.0" y2="608.3" stroke="#e5e4e0"/>
+<text x="544.0" y="612.3" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">2.30</text>
+<line x1="553.0" y1="563.5" x2="932.0" y2="563.5" stroke="#e5e4e0"/>
+<text x="544.0" y="567.5" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">2.40</text>
+<line x1="553.0" y1="518.7" x2="932.0" y2="518.7" stroke="#e5e4e0"/>
+<text x="544.0" y="522.7" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">2.50</text>
+<line x1="553.0" y1="473.9" x2="932.0" y2="473.9" stroke="#e5e4e0"/>
+<text x="544.0" y="477.9" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">2.60</text>
+<line x1="553.0" y1="429.1" x2="932.0" y2="429.1" stroke="#e5e4e0"/>
+<text x="544.0" y="433.1" text-anchor="end" fill="#52514e" font-size="11" font-weight="normal">2.70</text>
+<text x="590.9" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">Control</text>
+<text x="666.7" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">Random</text>
+<text x="742.5" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">Schedule</text>
+<text x="818.3" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">Selection</text>
+<text x="894.1" y="670.0" text-anchor="middle" fill="#52514e" font-size="11" font-weight="normal">Joint</text>
+<text x="742.5" y="690.0" text-anchor="middle" fill="#52514e" font-size="12" font-weight="normal">Policy</text>
+<line x1="564.9" y1="454.6" x2="616.9" y2="454.6" stroke="#52514e" stroke-width="2.5"/>
+<circle cx="572.9" cy="465.0" r="4" fill="#52514e" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Control: 2.6199</title></circle>
+<circle cx="581.9" cy="455.5" r="4" fill="#52514e" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Control: 2.6412</title></circle>
+<circle cx="590.9" cy="452.7" r="4" fill="#52514e" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Control: 2.6474</title></circle>
+<circle cx="599.9" cy="450.1" r="4" fill="#52514e" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Control: 2.6532</title></circle>
+<circle cx="608.9" cy="449.7" r="4" fill="#52514e" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Control: 2.6541</title></circle>
+<line x1="640.7" y1="502.4" x2="692.7" y2="502.4" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="648.7" cy="506.6" r="4" fill="#2a78d6" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Random: 2.5270</title></circle>
+<circle cx="657.7" cy="505.7" r="4" fill="#2a78d6" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Random: 2.5290</title></circle>
+<circle cx="666.7" cy="500.7" r="4" fill="#2a78d6" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Random: 2.5402</title></circle>
+<circle cx="675.7" cy="500.6" r="4" fill="#2a78d6" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Random: 2.5406</title></circle>
+<circle cx="684.7" cy="498.4" r="4" fill="#2a78d6" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Random: 2.5454</title></circle>
+<line x1="716.5" y1="507.0" x2="768.5" y2="507.0" stroke="#eb6834" stroke-width="2.5"/>
+<circle cx="724.5" cy="515.2" r="4" fill="#eb6834" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Schedule: 2.5079</title></circle>
+<circle cx="733.5" cy="513.0" r="4" fill="#eb6834" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Schedule: 2.5128</title></circle>
+<circle cx="742.5" cy="511.4" r="4" fill="#eb6834" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Schedule: 2.5163</title></circle>
+<circle cx="751.5" cy="499.9" r="4" fill="#eb6834" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Schedule: 2.5419</title></circle>
+<circle cx="760.5" cy="495.6" r="4" fill="#eb6834" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Schedule: 2.5516</title></circle>
+<line x1="792.3" y1="611.4" x2="844.3" y2="611.4" stroke="#1baf7a" stroke-width="2.5"/>
+<circle cx="800.3" cy="630.3" r="4" fill="#1baf7a" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Selection: 2.2509</title></circle>
+<circle cx="809.3" cy="609.1" r="4" fill="#1baf7a" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Selection: 2.2982</title></circle>
+<circle cx="818.3" cy="608.8" r="4" fill="#1baf7a" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Selection: 2.2988</title></circle>
+<circle cx="827.3" cy="608.4" r="4" fill="#1baf7a" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Selection: 2.2999</title></circle>
+<circle cx="836.3" cy="600.3" r="4" fill="#1baf7a" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Selection: 2.3179</title></circle>
+<line x1="868.1" y1="606.8" x2="920.1" y2="606.8" stroke="#eda100" stroke-width="2.5"/>
+<circle cx="876.1" cy="620.3" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.2733</title></circle>
+<circle cx="885.1" cy="613.7" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.2880</title></circle>
+<circle cx="894.1" cy="602.9" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.3121</title></circle>
+<circle cx="903.1" cy="600.8" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.3169</title></circle>
+<circle cx="912.1" cy="596.3" r="4" fill="#eda100" fill-opacity="0.85" stroke="#fcfcfb" stroke-width="2"><title>Joint: 2.3268</title></circle>
+<text x="62.0" y="742.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Panels a–c: mean over the five frozen seeds, with a ±1 SD band.</text>
+<text x="62.0" y="758.0" text-anchor="start" fill="#52514e" font-size="11" font-weight="normal">Between-chain SD is under 1.1% of the mean, so those bands sit inside the stroke at this scale. Panel d plots all 25 chains.</text>
+</svg>

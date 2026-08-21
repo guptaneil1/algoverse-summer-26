@@ -1,13 +1,24 @@
 # Handoff prompt — paste this into a new chat
 
-Copy everything below the line. Update the HEAD sha before pasting.
+Copy everything below the line.
 
 ---
 
 I'm continuing the Human Data Budget research project at
-`C:\Users\sanji\Downloads\algoverse-summer-26`, branch `stage-a/env-freeze`, clean and
-fully pushed. **Read `docs/HANDOVER_2026-08-20.md` and `FAILURE_LOG.md` entries F-020
-through F-026a first** — they carry the full state and I don't want it re-derived.
+`C:\Users\sanji\Downloads\algoverse-summer-26`, branch `stage-a/env-freeze`.
+**Read `docs/HANDOVER_2026-08-20.md` and `FAILURE_LOG.md` entries F-020 through F-028
+first** — they carry the full state and I don't want it re-derived.
+
+**Verify the repo state yourself before trusting anything below**, since I can't:
+
+```
+git status -sb ; git status --short ; git log --oneline origin/stage-a/env-freeze..HEAD
+```
+
+As of the last session: working tree clean, nothing unpushed, HEAD `5523afe`, tags
+`results-freeze-2026-08-20` and `pilot-2026-08-18` on the remote
+(`github.com/guptaneil1/algoverse-summer-26`). The branch is ~66 commits ahead of `main`
+with **no PR open**; `docs/PR_DESCRIPTION_stage-a-env-freeze.md` is written if I want one.
 
 ## What the project is
 
@@ -15,62 +26,85 @@ Recursive-training / model-collapse study. Under a *fixed lifetime budget* of hu
 optimizer tokens, does it matter **when** you spend them and **which** under-covered modes
 you target? Five budget-matched arms — `no_rescue` (control), `random`, `schedule_only`,
 `selection_only`, `joint` — crossed with 5 frozen seeds, horizon 10, GPT-2 on WikiText-103.
-Complete recursive chains are the experimental unit. Target venue is NeurIPS 2027
-(`DECISIONS.md` D-002).
+Complete recursive chains are the experimental unit.
 
-## Where things stand
+## The result — the experiment is finished
 
-**The experiment is done and the paper is written against it.**
+The corrected grid completed 2026-08-20: **25 of 25 chains, zero failures, 25
+`valid_with_limitation`, 0 `invalid`.** Both axes of `PROTOCOL.md` §4 hold — human spread
+**0.0381%** against 0.2000% permitted, and total optimizer tokens **identical at 16,678,912
+in every chain of every arm** — because rescued human examples displace synthetic records
+rather than being appended (`DECISIONS.md` P-011). Artifacts:
+`results/runs/primary_pilot_v2_2026-08-20/`.
 
-The corrected grid (`primary_pilot_v2.json`) completed 2026-08-20: 25 of 25 chains on
-2× RTX 4090, zero failures, **25 `valid_with_limitation` and 0 `invalid`**. Both axes of
-`PROTOCOL.md` §4 hold — human spend varies 0.0381% across arms against 0.2000% permitted,
-and total optimizer tokens are **identical at 16,678,912** for every chain in every arm,
-because rescued human examples displace synthetic records rather than being appended
-(`DECISIONS.md` P-011). Artifacts: `results/runs/primary_pilot_v2_2026-08-20/`.
+**The preregistered primary contrast is a null.** joint − `selection_only` = **+0.0103,
+95% CI [−0.0092, +0.0297]**, +0.45% relative, against an equivalence region of ±0.0507. The
+interval lies *wholly inside* that region — equivalence at the preregistered threshold, not
+insufficient power. `CLAIMS.md` C-002 is **tested and not supported**. It is *not* evidence
+joint is worse: the interval covers zero.
 
-**The preregistered primary contrast is a null.** joint − `selection_only` = +0.01026,
-95% CI [−0.00916, +0.02968], +0.45% relative, against an equivalence region of ±0.05073.
-The interval lies *wholly inside* that region, so this is equivalence at the preregistered
-threshold rather than insufficient power — the design is sized for three chains per arm and
-ran five. `CLAIMS.md` C-002 is **tested and not supported**. It is *not* evidence that joint
-is worse: the interval covers zero. Confirmatory tail retention agrees.
+**Secondary contrasts, all admissible:** spending at all −4.04%; targeting under-covered
+modes a further −9.59%; scheduling −0.41% with an interval containing zero. Which modes you
+target matters, when you spend does not — **on the primary outcome**. The confirmatory
+tail-retention outcome detects a small timing effect, and
+`docs/evidence/claim_evidence_matrix.md` makes reporting that alongside any timing claim a
+mandatory pairing.
 
-**Three secondary contrasts are admissible and locate the effect.** Spending a human budget
-at all is worth 4.04% against a control trained on identical data volume; targeting
-under-covered modes a further 9.59%; scheduling when to spend 0.41% with an interval
-containing zero. Which modes you target matters, when you spend does not — *on the primary
-outcome*. On the confirmatory tail-retention outcome timing shows a small effect whose
-interval excludes zero, and `docs/evidence/claim_evidence_matrix.md` makes reporting that
-alongside any timing claim a mandatory pairing, not a stylistic choice.
+Record: `docs/runs/primary_pilot_v2_2026-08-20_results.md`.
 
-Full record: `docs/runs/primary_pilot_v2_2026-08-20_results.md`.
+## Papers — three versions, one archive
 
-**Run 1 (`primary_pilot.json`, 2026-08-18) is superseded and retained.** It failed both
-budget axes (F-020, F-021) and 10 of its chains certify `invalid`. Its artifacts, its
-`validation.json` and its numbers all stay in the repository and stay independently
-checkable — F-020 and F-021 cite them.
+All three read the same generated macros, so they cannot disagree about a number.
+
+| Source | Content pages | Venue |
+|---|---|---|
+| `paper/evorobust_main.tex` | 4 | EvoRobust, AXIOM |
+| `paper/workshop_main.tex` | 6 | NewInML, CL4FMAgents (8pp limit) |
+| `paper/main.tex` | ~12.5 | full version, 19pp total |
+
+`python scripts/build_overleaf_project.py --check` builds `dist/overleaf-project.zip` —
+one Overleaf "Upload Project" containing all three plus the figure and a README — and
+verifies it by unpacking into an empty directory and compiling. `scripts/preflight_overleaf.py`
+checks a single bundle against Overleaf conditions (three compile scenarios, static checks).
+`tests/analysis/test_overleaf_bundles.py` gates all of it.
+
+**MiKTeX is installed**, so the papers can be compiled locally. `neurips_2026.sty` is *not*
+in the repo; every version falls back to a same-dimension text block without it.
+
+## Target venues and deadlines
+
+| Workshop | Pages | Deadline | Fit |
+|---|---|---|---|
+| **EvoRobust** (my choice) | 4 incl. figures | **29 Aug 2026 AoE** | weak — I was told, I chose it anyway |
+| AXIOM | 4 | 29 Aug 2026 | strong |
+| CL4FMAgents | 8 / 4 | 30 Aug 2026 | moderate |
+| NewInML | 2–8, non-archival | see CFP | strong by eligibility |
+
+Assessment and evidence: `docs/WORKSHOP_SUBMISSION_GUIDE.md`. Upload steps:
+`docs/OVERLEAF_TUTORIAL_EVOROBUST.md`.
 
 ## What is left
 
-Nothing blocks the paper on evidence. All ten sections are written against the executed run
-and every number is a generated macro. What remains needs a person:
+Nothing blocks on code. Everything remaining needs a person:
 
-- **Run `python scripts/reproduce_pilot_table.py`** — one command, prints pass/fail. It
-  passes for both grids. The checklist wants it run by someone other than the analysis
-  author, which is the only reason it is still open.
-- **Validity certificate.** `results/certificates/primary_pilot_v2_2026-08-20_EVIDENCE_PACK.md`
-  pre-gathers every machine-checkable field with the command that reproduces it, and states
-  plainly what it does not close. It is deliberately unsigned — it was assembled by the run
-  operator, and the template requires a certifier who was not.
-- External novelty review, statistics review, uninvolved-reader review, mock-review scores,
-  the workshop CFP. All unchanged, all outside the team.
+- **Mentor approval.** `docs/MENTOR_REVIEW_REQUEST.md` is a ready-to-send message to Laryn
+  and Charlotte naming five decisions that need someone other than me.
+- **Statistics review** of the 2% practical-effect threshold. The headline is an
+  equivalence, which leans on that threshold far harder than a positive result would, and
+  it has never been reviewed outside the project. **This is the paper's main attack
+  surface.**
+- **11 of 31 citations** not yet individually verified (20 are, all exact; one defect found
+  and fixed). Remaining: Kang, Ye, RegMix, DSIR, and seven long-established ML papers.
+- **Validity certificate** — evidence pre-gathered at `results/certificates/`, deliberately
+  unsigned because it was assembled by the run operator.
+- **Independent reproduction** — I ran `scripts/reproduce_pilot_table.py` myself
+  (logged in `results/certificates/reproduction_log.md`); it wants someone with no stake.
+- External novelty review, uninvolved-reader review, mock-review scores.
 
 ## Constraints
 
-- Budget is effectively gone. The grid cost ~$18 of the ~$25 available. **Say so if a
-  suggestion costs money**, and ask before spending any.
-- The pod is terminated. There is no GPU access.
+- Budget is gone. The grid cost ~$18 of ~$25. **The pod is terminated; there is no GPU
+  access.** Say so if a suggestion costs money, and ask before spending any.
 - **No invented numbers.** Every result figure comes from `paper/tables/pilot_macros.tex`,
   generated by `scripts/generate_pilot_outputs.py`. A bare decimal in a paper section is a
   test failure, deliberately.
@@ -78,43 +112,47 @@ and every number is a generated macro. What remains needs a person:
 - Banned words: "first", "optimal", "prevents collapse", "solves", "state of the art",
   unqualified "novel".
 - `primary_no_rescue.json` and `primary_fresh_random.json` stay `AWAITING_JULY_31_FREEZE`.
-  Tests assert this.
 - **Never push to `main`.** Branch and PR.
-- **Heredocs eat backslash escapes here.** Use file writes for anything containing them —
-  this has now broken a shim, a LaTeX file, a regex, and two edit scripts.
+- **Heredocs eat backslash escapes here.** Use Write/Edit for anything containing them —
+  this has now broken a shim, a LaTeX file, a regex, and four edit scripts.
 - **`git add -A` has swept in unwanted directories.** Stage explicitly.
-- Validator exit codes are **0 valid / 1 limited / 2 invalid / 3 usage** (F-024, and F-024a
-  for a fifth document that still had them inverted). `run_pilot --check-only` is a
-  *different* tool with only 0 and 1 — confusing the two is how F-024 happened.
+- Validator exit codes are **0 valid / 1 limited / 2 invalid / 3 usage** (F-024, F-024a).
+  `run_pilot --check-only` is a *different* tool with only 0 and 1.
 - **Wall time for a phased grid is the sum of per-launch maxima**, not the max over shard
-  summaries. A single max understates it by most of the run (F-026a).
+  summaries (F-026a).
+- **`dist/` is gitignored and transient.** Do not write tests that read from it — one did,
+  and failed the moment it was cleaned.
+- Run tests with the venv active: several shell out to bare `python` and pick up the
+  system interpreter otherwise, producing a failure and 58 collection errors that say
+  nothing about the repo.
+
+## Project skills
+
+`.claude/skills/` has five I built for this: `paper-house-rules`, `paper-polish`,
+`latex-build`, `claim-licence`, `cite-check`. `.claude/agents/` has `evidence-auditor`,
+`novelty-adversary` and `stats-referee`, which are unused because of the standing
+instruction below.
 
 ## Standing instruction
 
 Make the decisions yourself rather than asking me — the team is not supplying reviews and I
-am not technical enough to arbitrate. Judge every call by what makes the paper strongest for
-NeurIPS, keep it consistent with what is already in the repo, and make sure each decision has
-supporting evidence. Record provenance honestly, including when a decision is yours,
-unvalidated, or in another owner's CODEOWNERS area. The only thing to ask me about is
-spending money on compute. If something needs a person to run a command or push, I can do
-that — say so.
+am not technical enough to arbitrate. Judge every call by what makes the paper strongest,
+keep it consistent with the repo, and make sure each decision has supporting evidence.
+Record provenance honestly, including when a decision is yours, unvalidated, or in another
+owner's CODEOWNERS area. The only thing to ask me about is spending money on compute. If
+something needs a person to run a command or push, say so and I'll do it.
 
-## One open judgement call
+## Open judgement calls the last session made
 
-The 2% practical threshold's denominator had three conventions in the repo. The code now uses
-the one both U-006 documents use (the fresh-random mean). That is a threshold definition
-touched *after* primary outcomes were open, which U-006 exists to constrain. The verdict is
-identical under either convention and both are emitted as macros so a reader can check —
-F-026a carries the note. If you think it should revert, the conclusion does not move.
+- **The 2% threshold's denominator** had three conventions in the repo; the code now uses
+  the one both U-006 documents use (the fresh-random mean). That is a threshold definition
+  touched *after* outcomes opened, which U-006 exists to constrain. The verdict is identical
+  under either convention and both are emitted as macros. F-026a has the note.
+- **P-012's phase ordering** was the assistant's, not mine — scheduling only, no scientific
+  content, and the run reached the last phase so it left no trace in the design.
 
-## State of everything else
+## State
 
-**817 tests pass, 0 fail**, ruff and repository audit clean, documents pinned against drift
-by `tests/analysis/test_document_coherence.py`. `bash scripts/build_submission.sh` builds the
-archive. **Activate the venv before running any of these**: several tests and the submission
-build shell out to bare `python`, so without `.venv/Scripts` (or `.venv/bin`) on `PATH` they
-pick up the system interpreter, which has no `human_data_budget` installed, and you will see
-one failure and 58 collection errors that are entirely an artifact of the shell.
-Decisions P-001–P-012 are accepted by me as project owner (not team-ratified, recorded as
-such); P-012 is a spend decision I made directly, with its ordering clause the assistant's.
-All six U-items closed.
+**849 tests pass, 0 fail.** Ruff and repository audit clean. Papers build with 0 undefined
+references and 0 errors. Decisions P-001–P-012 accepted by me as owner, not team-ratified;
+all six U-items closed.

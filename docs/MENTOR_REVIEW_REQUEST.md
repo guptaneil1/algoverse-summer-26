@@ -88,6 +88,13 @@ Branch root: https://github.com/guptaneil1/algoverse-summer-26/tree/stage-a/env-
 The paper PDF is attached to this message rather than linked — it is a build artifact and
 is deliberately not committed, so a clone will not contain one.
 
+The raw run artifacts are too large for the repository and are attached to the release:
+https://github.com/guptaneil1/algoverse-summer-26/releases/tag/results-freeze-2026-08-20 —
+`v2_results.tar.gz`, 101 files, every one matching the SHA-256 ledger in
+`ARTIFACT_HASHES.json`. That is the copy to check against if you want to verify rather than
+trust. The superseded 2026-08-18 grid is on its own release, kept because F-020 and F-021
+cite it.
+
 Everything reproduces from a clone. `python scripts/reproduce_pilot_table.py` recomputes
 every published number from the raw chain files using arithmetic written separately from
 the code that generated them — one command, no GPU, about a second. **If you run only one

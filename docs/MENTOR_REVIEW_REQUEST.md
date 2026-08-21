@@ -1,111 +1,52 @@
 # Message to mentors - copy from the line below
 
-Plain ASCII on purpose. Typographic characters (em dash, U+2212 minus, multiplication sign)
-do not survive a paste into most mail clients intact, and nobody types them by hand.
+Written for readers who have not been following the technical detail. It says where the
+project stands, what the result is in plain terms, what we need from them, and asks about
+submission paperwork. The long technical version is in `docs/HANDOVER_2026-08-20.md`; the
+earlier detailed draft of this message is in git history if it is ever wanted back.
+
+Plain ASCII on purpose. Typographic characters do not survive a paste into most mail
+clients, and nobody types them by hand.
 
 ---
 
 Hi Laryn, Charlotte,
 
-The pilot grid is done and I need your sign-off before we submit. Deadline is 29 August, so
-I'm asking now rather than in a week.
+An update on where we've landed, plus a few things I need from you.
 
-The experiment worked. The hypothesis didn't. I'd rather tell you that than have you find it
-in the paper.
+**The experiment is finished.** All 25 training runs completed on 20 August, none failed,
+and the results passed the fairness checks we committed to in advance. The paper is written.
+Nothing left needs more compute, and the GPU budget is spent and closed out.
 
-## What we ran
+**Our main hypothesis didn't pan out.** The idea was that being smart about *when* you spend
+a limited budget of human-written training data, on top of being smart about *which* data
+you spend it on, would beat doing just the second. It doesn't. The two come out equivalent,
+and we designed the study well enough to say "genuinely equivalent" rather than "we couldn't
+tell the difference" - which is a real result, just not the one we were hoping for.
 
-25 recursive chains: 5 allocation policies across 5 frozen seeds, horizon 10, GPT-2 on
-WikiText-103. All 25 completed and none certifies invalid. About $18 of GPU time.
+What did show up underneath is solid. Using human data at all clearly helps. Choosing which
+human data to use helps quite a bit more. Timing barely registers. So the paper reports an
+honest negative on our headline question and a clear positive on the part beneath it.
 
-Each chain gets a fixed lifetime budget of human-origin tokens. The question is when to
-spend it, and which under-covered parts of the distribution to aim at. Four policies vary
-those two axes; one control spends nothing.
+**What I need from you**
 
-What makes it a fair test: every policy burns the same total optimizer tokens, identical to
-the token, and the same human budget to within 0.038%. Rescued human examples displace
-synthetic ones instead of being added on top, so no arm sees more data than another.
+1. **A statistics read. This is the main one.** The result rests on a threshold for what
+   counts as "close enough to call equal". We fixed that threshold before looking at any
+   outcomes, but nobody outside the project has reviewed it, and it's the most likely thing
+   a reviewer goes after.
+2. **Sign-off on twelve design decisions** I made as owner that the team never formally
+   ratified. A few sit in other people's areas.
+3. **Someone who didn't run the experiment to sign the validity certificate.** All the
+   mechanical evidence is already gathered, so what's left is judgement and a signature.
+4. **A venue call.** We're aimed at EvoRobust, due 29 August. My own read is that AXIOM fits
+   our topic better, same deadline. Happy to be overruled, but you should know we didn't
+   pick on fit.
 
-## What we found
+**And one logistics question: when can we get the forms for sending it out?** The deadline
+is 29 August and I'd rather not have paperwork be the thing that stops us.
 
-The preregistered primary contrast came out null. Combining time and mode adaptation does
-not beat mode-targeting on its own: +0.0103, 95% CI [-0.0092, +0.0297]. That interval sits
-entirely inside the 2% practical-equivalence region we froze before opening outcomes, so
-this is equivalence, not "we couldn't tell". We powered the design for three chains per arm
-and ran five.
-
-The secondary contrasts show where the effect actually lives:
-
-- spending human data at all: -4.04% against a control on identical data volume
-- targeting under-covered modes: another -9.59%
-- choosing when to spend: -0.41%, interval covering zero
-
-Which data you buy matters. When you buy it doesn't. Doing both comes out the same as doing
-the first. One caveat we print rather than bury: the confirmatory tail-retention metric does
-pick up a small timing effect, so we qualify every timing claim as "on the primary outcome".
-
-## What I need from you
-
-**1. Is leading with a null right?** We think so, and the paper puts it ahead of the
-secondary effects, which are bigger and more tempting. Say so if that's wrong.
-
-**2. A statistics read. This is the big one.** An equivalence result leans on the
-practical-effect threshold much harder than a positive result would. Our 2% bar was frozen
-before outcomes and checked against measured anchors, but nobody outside the project has
-looked at it. If a reviewer goes after one thing, it's this. The verdict holds under the
-alternative denominator and both are in the paper.
-
-**3. Decisions P-001 through P-012.** I accepted all of them as owner and none is
-team-ratified. Three fall in other people's CODEOWNERS areas. `DECISIONS.md` says so plainly
-rather than implying agreement, but they need real eyes, P-011 most of all, since it changed
-what the experiment measures.
-
-**4. Venue.** We're aimed at EvoRobust, 4 pages, 29 August. Our own read is that AXIOM fits
-better: it's explicitly about efficiency under constraints, same deadline, same page limit,
-while EvoRobust is diversity-driven search for robustness, which is adjacent but not our
-question. Overrule me if you like, but you should know we didn't pick on fit.
-
-**5. Someone to sign the validity certificate** who didn't run the experiment. The
-mechanical evidence is already gathered in `results/certificates/`. What's missing is
-judgement and a signature.
-
-## Where to look
-
-Use these links rather than the repo front page. The work is on branch `stage-a/env-freeze`,
-tagged `results-freeze-2026-08-20`. The default branch is 42 commits behind and still says
-there's no result. It predates the run and I haven't merged it.
-
-Branch: https://github.com/guptaneil1/algoverse-summer-26/tree/stage-a/env-freeze
-
-- 5 minutes: `docs/HANDOVER_2026-08-20.md`
-- 20 minutes: the attached PDF, plus `docs/runs/primary_pilot_v2_2026-08-20_results.md`
-- if you want to attack it: `FAILURE_LOG.md`, entries F-020 through F-028
-
-The PDF is attached because it's a build artifact we don't commit, so a clone won't have
-one. The raw run artifacts are too big for the repo and hang off the release:
-https://github.com/guptaneil1/algoverse-summer-26/releases/tag/results-freeze-2026-08-20 -
-that's `v2_results.tar.gz`, 101 files, each matching the SHA-256 ledger in
-`ARTIFACT_HASHES.json`, if you'd rather verify than trust.
-
-Everything reproduces from a clone. `python scripts/reproduce_pilot_table.py` recomputes
-every published number from the raw chain files, using arithmetic written separately from
-the code that generated them. One command, no GPU, about a second. If you run one thing, run
-that. It also closes a checklist item that needs someone who isn't the analysis author.
-
-## Things you should hear from me first
-
-- An earlier version of this grid was invalid and we threw it out. It failed its own
-  fairness check on both axes. Both failures are written up as F-020 and F-021, and its
-  artifacts are still in the repo rather than deleted.
-- 20 of our 31 citations are individually verified against primary sources. One was wrong, a
-  misnamed workshop, now fixed. The remaining eleven are canonical and I haven't opened them.
-- Three of seven predeclared comparators were never implemented, including an oracle upper
-  bound. So our equivalence says nothing about how far either policy sits from what's
-  achievable, and the paper says that wherever the null appears.
-- We can't tell whether the joint policy actually behaved differently from the
-  targeting-only one. The per-generation allocation records weren't archived before we
-  released the compute (F-028). That's a real gap and it's in the limitations.
-
-Happy to walk through any of it live.
+The paper is attached if you want the detail, and the limitations are written up honestly in
+it rather than tucked away - including one earlier version of this experiment that we ran,
+found invalid, and threw out. Happy to walk through any of it live.
 
 Ronit

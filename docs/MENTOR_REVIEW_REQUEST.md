@@ -72,14 +72,21 @@ and a signature.
 
 ## Where to look
 
-Repo: https://github.com/guptaneil1/algoverse-summer-26 — branch `stage-a/env-freeze`,
-tagged `results-freeze-2026-08-20`.
+**Use these links, not the repo's front page.** The work is on branch
+`stage-a/env-freeze`, tagged `results-freeze-2026-08-20`. The default branch `main` is 68
+commits behind and still says there is no result — it predates the run and I have not
+merged it yet.
+
+Branch root: https://github.com/guptaneil1/algoverse-summer-26/tree/stage-a/env-freeze
 
 | If you have | Read |
 |---|---|
-| 5 minutes | `docs/HANDOVER_2026-08-20.md` |
-| 20 minutes | the paper PDF, plus `docs/runs/primary_pilot_v2_2026-08-20_results.md` |
-| you want to attack it | `FAILURE_LOG.md` F-020 → F-028 |
+| 5 minutes | [`docs/HANDOVER_2026-08-20.md`](https://github.com/guptaneil1/algoverse-summer-26/blob/stage-a/env-freeze/docs/HANDOVER_2026-08-20.md) |
+| 20 minutes | the paper PDF (attached), plus [`docs/runs/primary_pilot_v2_2026-08-20_results.md`](https://github.com/guptaneil1/algoverse-summer-26/blob/stage-a/env-freeze/docs/runs/primary_pilot_v2_2026-08-20_results.md) |
+| you want to attack it | [`FAILURE_LOG.md`](https://github.com/guptaneil1/algoverse-summer-26/blob/stage-a/env-freeze/FAILURE_LOG.md) F-020 → F-028 |
+
+The paper PDF is attached to this message rather than linked — it is a build artifact and
+is deliberately not committed, so a clone will not contain one.
 
 Everything reproduces from a clone. `python scripts/reproduce_pilot_table.py` recomputes
 every published number from the raw chain files using arithmetic written separately from

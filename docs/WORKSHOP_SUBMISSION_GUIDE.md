@@ -154,7 +154,7 @@ Verified means checked against the artifact, not assumed.
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Citations real | **◐** 6 of 31 verified individually against primary sources; 1 defect found and fixed (a workshop name). 25 canonical entries unverified |
+| 1 | Citations real | **◐** 20 of 31 verified individually against primary sources, all exact; 1 defect found and fixed (a workshop name). 11 unverified: Kang, Ye, RegMix, DSIR and seven long-established ML papers. (This row read "6 of 31 / 25 unverified" until 2026-08-20; corrected to match `docs/HANDOFF_PROMPT.md`) |
 | 2 | Overview diagram | **☑** Figure 1 in the introduction; caption states the mechanism and why it makes the decision joint |
 | 3 | Numbers consistent | **☑** Mechanically enforced. Every figure is a macro; a bare decimal in prose fails a test; both papers share one macro file so they cannot disagree |
 | 4 | AI sanity pass | **☑** Run repeatedly. F-027 (estimand mismatch) and F-028 (unarchived allocations) came out of it |

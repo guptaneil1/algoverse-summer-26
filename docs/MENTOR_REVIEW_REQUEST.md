@@ -73,7 +73,7 @@ and a signature.
 ## Where to look
 
 **Use these links, not the repo's front page.** The work is on branch
-`stage-a/env-freeze`, tagged `results-freeze-2026-08-20`. The default branch `main` is 68
+`stage-a/env-freeze`, tagged `results-freeze-2026-08-20`. The default branch `main` is 42
 commits behind and still says there is no result — it predates the run and I have not
 merged it yet.
 

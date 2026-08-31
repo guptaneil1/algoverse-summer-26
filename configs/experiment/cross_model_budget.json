@@ -1,10 +1,8 @@
 {
   "_comment": "Budget rule for the cross-model comparison, written before any cross-model chain runs. Every value below is either copied from the frozen primary_pilot.json or measured from the released v2 chain artifacts; none is a plan.",
-
   "status": "frozen",
   "frozen_on": "2026-08-29",
   "applies_to": "every model family in the cross-model comparison, including the GPT-2 pilot of 2026-08-20, which satisfies it as executed",
-
   "rule": {
     "name": "fixed_human_fraction_of_optimizer_tokens",
     "statement": "Each model's lifetime human budget B is the fixed fraction f of the total optimizer-consumed tokens T that model sees over the horizon. B = round(f * T).",
@@ -14,7 +12,6 @@
     "why_not_the_planned_figure": "primary_pilot.json planned 750000 against 16100000, a fraction of 0.04658385. The run realised 16678912 total tokens, so the planned fraction was never the executed one. Using the realised figure is what lets the GPT-2 run stand as the first row without a rerun.",
     "why_this_rule": "Tokenizers differ in efficiency, so a fixed absolute token budget gives each model a different quantity of human text, and a fixed text quantity gives each model a different token budget. The paper's claims are stated as conditional on an operating point, so holding the operating point fixed is the parity that matches what is claimed."
   },
-
   "per_model_instantiation": {
     "procedure": "Rebuild the partition manifests under the model's own tokenizer with scripts/add_optimizer_token_counts.py --tokenizer <id> --out-dir data/manifests/<short_name>. Scale the total: T_model = T_gpt2 * (base_train optimizer tokens under the model's tokenizer / base_train optimizer tokens under GPT-2's). Then B = round(f * T_model). scripts/make_model_pilot.py does this and emits the config.",
     "gpt2_reference": {
@@ -23,15 +20,28 @@
       "note": "realised values from the v2 release, not the planned values in primary_pilot.json"
     }
   },
-
   "held_identical_across_models": {
     "_comment": "Copied from the frozen primary_pilot.json. make_model_pilot.py carries these through unchanged, so a per-model config differs only in the model block, the manifest paths, the budgets, and the run identity.",
-    "arms": ["no_rescue", "random", "schedule_only", "selection_only", "joint"],
-    "seeds": [101, 202, 303, 404, 505],
+    "arms": [
+      "no_rescue",
+      "random",
+      "schedule_only",
+      "selection_only",
+      "joint"
+    ],
+    "seeds": [
+      101,
+      202,
+      303,
+      404,
+      505
+    ],
     "horizon": 10,
     "dataset": "wikitext-103-v1",
     "base_train_articles_used": 400,
-    "tail_modes": ["tail"],
+    "tail_modes": [
+      "tail"
+    ],
     "practical_effect_threshold_relative": 0.02,
     "training": {
       "block_size": 512,
@@ -41,27 +51,70 @@
       "save_steps": 2000,
       "torch_dtype": "bfloat16"
     },
-    "decoding": {"temperature": 1.0, "top_p": 1.0, "top_k": 50}
+    "decoding": {
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "top_k": 50
+    }
   },
-
   "models": [
-    {"short_name": "gpt2", "identifier": "openai-community/gpt2", "params": "124M",
-     "family": "GPT-2", "licence": "MIT", "status": "executed 2026-08-20"},
-    {"short_name": "smollm", "identifier": "HuggingFaceTB/SmolLM2-135M", "params": "135M",
-     "family": "Llama-style", "licence": "Apache-2.0", "status": "planned"},
-    {"short_name": "pythia", "identifier": "EleutherAI/pythia-160m", "params": "160M",
-     "family": "GPT-NeoX", "licence": "Apache-2.0", "status": "planned"},
-    {"short_name": "qwen", "identifier": "Qwen/Qwen2.5-0.5B", "params": "494M",
-     "family": "Qwen2.5", "licence": "Apache-2.0", "status": "planned",
-     "note": "about four times the parameter count of the others; decoding cost scales roughly with it, so measure one chain before committing to the grid"}
+    {
+      "short_name": "gpt2",
+      "identifier": "openai-community/gpt2",
+      "params": "124M",
+      "family": "GPT-2",
+      "licence": "MIT",
+      "status": "executed 2026-08-20"
+    },
+    {
+      "short_name": "smollm",
+      "identifier": "HuggingFaceTB/SmolLM2-135M",
+      "params": "135M",
+      "family": "Llama-style",
+      "licence": "Apache-2.0",
+      "status": "planned"
+    },
+    {
+      "short_name": "pythia",
+      "identifier": "EleutherAI/pythia-160m",
+      "params": "160M",
+      "family": "GPT-NeoX",
+      "licence": "Apache-2.0",
+      "status": "planned"
+    },
+    {
+      "short_name": "qwen",
+      "identifier": "Qwen/Qwen2.5-0.5B",
+      "params": "494M",
+      "family": "Qwen2.5",
+      "licence": "Apache-2.0",
+      "status": "planned",
+      "note": "about four times the parameter count of the others; decoding cost scales roughly with it, so measure one chain before committing to the grid"
+    },
+    {
+      "short_name": "pythia410",
+      "identifier": "EleutherAI/pythia-410m",
+      "params": "410M",
+      "family": "GPT-NeoX",
+      "licence": "Apache-2.0",
+      "status": "planned",
+      "note": "scale ladder rung 2; same pretraining data and tokenizer as pythia-160m, so a difference between them is scale and nothing else"
+    },
+    {
+      "short_name": "pythia1b",
+      "identifier": "EleutherAI/pythia-1b",
+      "params": "1B",
+      "family": "GPT-NeoX",
+      "licence": "Apache-2.0",
+      "status": "planned",
+      "note": "scale ladder rung 3; roughly eight times GPT-2's decode cost, so run it last and only after the effect is shown to replicate"
+    }
   ],
-
   "reporting_requirements": [
     "Report T and B per model beside every result table, so a reader can check the rule was applied rather than take it on trust.",
     "State that the comparison holds the operating point constant and therefore does not hold the absolute quantity of human text constant.",
     "Report each model's tokenizer efficiency against GPT-2's on the same corpus, since that is what makes the budgets differ."
   ],
-
   "prohibited_after_freeze": [
     "Changing f after seeing any cross-model outcome.",
     "Selecting which model families to report after seeing their outcomes; every planned row is reported or its absence explained.",

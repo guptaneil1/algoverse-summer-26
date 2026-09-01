@@ -28,6 +28,7 @@ there is a "you should see" line — if what you see is different, stop and look
 - [Part 4 — Connecting to it](#part-4--connecting-to-it)
 - [Part 5 — Installing the project](#part-5--installing-the-project)
 - [Part 6 — Running one model](#part-6--running-one-model)
+- [§6.8 — Running several models at once](#68-running-several-models-at-once)
 - [Part 7 — When something goes wrong](#part-7--when-something-goes-wrong)
 - [Part 8 — Costs](#part-8--costs)
 
@@ -58,6 +59,28 @@ The models, in the order you will run them:
 
 **Do not reorder these.** The first one is deliberately the cheapest so that mistakes are
 cheap.
+
+### You do not have to run them one after another
+
+Those hours add up to about 150, which sounds like weeks. It is not, because **the models
+are completely independent of each other**. Nothing in model 2 needs anything from model 1.
+
+So once model 1 has worked, you can rent a **separate computer for each remaining model and
+run them all at the same time**. Four machines running for 34 hours costs the same as one
+machine running for 136 hours — you are billed per machine-hour either way — but you get
+your results in a day and a half instead of most of a week.
+
+The plan:
+
+1. Run **SmolLM2-135M alone first**, start to finish. This proves everything works.
+2. Then start **one computer per remaining model, all at once.** They do not interact.
+
+[§6.8](#68-running-several-models-at-once) covers this. It is the same instructions
+repeated, not anything new.
+
+> If you are curious why this is safe: each run is 25 independent "chains", and no chain
+> uses another chain's output. The original GPT-2 experiment was itself run split across
+> four graphics cards for exactly this reason.
 
 ### You need nothing from anyone
 
@@ -207,8 +230,11 @@ Now look at the **Adjustable** column on that row:
 
 **If it says Yes:**
 - Hover over the row, click the **pencil** icon on the right
-- Enter `8`
+- Enter `20`
 - Click **Submit**
+
+> Why 20 and not 4? Each computer uses 4, and asking once for enough to run four
+> computers at the same time saves you waiting for a second approval later.
 
 **If it says No, or you get an error saying "unable to adjust":**
 
@@ -224,13 +250,14 @@ This is normal on sponsored accounts. You have to ask a person instead:
 5. Click **Enter details**, then fill in:
    - **Deployment model:** Resource Manager
    - **Location:** your region
-   - **Quota:** Standard NCASv3 Family vCPUs → **New limit:** `8`
+   - **Quota:** Standard NCASv3 Family vCPUs → **New limit:** `20`
    - Add a second row: Standard NCADSA100v4 Family vCPUs → **New limit:** `24`
 6. In the description box, paste:
 
 > Academic research on recursive language-model training. Fine-tuning small models
-> (135M–1B) for approximately 200 GPU-hours over the next month. Requesting 8 vCPU of
-> NCASv3_T4 and 24 vCPU of NCADSA100v4.
+> (135M–1B) for approximately 200 GPU-hours over the next month. Requesting 20 vCPU of
+> NCASv3_T4, enough to run four small machines concurrently, and 24 vCPU of
+> NCADSA100v4.
 
 7. **Severity:** C
 8. Click **Create**
@@ -239,7 +266,7 @@ This is normal on sponsored accounts. You have to ask a person instead:
 approved. You will get an email.
 
 To check: go back to **Quotas → My quotas**, search `T4`, and look at the row. When it
-reads **`0 of 8`** instead of **`0 of 0`**, you are approved.
+reads **`0 of 20`** instead of **`0 of 0`**, you are approved.
 
 ---
 
@@ -644,13 +671,63 @@ IP (it changes), and go back to §4.2. Your files are all still there.
 
 ---
 
+### 6.8 Running several models at once
+
+**Only do this after SmolLM2-135M has finished and uploaded successfully.** The point of
+running it alone first is to find problems on one cheap machine rather than four.
+
+Once it has worked, the remaining models can all run simultaneously. There is nothing
+clever to it: you make more computers and do the same thing on each.
+
+**For each remaining model:**
+
+1. Do **Part 3** again, giving the machine a name that says which model it is —
+   `hdb-pythia`, `hdb-pythia410`, `hdb-qwen`. Do not call them all `hdb-run` or you will
+   lose track of which is which.
+2. Do **Part 4** and **Part 5** on it, exactly as before.
+3. Do **Part 6**, using that model's `SHORT` and `HF_ID` from the table in §6.1.
+
+Each machine works on one model and knows nothing about the others. You can start all of
+them within about an hour, then leave them.
+
+**Write down which machine is doing which model.** Something like:
+
+```
+hdb-pythia      20.121.45.68    Pythia-160M     started Tue 3pm
+hdb-pythia410   20.121.45.69    Pythia-410M     started Tue 3pm
+hdb-qwen        20.121.45.70    Qwen2.5-0.5B    started Tue 4pm
+```
+
+You will be connecting to several machines and it is genuinely easy to run the wrong
+command on the wrong one.
+
+**Two warnings:**
+
+- **You are now paying for every machine, every hour.** Four small machines is about
+  $2/hour together. The total cost is the same as running them one at a time, but it
+  arrives four times faster, so watch your budget alert emails.
+- **You must deallocate every one of them** (§6.7). Four forgotten machines cost four
+  times as much as one.
+
+**Keep the three Pythia models on the same machine size.** They are the size comparison, so
+all three must use `Standard_NC4as_T4_v3`. Changing hardware between them would mean two
+things varied at once and the comparison would not mean anything.
+
+> **The advanced option, if you are comfortable:** a single machine with several graphics
+> cards can split one model's work across them using `--shard-index` and `--shard-count`.
+> The original GPT-2 run did this. It is faster per model but more fiddly, and separate
+> machines get you the same finish time with simpler instructions. Stick with separate
+> machines unless you have a reason not to.
+
+---
+
 ## Part 7 — When something goes wrong
 
 | What you see | What it means | What to do |
 |---|---|---|
 | Quotas page is empty | Compute service not turned on | Redo §2.3 |
 | "Unable to adjust" on quota | Sponsored account | File the support request, §2.4 |
-| VM creation fails on size | Quota not approved yet | Check the row says `0 of 8` |
+| VM creation fails on size | Quota not approved yet | Check the row says `0 of 20` |
 | `Permission denied (publickey)` | Key file permissions | Redo §4.1 |
 | `command not found: nvidia-smi` | Wrong VM image | Delete the VM, redo Part 3 with the NVIDIA image |
 | `Authentication failed` on git clone | Used your password | Use a personal access token, §5.1 |
@@ -694,7 +771,7 @@ once.
 - [ ] Credit amount and expiry written down
 - [ ] Budget alert set at 50/75/90%
 - [ ] `Microsoft.Compute` says `Registered`
-- [ ] Quota approved (row reads `0 of 8`)
+- [ ] Quota approved (row reads `0 of 20`)
 - [ ] VM created, auto-shutdown on, 256 GB disk
 - [ ] `hdb-key.pem` saved somewhere safe
 - [ ] `nvidia-smi` shows a GPU
@@ -702,7 +779,7 @@ once.
 - [ ] Per model: data prepared, config made, efficiency number sane
 - [ ] Per model: run finished, `--check-only` passed
 - [ ] Per model: release uploaded, config committed
-- [ ] VM shows **Stopped (deallocated)**
+- [ ] **Every** VM shows **Stopped (deallocated)** — check each one
 
 ---
 

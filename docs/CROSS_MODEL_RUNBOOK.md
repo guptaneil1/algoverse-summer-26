@@ -14,7 +14,7 @@ there is a "you should see" line — if what you see is different, stop and look
 
 1. When a command is running, the terminal may sit still for minutes or hours. **That is
    normal.** Do not press Ctrl-C. Do not close the window.
-2. When you finish for the day, follow [§6.4](#64-turn-the-computer-off) exactly. The cloud
+2. When you finish for the day, follow [§6.7](#67-turn-the-computer-off) exactly. The cloud
    computer bills by the hour whether or not you are using it.
 
 ---

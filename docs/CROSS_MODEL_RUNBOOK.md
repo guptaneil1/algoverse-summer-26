@@ -59,13 +59,11 @@ The models, in the order you will run them:
 **Do not reorder these.** The first one is deliberately the cheapest so that mistakes are
 cheap.
 
-### One thing to get from your team first
+### You need nothing from anyone
 
-There is a small file called `sitecustomize.py` that the program needs. It is not in the
-repository. Ask whoever ran the original GPT-2 experiment for it, and save it somewhere you
-can find it.
-
-Without it the program will crash partway through the first run. Ask now, before you start.
+Everything is in this document or in the repository. You do not need any files, passwords,
+or setup from another person. The only thing someone else must do is give your GitHub
+account access to this repository, which is one click on their side.
 
 ---
 
@@ -383,41 +381,60 @@ Then:
 ```bash
 cd algoverse-summer-26
 git checkout cross-model/add-model-families
-pip install -e .
+pip install -e . --no-deps
 ```
 
-The last one prints a lot of text and takes a minute or two.
-
 ### 5.2 Download the training pipeline
+
+The exact version matters — a newer one may behave differently from the original
+experiment, which would make your results not comparable.
 
 ```bash
 cd ~
 git clone https://github.com/GeorgeDrayson/model_collapse.git
+cd ~/model_collapse
+git checkout feb8511479a2e2dc868e1caf3f63cb99f1fcc746
+cd ~
+```
+
+**You should see** a message mentioning "detached HEAD". That is correct and expected.
+
+Now install what it needs. These versions are pinned deliberately:
+
+```bash
 pip install -r ~/model_collapse/requirements.txt
+pip install transformers==4.48.3 datasets==3.2.0 accelerate==1.2.1 \
+    huggingface_hub jsonschema pytest pyarrow hf_transfer
 ```
 
-This one takes several minutes and prints a great deal. Wait for the prompt.
+This takes several minutes and prints a great deal of text. Wait for the prompt.
 
-### 5.3 Put the file your team gave you in place
+### 5.3 Create the small helper file
+
+The training pipeline crashes without this. Copy the **whole block** below, including the
+first and last lines, paste it into the terminal, and press Enter:
 
 ```bash
-mkdir -p ~/shim
+mkdir -p ~/shim && cat > ~/shim/sitecustomize.py <<'PY'
+import os, sys, sysconfig
+try:
+    import importlib.util
+    _p = os.path.join(sysconfig.get_paths()["stdlib"], "sitecustomize.py")
+    if os.path.exists(_p):
+        _s = importlib.util.spec_from_file_location("_d", _p)
+        _m = importlib.util.module_from_spec(_s); _s.loader.exec_module(_m)
+except Exception:
+    pass
+if os.environ.get("STAGE_A_WANDB_SHIM") == "1":
+    try:
+        import wandb
+        wandb.init(mode="disabled")
+    except Exception as e:
+        sys.stderr.write("SHIM FAILED %s\n" % e)
+PY
 ```
 
-Now copy the `sitecustomize.py` from Part 0 onto the machine. **Open a second terminal
-window on your laptop** (Part 1 again — do not close the first one) and run:
-
-**Windows:**
-```powershell
-scp -i "C:\Users\YourName\Downloads\hdb-key.pem" "C:\path\to\sitecustomize.py" azureuser@20.121.45.67:~/shim/
-```
-
-**Mac:**
-```bash
-scp -i ~/Downloads/hdb-key.pem /path/to/sitecustomize.py azureuser@20.121.45.67:~/shim/
-```
-
-Then go back to your first terminal and check it arrived:
+Check it worked:
 
 ```bash
 ls ~/shim
@@ -425,10 +442,15 @@ ls ~/shim
 
 **You should see:** `sitecustomize.py`
 
+> What this does, if you are curious: the training pipeline reports to a dashboard service
+> called wandb, and crashes if it was not started properly. This file switches it off. You
+> do not need to understand it, but it must exist.
+
 ### 5.4 Check everything works before spending money
 
 ```bash
 cd ~/algoverse-summer-26
+export PYTHONPATH=src
 python -m pytest -q tests/runner tests/policies
 ```
 
@@ -472,12 +494,13 @@ Three commands. Each takes a few minutes.
 
 ```bash
 cd ~/algoverse-summer-26
+export PYTHONPATH=src
 
-python scripts/build_base_corpus.py --partition base_train \
+python scripts/build_base_corpus.py --partition base_train --limit 400 \
     --tokenizer "$HF_ID" --upstream-dir ~/model_collapse \
     --out data/corpora/${SHORT}_base.json
 
-python scripts/build_base_corpus.py --partition prompts \
+python scripts/build_base_corpus.py --partition prompts --limit 400 \
     --tokenizer "$HF_ID" --upstream-dir ~/model_collapse \
     --out data/corpora/${SHORT}_prompts.json
 
@@ -485,6 +508,10 @@ python scripts/build_base_corpus.py --partition test --eval \
     --tokenizer "$HF_ID" --upstream-dir ~/model_collapse \
     --out data/corpora/${SHORT}_test.json
 ```
+
+> `--limit 400` is not optional. The original experiment used exactly the first 400
+> articles, and leaving it off would build a much larger corpus that is not comparable.
+> The `test` one has no limit, which is also deliberate.
 
 Then:
 
@@ -627,7 +654,7 @@ IP (it changes), and go back to §4.2. Your files are all still there.
 | `Permission denied (publickey)` | Key file permissions | Redo §4.1 |
 | `command not found: nvidia-smi` | Wrong VM image | Delete the VM, redo Part 3 with the NVIDIA image |
 | `Authentication failed` on git clone | Used your password | Use a personal access token, §5.1 |
-| Anything mentioning `wandb` | Shim file missing | Redo §5.3; get the file from your team |
+| Anything mentioning `wandb` | Helper file missing or mistyped | Redo §5.3, pasting the whole block including the `PY` lines |
 | `No space left on device` | Disk full | Check you are on the `cross-model/add-model-families` branch |
 | `make_model_pilot.py` says "CANNOT BUILD CONFIG" | Data not prepared | Do §6.2 first |
 | Terminal seems frozen | It is working | **Wait.** Do not press Ctrl-C |
@@ -664,7 +691,6 @@ once.
 
 ## Checklist
 
-- [ ] Got `sitecustomize.py` from the team
 - [ ] Credit amount and expiry written down
 - [ ] Budget alert set at 50/75/90%
 - [ ] `Microsoft.Compute` says `Registered`

@@ -31,6 +31,7 @@ there is a "you should see" line — if what you see is different, stop and look
 - [§6.8 — Running several models at once](#68-running-several-models-at-once)
 - [Part 7 — When something goes wrong](#part-7--when-something-goes-wrong)
 - [Part 8 — Costs](#part-8--costs)
+- [Part 9 — The fast path](#part-9--the-fast-path)
 
 ---
 
@@ -718,6 +719,47 @@ things varied at once and the comparison would not mean anything.
 > The original GPT-2 run did this. It is faster per model but more fiddly, and separate
 > machines get you the same finish time with simpler instructions. Stick with separate
 > machines unless you have a reason not to.
+
+---
+
+## Part 9 — The fast path
+
+Parts 5 and 6 exist so you can see what is happening. Once you have done one machine by
+hand and it worked, `scripts/bootstrap_vm.sh` does all of it in one command, so starting
+the remaining machines takes minutes rather than an hour each.
+
+On a fresh VM, after connecting (Part 4):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/guptaneil1/algoverse-summer-26/cross-model/add-model-families/scripts/bootstrap_vm.sh | bash -s -- smollm
+```
+
+Replace `smollm` with `pythia`, `pythia410`, `qwen` or `pythia1b`.
+
+It checks the GPU, clones both repositories at the pinned versions, installs the pinned
+dependencies, writes the shim, runs the tests, builds the corpora and manifests, and
+generates the run configuration. Then it stops and prints the command to start the run.
+
+It deliberately does **not** start the run. You should launch that yourself inside `tmux`
+so you can watch it, and you should read the tokenizer-efficiency number first.
+
+It is safe to run twice. Every step skips work that is already done, so if it fails
+halfway you can fix the problem and run the same command again.
+
+### Fastest possible schedule
+
+1. File **one** quota request covering both T4 and A100 (§2.4). Nothing starts until this
+   clears, and it is the only step you cannot compress.
+2. Create all five machines at once.
+3. Bootstrap **one** of them, and start SmolLM2-135M.
+4. Watch it for twenty minutes. Once it is past the first generation, the setup is proven.
+5. Bootstrap and start the other four. Do not wait for SmolLM to finish — you only needed
+   it to *start*.
+
+Everything then runs concurrently, so the total wall-clock is the longest single model
+rather than the sum. Pythia-1B at about 68 hours sets the floor.
+
+**Keep the three Pythia models on identical machines.** They are the size comparison.
 
 ---
 

@@ -1,0 +1,64 @@
+{
+  "budget_id": "pilot-wt103-400art-750k-optimizer-tokens",
+  "chain_seed": 101,
+  "consumed_human_tokens": 798812,
+  "consumed_total_tokens": 17811968,
+  "exclusion_reason": null,
+  "generations_completed": 10,
+  "metrics": [
+    {
+      "generation": 0,
+      "human_nll": 2.6895753864206213,
+      "tail_retention": 1.0
+    },
+    {
+      "generation": 1,
+      "human_nll": 2.7891918324211105,
+      "tail_retention": 0.9642146722746133
+    },
+    {
+      "generation": 2,
+      "human_nll": 2.8463736716393,
+      "tail_retention": 0.944172643992515
+    },
+    {
+      "generation": 3,
+      "human_nll": 2.892915379075699,
+      "tail_retention": 0.928208271613481
+    },
+    {
+      "generation": 4,
+      "human_nll": 2.929147034288619,
+      "tail_retention": 0.9169831850388875
+    },
+    {
+      "generation": 5,
+      "human_nll": 2.9625106104821533,
+      "tail_retention": 0.9065201346621675
+    },
+    {
+      "generation": 6,
+      "human_nll": 2.976228140416055,
+      "tail_retention": 0.9021109852542011
+    },
+    {
+      "generation": 7,
+      "human_nll": 2.9979369082018508,
+      "tail_retention": 0.8961375834675737
+    },
+    {
+      "generation": 8,
+      "human_nll": 3.019781637471716,
+      "tail_retention": 0.8894110613966653
+    },
+    {
+      "generation": 9,
+      "human_nll": 3.023338326829287,
+      "tail_retention": 0.8881595361833218
+    }
+  ],
+  "policy": "schedule_only",
+  "run_id": "cross_model_smollm__schedule_only__seed101",
+  "schema_version": "1.0",
+  "valid": true
+}

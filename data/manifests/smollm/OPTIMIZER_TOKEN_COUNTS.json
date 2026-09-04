@@ -1,0 +1,30 @@
+{
+  "partitions": {
+    "base_train": {
+      "ratio": 1.2372698706037948,
+      "tokens": 99809682,
+      "words": 80669290
+    },
+    "prompts": {
+      "ratio": 1.2362420484224033,
+      "tokens": 5948526,
+      "words": 4811781
+    },
+    "rescue_candidates": {
+      "ratio": 1.2392691095340067,
+      "tokens": 18421656,
+      "words": 14864936
+    },
+    "test": {
+      "ratio": 1.2483800490027404,
+      "tokens": 301123,
+      "words": 241211
+    },
+    "validation": {
+      "ratio": 1.23982869379015,
+      "tokens": 265182,
+      "words": 213886
+    }
+  },
+  "tokenizer": "HuggingFaceTB/SmolLM2-135M"
+}

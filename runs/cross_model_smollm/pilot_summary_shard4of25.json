@@ -1,0 +1,12 @@
+{
+  "chains": [
+    {
+      "arm": "no_rescue",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/algoverse-summer-26/runs/cross_model_smollm/no_rescue/seed505/stdout_stderr.log",
+      "seed": 505,
+      "status": "failed"
+    }
+  ],
+  "run_id": "cross_model_smollm",
+  "wall_seconds": 9.362601752392948
+}

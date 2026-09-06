@@ -1,0 +1,65 @@
+{
+  "chains": [
+    {
+      "arm": "joint",
+      "consumed_human_tokens": 755000,
+      "consumed_total_tokens": 17157632,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 3.5271121787153965,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 4.076194250575872,
+          "tail_retention": 0.8695717980364049
+        },
+        {
+          "generation": 2,
+          "human_nll": 3.8943790005300065,
+          "tail_retention": 0.9086880010261178
+        },
+        {
+          "generation": 3,
+          "human_nll": 4.091457765582956,
+          "tail_retention": 0.8742626133184123
+        },
+        {
+          "generation": 4,
+          "human_nll": 4.203450114728575,
+          "tail_retention": 0.8488338239356168
+        },
+        {
+          "generation": 5,
+          "human_nll": 4.39764429379816,
+          "tail_retention": 0.7989753953834544
+        },
+        {
+          "generation": 6,
+          "human_nll": 4.669020656876834,
+          "tail_retention": 0.7600472747784334
+        },
+        {
+          "generation": 7,
+          "human_nll": 4.653183351679713,
+          "tail_retention": 0.7551463531759284
+        },
+        {
+          "generation": 8,
+          "human_nll": 4.829237981847276,
+          "tail_retention": 0.7395150353987251
+        },
+        {
+          "generation": 9,
+          "human_nll": 4.834274015283554,
+          "tail_retention": 0.7216458256765047
+        }
+      ],
+      "seed": 101,
+      "status": "complete"
+    }
+  ],
+  "run_id": "cross_model_pythia",
+  "wall_seconds": 3355.763624562882
+}

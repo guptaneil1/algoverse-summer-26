@@ -1,0 +1,12 @@
+{
+  "chains": [
+    {
+      "arm": "random",
+      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/algoverse-summer-26/runs/cross_model_smollm/random/seed404/stdout_stderr.log",
+      "seed": 404,
+      "status": "failed"
+    }
+  ],
+  "run_id": "cross_model_smollm",
+  "wall_seconds": 9.404196051880717
+}

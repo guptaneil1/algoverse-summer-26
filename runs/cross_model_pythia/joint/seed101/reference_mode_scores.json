@@ -1,14 +1,14 @@
 {
-  "checkpoint_sha256": "b914a93184d92b2fdcba3da16dfb4eaf3a2dbb9cd6401305c1e28ef9dbb5a979",
+  "checkpoint_sha256": "4ae5f22fd0cf0e7f32d10f4e8fc809fae6cff6549f10d9f92026f3a955a0661a",
   "generation": 0,
   "mode_nll": {
-    "common": 3.620023837347508,
-    "mid": 3.603479902481936,
-    "tail": 3.4167940720808874
+    "common": 3.545077959475708,
+    "mid": 3.521727229320337,
+    "tail": 3.388135338949364
   },
   "reference_mode_scores": {
-    "common": 0.2762412749007553,
-    "mid": 0.277509526086503,
-    "tail": 0.29267201326856157
+    "common": 0.28208124375010724,
+    "mid": 0.28395157684969013,
+    "tail": 0.29514759593697126
   }
 }

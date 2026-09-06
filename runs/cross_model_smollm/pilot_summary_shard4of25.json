@@ -2,11 +2,64 @@
   "chains": [
     {
       "arm": "no_rescue",
-      "error": "UpstreamStepError: upstream step failed (exit 1); full log: /workspace/algoverse-summer-26/runs/cross_model_smollm/no_rescue/seed505/stdout_stderr.log",
+      "consumed_human_tokens": 0,
+      "consumed_total_tokens": 17720832,
+      "metrics": [
+        {
+          "generation": 0,
+          "human_nll": 2.688973674537773,
+          "tail_retention": 1.0
+        },
+        {
+          "generation": 1,
+          "human_nll": 2.7877819203117356,
+          "tail_retention": 0.9652988874689129
+        },
+        {
+          "generation": 2,
+          "human_nll": 2.847832658721665,
+          "tail_retention": 0.9444236211109921
+        },
+        {
+          "generation": 3,
+          "human_nll": 2.8922953048875266,
+          "tail_retention": 0.9288154213904177
+        },
+        {
+          "generation": 4,
+          "human_nll": 2.9285072042984037,
+          "tail_retention": 0.9177235241194928
+        },
+        {
+          "generation": 5,
+          "human_nll": 2.961872524353545,
+          "tail_retention": 0.9073429795384759
+        },
+        {
+          "generation": 6,
+          "human_nll": 2.99174537932414,
+          "tail_retention": 0.8975956773233423
+        },
+        {
+          "generation": 7,
+          "human_nll": 3.0205659452016573,
+          "tail_retention": 0.8893425247877983
+        },
+        {
+          "generation": 8,
+          "human_nll": 3.0451132100622247,
+          "tail_retention": 0.8822283827022931
+        },
+        {
+          "generation": 9,
+          "human_nll": 3.070147557765615,
+          "tail_retention": 0.8752072561602856
+        }
+      ],
       "seed": 505,
-      "status": "failed"
+      "status": "complete"
     }
   ],
   "run_id": "cross_model_smollm",
-  "wall_seconds": 9.362601752392948
+  "wall_seconds": 9119.85204698611
 }

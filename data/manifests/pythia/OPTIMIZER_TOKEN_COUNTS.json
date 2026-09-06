@@ -1,0 +1,30 @@
+{
+  "partitions": {
+    "base_train": {
+      "ratio": 1.1691897003184235,
+      "tokens": 94317703,
+      "words": 80669290
+    },
+    "prompts": {
+      "ratio": 1.1697990827097078,
+      "tokens": 5628817,
+      "words": 4811781
+    },
+    "rescue_candidates": {
+      "ratio": 1.171946518975931,
+      "tokens": 17420910,
+      "words": 14864936
+    },
+    "test": {
+      "ratio": 1.1811235805995581,
+      "tokens": 284900,
+      "words": 241211
+    },
+    "validation": {
+      "ratio": 1.1679446060050682,
+      "tokens": 249807,
+      "words": 213886
+    }
+  },
+  "tokenizer": "EleutherAI/pythia-160m"
+}

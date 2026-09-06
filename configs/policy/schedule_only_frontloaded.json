@@ -1,0 +1,19 @@
+{
+  "candidate_source": "frozen_rescue_candidate_manifest",
+  "horizon": 10,
+  "insufficient_candidates_behavior": "select_the_largest_feasible_subset_without_exceeding_the_scheduled_or_remaining_lifetime_budget",
+  "lifetime_human_tokens": 100,
+  "missing_monitoring_behavior": "monitoring_is_not_read",
+  "name": "schedule_only_frontloaded",
+  "policy_version": "frontloaded-v1",
+  "_rationale": "The executed pilot ran one non-uniform schedule and it is back-loaded: nothing for five generations, then at the cap. The introduction motivates the opposite, buying early to stop errors before they propagate, and that direction was never run. This is the mirror image of configs/policy/schedule_only.json, same lifetime total, same selection rule, so the pair isolates schedule direction and nothing else.",
+  "schema_version": "1.0",
+  "selection_rule": "seeded_shuffle_without_replacement",
+  "spending_schedule": {
+    "0": 20, "1": 20, "2": 20, "3": 20, "4": 20,
+    "5": 0, "6": 0, "7": 0, "8": 0, "9": 0
+  },
+  "status": "proposed_not_frozen",
+  "tie_breaking": "seeded_shuffle_order",
+  "uses_mode_undercoverage": false
+}

@@ -1,0 +1,13 @@
+{
+  "chains": [
+    {
+      "arm": "joint",
+      "consumed_human_tokens": 798946,
+      "consumed_total_tokens": 18095616,
+      "seed": 101,
+      "status": "complete"
+    }
+  ],
+  "run_id": "cross_model_smollm",
+  "wall_seconds": 0.00012050382792949677
+}

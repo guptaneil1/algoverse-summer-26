@@ -1,0 +1,14 @@
+{
+  "checkpoint_sha256": "c9e10b97dcd5481f06da54b7bc76cd603c0976512cb6d0d4ae4f7808b88bd53a",
+  "generation": 0,
+  "mode_nll": {
+    "common": 3.469709848245356,
+    "mid": 3.47857174463486,
+    "tail": 3.303231733885763
+  },
+  "reference_mode_scores": {
+    "common": 0.28820853723711315,
+    "mid": 0.2874743065289195,
+    "tail": 0.3027338317628864
+  }
+}

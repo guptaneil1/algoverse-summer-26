@@ -61,6 +61,12 @@ def build_train_command(state: dict[str, Any], seed: int) -> list[str]:
         "--loss_on_last_n_tokens", str(state["loss_on_last_n_tokens"]),
         "--num_train_epochs", str(state["num_train_epochs"]),
         "--save_steps", str(state["save_steps"]),
+        # Without a limit the trainer keeps every intermediate checkpoint, and only
+        # the last one is ever read: real_generate_step decodes from the final
+        # checkpoint of the generation that just trained. COMPUTE.md forecasts
+        # 450-600 GB for a single 30-chain pilot at this scale, which is disk that
+        # is billed on a cloud VM and shared on a lab machine.
+        "--save_total_limit", str(state.get("save_total_limit", 1)),
         "--seed", str(seed),
         "--torch_dtype", str(state["torch_dtype"]),
         "--low_cpu_mem_usage", str(state["low_cpu_mem_usage"]),
